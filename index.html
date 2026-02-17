@@ -1,4 +1,4 @@
-<!-- ===== 4EK Ambassador Portal Login (POST param student_id) — FULL REPLACE ===== -->
+<!-- ===== 4EK Ambassador Portal Login (NETLIFY REDIRECT VERSION) ===== -->
 <meta name="robots" content="noindex, nofollow">
 
 <style>
@@ -17,7 +17,6 @@
 
   <div id="msg" class="hint hidden" style="margin-bottom:12px;"></div>
 
-  <!-- STEP 1 -->
   <form id="stepLogin">
     <label class="field">UCF Email
       <input id="email" type="email" class="input" placeholder="you@ucf.edu" required autocomplete="username">
@@ -27,45 +26,15 @@
     </label>
     <button class="btn" id="btnLogin" type="submit">Continue</button>
   </form>
-
-  <!-- STEP 2 -->
-  <form id="stepCode" class="hidden">
-    <div class="hint">Enter the 6-digit code sent to your email.</div>
-    <label class="field">Code
-      <input id="code" type="text" maxlength="6" class="input" autocomplete="one-time-code" inputmode="numeric">
-    </label>
-    <button class="btn" id="btnCode" type="submit">Verify</button>
-    <div class="hint" style="margin-top:8px;"><a href="#" id="resend">Resend code</a></div>
-  </form>
-
-  <!-- STEP 3 -->
-  <form id="stepConfirm" class="hidden">
-    <label class="field">Confirm password
-      <input id="newpw" type="password" class="input" autocomplete="new-password">
-    </label>
-    <button class="btn" id="btnConfirm" type="submit">Confirm</button>
-  </form>
 </div>
 
 <script>
 /* ===== CONFIG ===== */
 const API = "https://script.google.com/macros/s/AKfycbxUUnLnZWfYGe0ZJ5NKtoLXa78qXCK-cEeCv2Ip_3Xm_XUDy-fFp-w0gShBxakcjJdCPg/exec";
-
-// MUST match portals to prevent Neha/Sruthi “swap”
 const SESSION_KEY = "portal_session_v1";
-const LEGACY_KEYS = ["portal_session_v8"];
 
-const URLS = {
-  admin: "cool-tarsier-9bfafd.netlify.app/admin.html",
-  ambassador: "cool-tarsier-9bfafd.netlify.app/student.html"
-};
-
-/*
-  NOTE:
-  We intentionally do NOT show password rules on the page.
-  We keep the existing policy check very light (only blocks blank).
-  If Apps Script enforces complexity, it will respond with weak_password.
-*/
+/* 🔥 HARD-CODED NETLIFY DESTINATION */
+const NETLIFY_BASE = "https://cool-tarsier-9bfafd.netlify.app";
 
 /* ===== UTIL ===== */
 const $ = (id) => document.getElementById(id);
@@ -76,236 +45,92 @@ function setMsg(t, ok=false){
   el.style.color = ok ? "#1a7f37" : "#b00020";
   el.textContent = t;
 }
-function hideMsg(){ $("msg").classList.add("hidden"); $("msg").textContent=""; }
-
-function show(step){
-  ["stepLogin","stepCode","stepConfirm"].forEach(x => $(x).classList.add("hidden"));
-  $(step).classList.remove("hidden");
-}
-
-function clearSessions(){
-  try{ localStorage.removeItem(SESSION_KEY); }catch{}
-  LEGACY_KEYS.forEach(k=>{ try{ localStorage.removeItem(k); }catch{} });
-}
+function hideMsg(){ $("msg").classList.add("hidden"); }
 
 function saveSession(username, role){
   const payload = { username, role, ts: Date.now() };
   localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
-  LEGACY_KEYS.forEach(k=>{ try{ localStorage.setItem(k, JSON.stringify(payload)); }catch{} });
 }
 
-function getEmail(){ return ($("email").value || "").trim().toLowerCase(); }
-function getPW(){ return $("password").value || ""; }
+function redirectToPortal(role){
+  const target = role === "admin"
+    ? NETLIFY_BASE + "/admin.html"
+    : NETLIFY_BASE + "/student.html";
 
-function disableBtn(id,label){
-  const b = $(id);
-  if(!b) return;
-  b.disabled = true;
-  b.dataset.prev = b.textContent;
-  b.textContent = label;
+  console.log("FORCING redirect to:", target);
+
+  // HARD NAVIGATION — CANNOT resolve relative to WordPress
+  window.location.href = target;
 }
-function enableBtn(id){
-  const b = $(id);
-  if(!b) return;
-  b.disabled = false;
-  if(b.dataset.prev){ b.textContent = b.dataset.prev; delete b.dataset.prev; }
-}
-function enableBtns(){ ["btnLogin","btnCode","btnConfirm"].forEach(enableBtn); }
 
 /* ===== API ===== */
-async function GETJSON(params){
-  const url = API + "?" + new URLSearchParams(params).toString();
-  const r = await fetch(url, { mode:"cors", cache:"no-cache" });
-  const t = await r.text();
-  try { return JSON.parse(t); }
-  catch { return { ok:false, error:"Non-JSON response", body:t, status:r.status }; }
-}
+async function POST_LOGIN(email, password){
+  const qs = new URLSearchParams({
+    action: "login",
+    student_id: email,
+    email: email,
+    username: email
+  }).toString();
 
-/**
- * POST without preflight + ALSO puts identifiers in querystring (e.parameter.* compatible).
- */
-async function POST_PARAM(action, queryParams, bodyObj){
-  const qs = new URLSearchParams({ action, ...(queryParams || {}) }).toString();
   const url = API + "?" + qs;
 
   const r = await fetch(url, {
     method: "POST",
     mode: "cors",
     cache: "no-cache",
-    // no headers (avoid preflight)
-    body: JSON.stringify(bodyObj || {})
+    body: JSON.stringify({
+      student_id: email,
+      email: email,
+      username: email,
+      password: password
+    })
   });
 
   const t = await r.text();
   try { return JSON.parse(t); }
-  catch { return { ok:false, error:"Non-JSON response", body:t, status:r.status }; }
+  catch { return { ok:false, error:"Invalid JSON", body:t }; }
 }
 
-/* ===== ACTIONS ===== */
-async function doLogin(useNew=false){
+/* ===== LOGIN ===== */
+$("stepLogin").addEventListener("submit", async (e)=>{
+  e.preventDefault();
   hideMsg();
 
-  const email = getEmail();
+  const email = ($("email").value || "").trim().toLowerCase();
+  const password = $("password").value || "";
+
   if(!email){ setMsg("Enter your UCF email."); return; }
+  if(!password){ setMsg("Enter your password."); return; }
 
-  const pw = useNew ? ($("newpw").value || "") : getPW();
-  if(!pw){ setMsg("Enter your password."); return; }
-
-  disableBtn("btnLogin", "Loading…");
+  $("btnLogin").disabled = true;
+  $("btnLogin").textContent = "Loading…";
 
   try{
-    clearSessions();
+    localStorage.removeItem(SESSION_KEY);
 
-    // Put student_id/email/username in querystring so Apps Script can read e.parameter.student_id
-    const out = await POST_PARAM(
-      "login",
-      { student_id: email, email: email, username: email },
-      { student_id: email, email: email, username: email, password: pw } // body too
-    );
-
+    const out = await POST_LOGIN(email, password);
     console.log("LOGIN response:", out);
-    enableBtns();
 
     if(out?.ok && out.role){
-      const canonicalEmail = String(out.student_id || out.email || email).trim().toLowerCase();
-      clearSessions();
-      saveSession(canonicalEmail, out.role);
-      location.assign(out.role === "admin" ? URLS.admin : URLS.ambassador);
+      saveSession(email, out.role);
+      redirectToPortal(out.role);
       return;
     }
 
-    if(out?.status === "not_set"){ await sendCode(); return; }
-    if(out?.status === "bad_password"){ setMsg("Incorrect password."); return; }
-    if(out?.error){ setMsg("Login failed: " + out.error); return; }
-
-    setMsg("Login failed. Check console for details.");
-  }catch(err){
-    enableBtns();
-    console.error("Login failed:", err);
-    setMsg("Could not reach the login service. Please try again.");
-  }
-}
-
-async function sendCode(){
-  const email = getEmail();
-  if(!email){ setMsg("Enter email first."); return; }
-
-  disableBtn("btnLogin", "Sending…");
-  try{
-    // If your script recently renamed this action, that would cause "Unknown action"
-    // Keep the canonical name, but fall back to common variants.
-    const candidates = ["sendlogincode","sendLoginCode","send_code","sendcode","login_code_send"];
-    let out = null;
-
-    for(const act of candidates){
-      out = await GETJSON({ action: act, email });
-      console.log("SEND CODE response ("+act+"):", out);
-      if(out?.ok) break;
-      const msg = String(out?.error || out?.message || out?.body || "").toLowerCase();
-      if(!msg.includes("unknown action")) break; // real failure, stop
-    }
-
-    enableBtns();
-
-    if(out?.ok){
-      show("stepCode");
-      setMsg("Code sent. Check your email.", true);
+    if(out?.status === "bad_password"){
+      setMsg("Incorrect password.");
+    } else if(out?.error){
+      setMsg("Login failed: " + out.error);
     } else {
-      setMsg(out?.error || "Could not send code.");
+      setMsg("Login failed.");
     }
+
   }catch(err){
-    enableBtns();
-    console.error("sendCode failed:", err);
-    setMsg("Could not send code. Please try again.");
+    console.error("Login error:", err);
+    setMsg("Could not reach login service.");
   }
-}
 
-async function verifyCode(){
-  const email = getEmail();
-  const code = ($("code").value || "").trim();
-  if(!email){ setMsg("Enter email first."); show("stepLogin"); return; }
-  if(!code || code.length !== 6){ setMsg("Enter the 6-digit code."); return; }
-
-  disableBtn("btnCode", "Verifying…");
-  try{
-    const candidates = ["verifylogincode","verifyLoginCode","verify_code","verifycode","login_code_verify"];
-    let out = null;
-
-    for(const act of candidates){
-      out = await GETJSON({ action: act, email, code });
-      console.log("VERIFY CODE response ("+act+"):", out);
-      if(out?.ok) break;
-      const msg = String(out?.error || out?.message || out?.body || "").toLowerCase();
-      if(!msg.includes("unknown action")) break;
-    }
-
-    enableBtns();
-
-    if(out?.ok){
-      show("stepConfirm");
-      hideMsg();
-    } else {
-      setMsg(out?.error || "Invalid code.");
-    }
-  }catch(err){
-    enableBtns();
-    console.error("verifyCode failed:", err);
-    setMsg("Could not verify code. Please try again.");
-  }
-}
-
-async function confirmPassword(){
-  const email = getEmail();
-  const pw = ($("newpw").value || "");
-
-  if(!email){ setMsg("Enter email first."); show("stepLogin"); return; }
-  if(!pw){ setMsg("Enter a password to confirm."); return; }
-
-  disableBtn("btnConfirm", "Saving…");
-  try{
-    const candidates = ["setpassword","setPassword","set_pw","setpw","login_set_password"];
-    let out = null;
-
-    for(const act of candidates){
-      out = await POST_PARAM(
-        act,
-        { student_id: email, email: email, username: email },
-        { student_id: email, email: email, username: email, password: pw }
-      );
-      console.log("CONFIRM PASSWORD response ("+act+"):", out);
-
-      if(out?.ok) break;
-      if(out?.status === "weak_password" || out?.status === "not_set" || out?.status === "bad_password") break;
-
-      const msg = String(out?.error || out?.message || out?.body || "").toLowerCase();
-      if(!msg.includes("unknown action")) break;
-    }
-
-    enableBtns();
-
-    if(out?.ok){
-      // Immediately log in with the confirmed password
-      $("password").value = pw;
-      show("stepLogin");
-      await doLogin(false);
-    } else if(out?.status === "weak_password"){
-      // Don't show parameters/rules
-      setMsg("Password could not be confirmed. Please try a different one.");
-    } else {
-      setMsg(out?.error || "Could not confirm password.");
-    }
-  }catch(err){
-    enableBtns();
-    console.error("confirmPassword failed:", err);
-    setMsg("Could not confirm password. Please try again.");
-  }
-}
-
-/* ===== EVENTS ===== */
-$("stepLogin").addEventListener("submit", (e)=>{ e.preventDefault(); doLogin(false); });
-$("stepCode").addEventListener("submit", (e)=>{ e.preventDefault(); verifyCode(); });
-$("resend").addEventListener("click", (e)=>{ e.preventDefault(); sendCode(); });
-$("stepConfirm").addEventListener("submit", (e)=>{ e.preventDefault(); confirmPassword(); });
-
-clearSessions();
+  $("btnLogin").disabled = false;
+  $("btnLogin").textContent = "Continue";
+});
 </script>
