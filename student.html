@@ -1,0 +1,1209 @@
+<!-- ===== AMBASSADOR PORTAL (NO LOGIN GUARD, NOINDEX TAG) — FULL REPLACE (FULLSCREEN COLOR CONFETTI + DEFAULT HOURS + FULL HISTORY W/ STATUS) ===== -->
+<meta name="robots" content="noindex, nofollow">
+
+<!-- UI -->
+<div id="amb-app" style="max-width:1100px;margin:0 auto;">
+  <header class="amb-top">
+    <div>
+      <div class="muted" id="ambGreet">Welcome</div>
+      <div class="h-name" id="ambName">—</div>
+    </div>
+    <div class="hours">
+      <div class="muted" id="hoursLabel">My Semester Total Hours</div>
+      <div class="h-big" id="hoursTotal">0</div>
+      <div class="muted small" id="hoursSub" style="margin-top:2px;">Spring2026</div>
+    </div>
+  </header>
+
+  <section class="amb-grid">
+    <div class="card">
+      <div class="card-h">Your Requirements</div>
+      <div class="card-b">
+        <ul id="reqList" class="req-list"></ul>
+        <div class="muted small">Admins control these checkboxes.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">Quick Actions</div>
+      <div class="card-b">
+        <!-- Attendance Request -->
+        <form id="formRequest" class="form" autocomplete="off">
+          <h4>Attendance Request</h4>
+          <label>Choose event
+            <select id="reqEvent"></select>
+          </label>
+          <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <label>Requested hours (optional)
+              <input id="reqHours" type="number" step="0.25" min="0" placeholder="Leave blank to use event hours">
+            </label>
+            <div class="muted small" style="display:flex;align-items:center;">
+              If you didn’t attend the full time, enter how many hours you did attend. If blank, it will use the event’s hours.
+            </div>
+          </div>
+          <label>Comment (times you’re available / notes etc.)
+            <textarea id="reqComment" rows="2" placeholder="I can work 2–4pm because …"
+              style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;"></textarea>
+          </label>
+          <button id="btnReq" type="submit">Submit request</button>
+          <div class="msg" id="msgReq"></div>
+        </form>
+
+        <hr style="margin:16px 0;border:none;border-top:1px solid #eee;">
+
+        <!-- Event Sign-Up -->
+        <form id="formSignup" class="form" autocomplete="off">
+          <h4>Event Sign-Up</h4>
+          <label>Choose event
+            <select id="signupEvent"></select>
+          </label>
+          <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <label>Requested hours (optional)
+              <input id="suHours" type="number" step="0.25" min="0" placeholder="Leave blank to use event hours">
+            </label>
+            <div class="muted small" style="display:flex;align-items:center;">
+              If you plan to attend part of the time, enter the hours here. If blank, it will use the event’s hours.
+            </div>
+          </div>
+          <label>Comment (times you’re available / notes etc.)
+            <textarea id="suComment" rows="2" placeholder="I’m available after class at 3:30…"
+              style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;"></textarea>
+          </label>
+          <button id="btnSignup" type="submit">Sign up</button>
+          <div class="msg" id="msgSignup"></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== HISTORY SECTION ===== -->
+  <div class="card">
+    <div class="card-h">History</div>
+    <div class="card-b">
+      <div class="muted small" style="margin-bottom:10px;">
+        This shows your <b>requests</b> and your <b>approved attendance</b>. Totals only include approved attendance hours.
+      </div>
+
+      <div class="hist-top">
+        <div class="hist-card">
+          <div class="muted small">Semester</div>
+          <select id="histSem" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;"></select>
+        </div>
+        <div class="hist-card">
+          <div class="muted small">Semester Total (approved)</div>
+          <div class="hist-big" id="histSemTotal">0</div>
+        </div>
+        <div class="hist-card">
+          <div class="muted small">All-Time Total (approved)</div>
+          <div class="hist-big" id="histAllTotal">0</div>
+        </div>
+      </div>
+
+      <!-- ✅ Always-scroll wrapper (forces vertical scrollbar once content exceeds max height) -->
+      <div class="hist-scroll">
+        <table class="hist-table">
+          <thead>
+            <tr>
+              <th style="min-width:140px;">Semester</th>
+              <th style="min-width:220px;">Event</th>
+              <th style="min-width:160px;">Date</th>
+              <th style="min-width:90px;">Hours</th>
+              <th style="min-width:90px;">Status</th>
+              <th style="min-width:260px;">Comments</th>
+            </tr>
+          </thead>
+          <tbody id="histRows">
+            <tr><td colspan="6" class="muted small">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="msg" id="msgHist" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">Calendar</div>
+    <div class="card-b">
+      <div id="calendar"></div>
+    </div>
+  </div>
+</div>
+
+<!-- EVENT MODAL (AMBASSADOR VIEW: description + signups + quick actions) -->
+<div id="eventModal" class="modal" style="display:none;">
+  <div class="modal-dialog">
+    <div class="modal-h">
+      <div id="mTitle">Event</div>
+      <button class="x" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-b">
+      <div id="mWhen"></div>
+      <div id="mWhere" class="muted"></div>
+      <div id="mDesc" class="muted"></div>
+      <div id="mCap" class="cap"></div>
+
+      <div class="rosters">
+        <div>
+          <h5>Sign-ups</h5>
+          <div class="muted small">Sign-ups don’t affect hours.</div>
+          <ul id="mSignups" class="roster"></ul>
+
+          <h6 class="muted" id="waitHdr" style="display:none;margin-top:8px;">Waitlist</h6>
+          <ul id="mWait" class="roster"></ul>
+        </div>
+      </div>
+    </div>
+    <div class="modal-f">
+      <button class="secondary" onclick="modalRequestAttendance()">Request attendance</button>
+      <button class="primary" onclick="modalSignup()">Sign up</button>
+      <button class="secondary" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- FULL-SCREEN CONFETTI OVERLAY (drawn over the entire viewport, above modals) -->
+<div id="confettiOverlay" style="display:none;position:fixed;inset:0;pointer-events:none;z-index:10001;">
+  <canvas id="confettiCanvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
+</div>
+
+<!-- CONFETTI POPUP (no confetti contained inside) -->
+<div id="confettiModal" class="modal" style="display:none;">
+  <div class="modal-dialog" style="width:min(560px,100%);position:relative;">
+    <div class="modal-h">
+      <div id="cTitle">Success 🎉</div>
+      <button class="x" onclick="closeConfetti()">×</button>
+    </div>
+    <div class="modal-b" style="position:relative;">
+      <div id="cBody" style="position:relative;">
+        Your request was submitted.
+        <div class="muted small" style="margin-top:6px;">
+          If email notifications are enabled in the Apps Script, they will send automatically.
+        </div>
+      </div>
+    </div>
+    <div class="modal-f">
+      <button class="secondary" onclick="closeConfetti()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- STYLES -->
+<style>
+  @import url("https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css");
+  #calendar{ min-height: 640px; }
+  #calendar, #calendar * { font-family: inherit; color: inherit; }
+
+  .amb-top{display:flex;justify-content:space-between;align-items:flex-end;margin:8px 0 16px}
+  .muted{color:#666}.small{font-size:12px}.h-name{font-weight:600;font-size:18px}
+  .h-big{font-size:40px;font-weight:700}.hours{text-align:right}
+  .amb-grid{display:grid;gap:16px;margin:0 0 16px}
+  @media (min-width: 900px){ .amb-grid{ grid-template-columns: 1fr 1fr; } }
+
+  .card{border:1px solid #e5e5e5;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.04);overflow:hidden;background:#fff}
+  .card-h{padding:12px 16px;border-bottom:1px solid #eee;font-weight:600}
+  .card-b{padding:16px}
+
+  .req-list{list-style:none;margin:0;padding:0}
+  .req-list li{display:flex;gap:8px;margin:8px 0;align-items:center}
+  .req-list .box{width:18px;height:18px;border:2px solid #888;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;line-height:1;color:#22a06b;background:transparent}
+  .req-list .done{border-color:#22a06b}
+
+  .form h4{margin:.25rem 0 .5rem}
+  .form label{display:block;margin:8px 0}
+  .form select, .form input, .form textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px}
+  .form button{margin-top:6px;padding:10px 14px;border:0;background:#111;color:#fff;border-radius:8px;cursor:pointer}
+  .form button:hover{opacity:.9}
+  .form button:disabled{opacity:.6;cursor:not-allowed}
+
+  /* History */
+  .hist-top{display:grid;gap:10px}
+  @media (min-width: 900px){ .hist-top{ grid-template-columns: 1fr 1fr 1fr; } }
+  .hist-card{border:1px solid #eee;border-radius:12px;padding:12px;background:#fafafa}
+  .hist-big{font-size:28px;font-weight:700;margin-top:4px}
+  .hist-table{width:100%;border-collapse:collapse}
+  .hist-table th,.hist-table td{border-bottom:1px solid #eee;padding:10px 8px;text-align:left;vertical-align:top}
+  .hist-table th{font-size:12px;color:#666;text-transform:uppercase;letter-spacing:.02em}
+  .tag{display:inline-block;padding:2px 8px;border:1px solid #ddd;border-radius:999px;font-size:12px;color:#444;background:#fff}
+
+  /* ✅ FORCE a vertical scrollbar area for History */
+  .hist-scroll{
+    max-height: 320px;
+    overflow-y: scroll; /* force scrollbar behavior */
+    overflow-x: auto;
+    border: 1px solid #eee;
+    border-radius: 12px;
+  }
+  .hist-scroll::-webkit-scrollbar{ width: 10px; height: 10px; }
+  .hist-scroll::-webkit-scrollbar-thumb{ background: rgba(0,0,0,.22); border-radius: 999px; }
+  .hist-scroll::-webkit-scrollbar-track{ background: rgba(0,0,0,.05); border-radius: 999px; }
+
+  /* Modal */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9999}
+  .modal-dialog{width:min(820px,100%);background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+  .modal-h{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #eee}
+  .modal-b{padding:16px;min-height:140px}
+  .modal-f{padding:12px 16px;border-top:1px solid #eee;text-align:right;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+  .modal .x{background:transparent;border:0;font-size:22px;cursor:pointer}
+  .secondary{padding:10px 14px;border:1px solid #ddd;background:#fff;border-radius:8px;cursor:pointer}
+  .secondary:hover{background:#f7f7f7}
+  .primary{padding:10px 14px;border:0;background:#111;color:#fff;border-radius:8px;cursor:pointer}
+  .primary:hover{opacity:.9}
+  .rosters{display:grid;gap:16px;margin-top:12px}
+  .roster{margin:.25rem 0 0;padding-left:18px}
+  .cap{margin:8px 0 0;font-weight:600}
+  .msg{margin-top:8px;font-size:13px}.ok{color:#1a7f37}.err{color:#b00020}
+
+  /* Ensure events are clickable */
+  .fc, .fc * { pointer-events:auto; }
+  .fc-event, .fc-event * { pointer-events:auto !important; }
+
+  /* ✅ Lighter FullCalendar toolbar/buttons */
+  .fc .fc-toolbar{
+    background:#fff;
+    border:1px solid #eee;
+    border-radius:12px;
+    padding:10px 12px;
+    margin-bottom:12px;
+  }
+  .fc .fc-toolbar-title{ font-weight:700; }
+  .fc .fc-button{
+    background:#fff !important;
+    border:1px solid #ddd !important;
+    color:#111 !important;
+    box-shadow:none !important;
+    text-transform:none !important;
+  }
+  .fc .fc-button:hover{ background:#f7f7f7 !important; }
+  .fc .fc-button:disabled{ opacity:.55 !important; }
+  .fc .fc-button-primary:not(:disabled).fc-button-active,
+  .fc .fc-button-primary:not(:disabled):active{
+    background: rgba(201,162,39,.15) !important;
+    border-color: rgba(201,162,39,.45) !important;
+    color:#111 !important;
+  }
+
+  /* Category colors */
+  :root { --ucf-gold:#C9A227; --ucf-black:#000; --ucf-purple:#6A0DAD; --ucf-red:#C1121F; }
+  .cat-gold .fc-daygrid-event-dot, .cat-gold .fc-list-event-dot { border-color:var(--ucf-gold); background:var(--ucf-gold); }
+  .cat-black .fc-daygrid-event-dot, .cat-black .fc-list-event-dot { border-color:var(--ucf-black); background:var(--ucf-black); }
+  .cat-purple .fc-daygrid-event-dot, .cat-purple .fc-list-event-dot { border-color:var(--ucf-purple); background:var(--ucf-purple); }
+  .cat-red .fc-daygrid-event-dot, .cat-red .fc-list-event-dot { border-color:var(--ucf-red); background:var(--ucf-red); }
+
+  .fc-timegrid-event.cat-gold  { border-left: 4px solid var(--ucf-gold); }
+  .fc-timegrid-event.cat-black { border-left: 4px solid var(--ucf-black); }
+  .fc-timegrid-event.cat-purple{ border-left: 4px solid var(--ucf-purple); }
+  .fc-timegrid-event.cat-red   { border-left: 4px solid var(--ucf-red); }
+
+  .fc-daygrid-event.cat-gold  .fc-event-main { background: rgba(201,162,39,.08); }
+  .fc-daygrid-event.cat-black .fc-event-main { background: rgba(0,0,0,.06); }
+  .fc-daygrid-event.cat-purple .fc-event-main { background: rgba(106,13,173,.08); }
+  .fc-daygrid-event.cat-red   .fc-event-main { background: rgba(193,18,31,.08); }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<script>
+/* ===== CONFIG ===== */
+const API = "https://script.google.com/macros/s/AKfycbxUUnLnZWfYGe0ZJ5NKtoLXa78qXCK-cEeCv2Ip_3Xm_XUDy-fFp-w0gShBxakcjJdCPg/exec";
+const SESSION_KEY = "portal_session_v1";
+const CURRENT_SEMESTER = "Spring2026";
+
+/* REQUIREMENTS */
+const REQUIREMENT_LABELS = {
+  "2 Tailgates": "2 Tailgates",
+  "2 Regalia Shifts": "2 Regalia Shifts (spring)",
+  "1 Homecoming event": "1 Homecoming event",
+  "1 Recruitment event": "1 Recruitment event",
+  "Student Philanthropy Celebration": "Student Philanthropy Celebration",
+  "Day of Giving": "Day of Giving",
+  "2 Socials": "2 Socials (spring)",
+  "Fall Retreat or Makeup": "Fall Retreat or Makeup",
+  "30 Hours (spring)": "30 Hours (spring)"
+};
+
+/* ===== UTIL ===== */
+function _norm(v){ return String(v == null ? "" : v).trim().toLowerCase(); }
+
+function getSession(){
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || "{}"); }
+  catch(e){ return {}; }
+}
+function toast(el, ok, msg){
+  el.className = "msg " + (ok ? "ok" : "err");
+  el.textContent = msg;
+}
+
+/* GET is CORS-safe */
+async function GET(q){
+  const r = await fetch(API + "?" + new URLSearchParams(q), { mode:"cors", cache:"no-cache", redirect:"follow" });
+  const t = await r.text();
+  try { return JSON.parse(t); } catch { return { ok:false, error:"Non-JSON response", body:t }; }
+}
+
+/* POST (simple request) */
+async function POST(action, payload){
+  const body = Object.assign({ action }, payload || {});
+  const r = await fetch(API + "?action=" + encodeURIComponent(action), {
+    method:"POST",
+    mode:"cors",
+    redirect:"follow",
+    headers:{ "Content-Type":"text/plain;charset=utf-8" },
+    body: JSON.stringify(body)
+  });
+  const t = await r.text();
+  try { return JSON.parse(t); } catch { return { ok:false, error:"Non-JSON response", body:t }; }
+}
+
+function fmtDate(dt){
+  try{
+    const d = new Date(dt);
+    return d.toLocaleString([], { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
+  }catch(_){ return String(dt); }
+}
+function fmtShortDate(dt){
+  try{
+    const d = new Date(dt);
+    return d.toLocaleDateString([], { year:"numeric", month:"short", day:"numeric" });
+  }catch(_){ return String(dt); }
+}
+function safeHours(val){
+  const s = String(val ?? "").trim();
+  if (!s) return null;
+  const n = Number(s);
+  if (!isFinite(n) || n < 0) return null;
+  return n;
+}
+function titleCaseNameFromEmail(email){
+  const base = String(email || "").split("@")[0].replace(/[._-]+/g, " ").trim();
+  if (!base) return "Student";
+  return base.split(" ").map(w => w ? (w[0].toUpperCase() + w.slice(1)) : "").join(" ");
+}
+function greetingForNow(){
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12) return "Good Morning";
+  if (h >= 12 && h < 17) return "Good Afternoon";
+  if (h >= 17 && h < 22) return "Good Evening";
+  return "Don’t Stay Up Too Late";
+}
+
+/* ===== NAME RESOLUTION ===== */
+let _studentsCache = null;
+async function getStudentsCached(){
+  if (_studentsCache) return _studentsCache;
+  const resp = await GET({ action:"students" });
+
+  const list =
+    Array.isArray(resp) ? resp :
+    (resp && Array.isArray(resp.rows) ? resp.rows :
+    (resp && Array.isArray(resp.students) ? resp.students : []));
+
+  _studentsCache = list;
+  return list;
+}
+function pickBestName(stu, fallbackEmail){
+  if (!stu) return titleCaseNameFromEmail(fallbackEmail);
+  const cand =
+    stu.name ||
+    stu.full_name || stu.fullName ||
+    stu.display_name || stu.displayName ||
+    (stu.first_name || stu.firstName || stu.firstname ? `${stu.first_name||stu.firstName||stu.firstname} ${stu.last_name||stu.lastName||stu.lastname||""}`.trim() : "") ||
+    "";
+  return String(cand || "").trim() || titleCaseNameFromEmail(fallbackEmail);
+}
+async function resolveStudentName(studentIdOrEmail){
+  const id = _norm(studentIdOrEmail);
+  const students = await getStudentsCached();
+  const match = students.find(s => _norm(s.email) === id || _norm(s.student_id) === id);
+  return pickBestName(match, studentIdOrEmail);
+}
+
+/* ===== CATEGORY → CSS CLASS ===== */
+function catClass(cat){
+  const c = String(cat || "").toLowerCase();
+  if (c.startsWith("social"))   return "cat-gold";
+  if (c.startsWith("event"))    return "cat-black";
+  if (c.startsWith("meeting"))  return "cat-purple";
+  if (c.startsWith("deadline")) return "cat-red";
+  return "cat-gold";
+}
+
+/* ===== ACTIVE CHECK ===== */
+function isActiveEvent(ev){
+  const a = ev?.active;
+  const s = ev?.status;
+  const v = (a != null) ? a : s;
+  if (typeof v === "boolean") return v === true;
+  return String(v || "").toLowerCase() === "true";
+}
+
+/* ===== EVENT HOURS DEFAULTING ===== */
+function eventById(eventId){
+  const id = String(eventId || "").trim();
+  if (!id) return null;
+  return (eventsCache || []).find(e => String(e.event_id) === id) || null;
+}
+function extractEventHours(ev){
+  if (!ev) return 0;
+
+  const candidates = [
+    ev.hours, ev.event_hours, ev.default_hours, ev.hours_default,
+    ev.duration_hours, ev.durationHours, ev.shift_hours
+  ];
+
+  for (const c of candidates){
+    const n = Number(c);
+    if (isFinite(n) && n > 0) return n;
+  }
+
+  const start = Date.parse(ev.start);
+  const end   = Date.parse(ev.end);
+  if (!isNaN(start) && !isNaN(end) && end > start){
+    const hrs = (end - start) / 3600000;
+    if (isFinite(hrs) && hrs > 0) return Math.round(hrs * 100) / 100;
+  }
+  return 0;
+}
+function requestedHoursOrEventDefault(rawInput, eventId){
+  const n = safeHours(rawInput);
+  if (n != null) return n;
+  const ev = eventById(eventId);
+  const def = extractEventHours(ev);
+  return def > 0 ? def : 0;
+}
+function eventLabelFromSelect(sel){
+  return sel?.options?.[sel.selectedIndex]?.textContent || "";
+}
+
+/* ===== HISTORY HELPERS ===== */
+function cleanSemesterLabel(x){
+  const s = String(x || "").trim();
+  return s || "Unknown";
+}
+function hoursNum(v){
+  const n = Number(v);
+  return isFinite(n) ? n : 0;
+}
+function toastHist(ok, msg){
+  const el = document.getElementById("msgHist");
+  if (!el) return;
+  el.className = "msg " + (ok ? "ok" : "err");
+  el.textContent = msg || "";
+}
+
+/* Normalize lists */
+function normalizeAttendanceList(resp){
+  if (Array.isArray(resp)) return resp;
+  if (resp && Array.isArray(resp.rows)) return resp.rows;
+  if (resp && Array.isArray(resp.attendance)) return resp.attendance;
+  return [];
+}
+function normalizeRequestsList(resp){
+  if (Array.isArray(resp)) return resp;
+  if (resp && Array.isArray(resp.rows)) return resp.rows;
+  if (resp && Array.isArray(resp.requests)) return resp.requests;
+  if (resp && Array.isArray(resp.history)) return resp.history;
+  return [];
+}
+
+function normalizeStatus(raw){
+  const s = String(raw ?? "").trim().toLowerCase();
+  if (!s) return "";
+  if (s.includes("pend")) return "pending";
+  if (s.includes("deny") || s.includes("reject") || s.includes("declin")) return "denied";
+  if (s.includes("approv") || s.includes("accept") || s.includes("ok") || s.includes("enter")) return "approved";
+  return s;
+}
+function statusIconForRow(row){
+  if (row?._type === "attendance") return "✅";
+  const s = normalizeStatus(row.status || row.request_status || row.decision || row.state);
+  if (s === "pending") return "⚠️";
+  if (s === "denied") return "❌";
+  if (s === "approved") return "✅";
+  return "⚠️";
+}
+function rowDateKey(row){
+  const t = row.event_start || row.start || row.recorded_at || row.created_at || row.requested_at || row.timestamp || "";
+  const ms = Date.parse(t);
+  return isNaN(ms) ? 0 : ms;
+}
+function rowSemester(row){
+  return cleanSemesterLabel(row.semester_id || row.semester || row.semesterId || row.sem || "");
+}
+function rowEventId(row){
+  return String(row.event_id || row.eventId || row.event || "").trim();
+}
+function rowEventTitle(row){
+  const direct = String(row.event_title || row.title || row.event_name || row.eventName || "").trim();
+  if (direct) return direct;
+  const id = rowEventId(row);
+  const ev = eventById(id);
+  return String(ev?.title || id || "—");
+}
+function rowEventDateForDisplay(row){
+  const dt = row.event_start || row.start || row.recorded_at || row.created_at || row.requested_at || "";
+  return dt ? fmtShortDate(dt) : "—";
+}
+function rowHoursForDisplay(row){
+  if (row?._type === "attendance"){
+    return hoursNum(row.hours_awarded);
+  }
+  const rh = row.requested_hours ?? row.hours_requested ?? row.hours ?? row.req_hours;
+  return hoursNum(rh);
+}
+function rowComment(row){
+  return String(row.comments || row.comment || row.notes || "").trim();
+}
+
+/* ✅ IMPORTANT FIX: client-side filter so History only shows the logged-in user,
+      even if the backend accidentally returns all rows. */
+function getRowStudentToken(row){
+  // Try many common keys seen in Sheets/App Script responses
+  const candidates = [
+    row?.student_id, row?.studentId, row?.student, row?.username,
+    row?.email, row?.student_email, row?.studentEmail, row?.student_email_address,
+    row?.ambassador_email, row?.ambassador, row?.user, row?.user_id, row?.userId
+  ];
+  for (const c of candidates){
+    const n = _norm(c);
+    if (n) return n;
+  }
+  return ""; // unknown / not present
+}
+function belongsToCurrentStudent(row, studentId){
+  const me = _norm(studentId);
+  if (!me) return false;
+
+  const token = getRowStudentToken(row);
+
+  // If row clearly has a student token, enforce strict match
+  if (token) return token === me;
+
+  // If the row has NO identifiable student field, don't block it (assume backend already filtered).
+  // This prevents hiding valid rows from older endpoints that omit student_id.
+  return true;
+}
+
+/* ===== CONFETTI ===== */
+let _confettiRAF = null;
+let _confettiPieces = [];
+let _confettiCtx = null;
+let _confettiCanvas = null;
+let _confettiOverlay = null;
+
+function openConfetti(title, body){
+  document.getElementById("cTitle").textContent = title || "Success 🎉";
+  document.getElementById("cBody").innerHTML = body || "Done.";
+  document.getElementById("confettiModal").style.display = "flex";
+  startConfetti();
+}
+function closeConfetti(){
+  document.getElementById("confettiModal").style.display = "none";
+}
+function stopConfetti(){
+  if (_confettiRAF) cancelAnimationFrame(_confettiRAF);
+  _confettiRAF = null;
+  _confettiPieces = [];
+  if (_confettiCtx && _confettiCanvas){
+    try { _confettiCtx.clearRect(0,0,_confettiCanvas.width,_confettiCanvas.height); } catch(_){}
+  }
+  if (_confettiOverlay) _confettiOverlay.style.display = "none";
+}
+function startConfetti(){
+  _confettiOverlay = document.getElementById("confettiOverlay");
+  _confettiCanvas = document.getElementById("confettiCanvas");
+  if (!_confettiOverlay || !_confettiCanvas) return;
+
+  _confettiOverlay.style.display = "block";
+  _confettiCtx = _confettiCanvas.getContext("2d");
+
+  const colors = ["#ff4d6d","#ffb703","#8ecae6","#219ebc","#8338ec","#3a86ff","#06d6a0","#ffd166","#ef476f","#f72585","#4cc9f0","#b5179e"];
+
+  const resize = () => {
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const w = Math.floor(window.innerWidth * dpr);
+    const h = Math.floor(window.innerHeight * dpr);
+    if (_confettiCanvas.width !== w || _confettiCanvas.height !== h){
+      _confettiCanvas.width = w;
+      _confettiCanvas.height = h;
+    }
+    _confettiCtx.setTransform(dpr,0,0,dpr,0,0);
+  };
+  resize();
+
+  const W = () => window.innerWidth;
+  const H = () => window.innerHeight;
+
+  _confettiPieces = [];
+  const count = 260;
+
+  for (let i=0;i<count;i++){
+    const size = 3 + Math.random() * 7;
+    _confettiPieces.push({
+      x: Math.random() * W(),
+      y: -60 - Math.random() * H() * 0.9,
+      w: size * (0.8 + Math.random()*0.8),
+      h: size * (0.8 + Math.random()*1.4),
+      vy: 2.2 + Math.random() * 5.8,
+      vx: -1.8 + Math.random() * 3.6,
+      rot: Math.random() * Math.PI,
+      vr: -0.18 + Math.random() * 0.36,
+      wob: Math.random() * Math.PI * 2,
+      wobSpd: 0.02 + Math.random() * 0.06,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      alpha: 0.95
+    });
+  }
+
+  const startAt = performance.now();
+  const maxFallTime = 5500;
+
+  const loop = (now) => {
+    resize();
+    const w = W();
+    const h = H();
+
+    _confettiCtx.clearRect(0,0,w,h);
+
+    let stillVisible = false;
+
+    for (const p of _confettiPieces){
+      p.wob += p.wobSpd;
+      p.x += p.vx + Math.sin(p.wob) * 0.9;
+      p.y += p.vy;
+      p.rot += p.vr;
+      p.vx *= 0.995;
+
+      if (p.y < h + 80) stillVisible = true;
+
+      _confettiCtx.save();
+      _confettiCtx.translate(p.x, p.y);
+      _confettiCtx.rotate(p.rot);
+      _confettiCtx.globalAlpha = p.alpha;
+      _confettiCtx.fillStyle = p.color;
+      _confettiCtx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      _confettiCtx.restore();
+    }
+
+    const elapsed = now - startAt;
+
+    if (elapsed > maxFallTime * 0.75){
+      const t = (elapsed - maxFallTime * 0.75) / (maxFallTime * 0.25);
+      const fade = Math.max(0, 1 - t);
+      for (const p of _confettiPieces) p.alpha = 0.95 * fade;
+    }
+
+    if (!stillVisible || elapsed >= maxFallTime || _confettiOverlay.style.display !== "block"){
+      stopConfetti();
+      return;
+    }
+
+    _confettiRAF = requestAnimationFrame(loop);
+  };
+
+  if (_confettiRAF) cancelAnimationFrame(_confettiRAF);
+  _confettiRAF = requestAnimationFrame(loop);
+
+  window.addEventListener("resize", resize, { passive:true });
+}
+
+/* ===== STATE ===== */
+let currentStudentId = null;
+let eventsCache = [];
+let calendarInstance = null;
+
+let _attendanceCache = [];
+let _requestsCache = [];
+let _fullHistoryCache = [];
+
+let _modalEventId = null;
+
+/* ===== BOOT ===== */
+(async function(){
+  document.getElementById("hoursLabel").textContent = "My Semester Total Hours";
+  document.getElementById("hoursSub").textContent = CURRENT_SEMESTER;
+
+  const sess = getSession();
+  currentStudentId = (sess.username || "").trim();
+
+  if (!currentStudentId){
+    document.getElementById("ambGreet").textContent = "Session expired";
+    document.getElementById("ambName").textContent = "Please go back and log in again.";
+    return;
+  }
+
+  document.getElementById("ambGreet").textContent = greetingForNow();
+  document.getElementById("ambName").textContent = await resolveStudentName(currentStudentId);
+
+  const sum = await GET({ action:"studentsummary", student_id: currentStudentId });
+
+  const ul = document.getElementById("reqList");
+  ul.innerHTML = "";
+  const rawReqs = (sum && sum.requirements) ? sum.requirements : [];
+  const have = new Map((rawReqs || []).map(r => [String(r.requirement_key), !!r.is_checked]));
+  Object.keys(REQUIREMENT_LABELS).forEach(k => {
+    const li = document.createElement("li");
+    const box = document.createElement("span");
+    const checked = have.get(k) === true;
+    box.className = "box" + (checked ? " done" : "");
+    box.textContent = checked ? "✓" : "";
+    const label = document.createElement("span");
+    label.textContent = REQUIREMENT_LABELS[k];
+    li.append(box, label);
+    ul.appendChild(li);
+  });
+
+  const evResp = await GET({ action:"events" });
+  eventsCache = Array.isArray(evResp) ? evResp : (evResp && Array.isArray(evResp.events) ? evResp.events : (evResp && Array.isArray(evResp.rows) ? evResp.rows : []));
+  const activeEvents = eventsCache.filter(isActiveEvent);
+
+  const reqSel = document.getElementById("reqEvent");
+  const btnReq = document.getElementById("btnReq");
+  const reqList = [...activeEvents].sort((a,b)=>{
+    const ta = Date.parse(a.start); const tb = Date.parse(b.start);
+    if (isNaN(ta) && isNaN(tb)) return 0;
+    if (isNaN(ta)) return 1;
+    if (isNaN(tb)) return -1;
+    return tb - ta;
+  });
+
+  reqSel.innerHTML = "";
+  if (!reqList.length){
+    const o = document.createElement("option");
+    o.value = "";
+    o.textContent = "No active events available";
+    reqSel.appendChild(o);
+    reqSel.disabled = true;
+    btnReq.disabled = true;
+  } else {
+    reqSel.disabled = false;
+    btnReq.disabled = false;
+    reqList.forEach(ev => {
+      const o = document.createElement("option");
+      o.value = ev.event_id;
+      o.textContent = `${ev.title} — ${fmtDate(ev.start)}`;
+      reqSel.appendChild(o);
+    });
+  }
+
+  const suSel  = document.getElementById("signupEvent");
+  const btnSu  = document.getElementById("btnSignup");
+  const now = Date.now();
+  const upcoming = activeEvents.filter(ev => {
+    const t = Date.parse(ev.start);
+    return !isNaN(t) && t >= now - 86400000;
+  }).sort((a,b)=>Date.parse(a.start)-Date.parse(b.start));
+
+  suSel.innerHTML = "";
+  if (!upcoming.length){
+    const o = document.createElement("option");
+    o.value = "";
+    o.textContent = "No upcoming events";
+    suSel.appendChild(o);
+    suSel.disabled = true;
+    btnSu.disabled = true;
+  } else {
+    suSel.disabled = false;
+    btnSu.disabled = false;
+    upcoming.forEach(ev => {
+      const o = document.createElement("option");
+      o.value = ev.event_id;
+      const capTxt = ev.signup_capacity ? ` (${ev.signup_capacity} cap)` : "";
+      o.textContent = `${ev.title} — ${fmtDate(ev.start)}${capTxt}`;
+      suSel.appendChild(o);
+    });
+  }
+
+  document.getElementById("formRequest").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msgEl = document.getElementById("msgReq");
+    msgEl.textContent = "";
+
+    if (!reqSel.value){
+      toast(msgEl, false, "Please choose an event.");
+      return;
+    }
+
+    const btn = document.getElementById("btnReq");
+    btn.disabled = true;
+
+    const hoursToSend = requestedHoursOrEventDefault(
+      document.getElementById("reqHours").value,
+      reqSel.value
+    );
+
+    const out = await POST("request", {
+      student_id: currentStudentId,
+      event_id: reqSel.value,
+      requested_hours: hoursToSend,
+      comment: (document.getElementById("reqComment").value || "").trim(),
+      notify: true,
+      source: "portal_student",
+      current_semester: CURRENT_SEMESTER
+    });
+
+    toast(msgEl, !!out.ok, out.ok ? "Request submitted!" : (out.error || "Error"));
+    btn.disabled = false;
+
+    if (out.ok){
+      openConfetti(
+        "Attendance request submitted 🎉",
+        `Your attendance request was submitted.<br><br><b>Event:</b> ${escapeHtml(eventLabelFromSelect(reqSel))}<br><b>Hours:</b> ${escapeHtml(String(hoursToSend))}`
+      );
+      document.getElementById("reqHours").value = "";
+      document.getElementById("reqComment").value = "";
+      await loadHistory();
+    }
+  });
+
+  document.getElementById("formSignup").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msgEl = document.getElementById("msgSignup");
+    msgEl.textContent = "";
+
+    if (!suSel.value){
+      toast(msgEl, false, "Please choose an event.");
+      return;
+    }
+
+    const btn = document.getElementById("btnSignup");
+    btn.disabled = true;
+
+    const hoursToSend = requestedHoursOrEventDefault(
+      document.getElementById("suHours").value,
+      suSel.value
+    );
+
+    const out = await POST("signup", {
+      student_id: currentStudentId,
+      event_id: suSel.value,
+      created_by: "student",
+      requested_hours: hoursToSend,
+      comment: (document.getElementById("suComment").value || "").trim(),
+      notify: true,
+      source: "portal_student",
+      current_semester: CURRENT_SEMESTER
+    });
+
+    toast(
+      msgEl,
+      !!out.ok,
+      out.ok ? `Sign-up ${out.status === "accepted" ? "confirmed ✅" : "waitlisted ⏳"}` : (out.error || "Error")
+    );
+
+    btn.disabled = false;
+
+    if (out.ok){
+      const statusLine = (out.status === "accepted")
+        ? "You were accepted!"
+        : "You were added to the waitlist.";
+      openConfetti(
+        "Sign-up submitted 🎉",
+        `Your sign-up was submitted.<br><br><b>Event:</b> ${escapeHtml(eventLabelFromSelect(suSel))}<br><b>Status:</b> ${escapeHtml(statusLine)}<br><b>Hours:</b> ${escapeHtml(String(hoursToSend))}`
+      );
+      document.getElementById("suHours").value = "";
+      document.getElementById("suComment").value = "";
+      await loadHistory();
+    }
+  });
+
+  await loadHistory();
+  buildCalendar(activeEvents);
+})();
+
+/* ===== REQUEST FETCH (with fallbacks) ===== */
+async function fetchRequestsWithFallback(studentId){
+  const actionsToTry = ["requests", "requesthistory", "history"];
+
+  for (const action of actionsToTry){
+    try{
+      const resp = await GET({ action, student_id: studentId });
+
+      const rows = normalizeRequestsList(resp);
+
+      // If "history" endpoint returns both attendance + requests, strip out attendance-like rows
+      const cleaned = (rows || [])
+        .filter(r => r && r.hours_awarded == null)
+        // ✅ Filter to ONLY current student in case backend returns all rows
+        .filter(r => belongsToCurrentStudent(r, studentId));
+
+      if (cleaned && cleaned.length){
+        return cleaned;
+      }
+    }catch(_){}
+  }
+  return [];
+}
+
+/* ===== HISTORY LOAD ===== */
+async function loadHistory(){
+  try{
+    const attResp = await GET({ action:"attendance", student_id: currentStudentId });
+
+    // ✅ Normalize, then filter to ONLY current student (backend safety net)
+    const attRows = normalizeAttendanceList(attResp)
+      .filter(r => belongsToCurrentStudent(r, currentStudentId))
+      .map(r => ({ ...r, _type:"attendance" }));
+
+    _attendanceCache = attRows;
+
+    const reqRowsRaw = await fetchRequestsWithFallback(currentStudentId);
+
+    // ✅ Extra safety: filter again after fallback
+    const reqRows = (reqRowsRaw || [])
+      .filter(r => belongsToCurrentStudent(r, currentStudentId))
+      .map(r => ({ ...r, _type:"request" }));
+
+    _requestsCache = reqRows;
+
+    _fullHistoryCache = [..._attendanceCache, ..._requestsCache];
+
+    const semesters = Array.from(new Set(_fullHistoryCache.map(r => rowSemester(r)))).sort((a,b)=>a.localeCompare(b));
+
+    const sel = document.getElementById("histSem");
+    sel.innerHTML = "";
+
+    if (!semesters.length){
+      sel.innerHTML = `<option value="">No history yet</option>`;
+      document.getElementById("histRows").innerHTML = `<tr><td colspan="6" class="muted small">No history yet.</td></tr>`;
+      document.getElementById("histSemTotal").textContent = "0";
+      document.getElementById("histAllTotal").textContent = "0";
+      document.getElementById("hoursTotal").textContent = "0";
+      toastHist(true, "");
+      return;
+    }
+
+    semesters.forEach(s => {
+      const o = document.createElement("option");
+      o.value = s;
+      o.textContent = s;
+      sel.appendChild(o);
+    });
+
+    sel.value = semesters.includes(CURRENT_SEMESTER) ? CURRENT_SEMESTER : semesters[semesters.length - 1];
+
+    const allTotal = _attendanceCache.reduce((acc,r)=>acc + hoursNum(r.hours_awarded), 0);
+    document.getElementById("histAllTotal").textContent = (Math.round(allTotal*100)/100).toString();
+
+    sel.onchange = () => renderHistory(sel.value);
+
+    renderHistory(sel.value);
+    syncTopHoursToCurrentSemester();
+
+    if (!_requestsCache.length){
+      toastHist(true, "Note: No requests were returned for your account.");
+    } else {
+      toastHist(true, "");
+    }
+  } catch (e){
+    toastHist(false, "History failed to load. Ensure Apps Script supports action=attendance and an endpoint for requests.");
+    document.getElementById("histRows").innerHTML = `<tr><td colspan="6" class="muted small">History unavailable.</td></tr>`;
+  }
+}
+
+function syncTopHoursToCurrentSemester(){
+  const sem = String(CURRENT_SEMESTER || "").trim();
+  const rows = (_attendanceCache || []).filter(r => rowSemester(r) === sem);
+  const total = rows.reduce((acc,r)=>acc + hoursNum(r.hours_awarded), 0);
+  document.getElementById("hoursTotal").textContent = (Math.round(total*100)/100).toString();
+  document.getElementById("hoursSub").textContent = CURRENT_SEMESTER;
+}
+
+function renderHistory(sem){
+  const semKey = String(sem || "");
+
+  // ✅ Always enforce student filter here too (belt + suspenders)
+  const rows = (_fullHistoryCache || [])
+    .filter(r => belongsToCurrentStudent(r, currentStudentId))
+    .filter(r => rowSemester(r) === semKey);
+
+  const tbody = document.getElementById("histRows");
+  tbody.innerHTML = "";
+
+  const semAtt = (_attendanceCache || []).filter(r => rowSemester(r) === semKey);
+  const semTotal = semAtt.reduce((acc,r)=>acc + hoursNum(r.hours_awarded), 0);
+  document.getElementById("histSemTotal").textContent = (Math.round(semTotal*100)/100).toString();
+
+  if (!rows.length){
+    tbody.innerHTML = `<tr><td colspan="6" class="muted small">No history in this semester.</td></tr>`;
+    return;
+  }
+
+  rows.sort((a,b)=>rowDateKey(b)-rowDateKey(a));
+
+  rows.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><span class="tag">${escapeHtml(rowSemester(r))}</span></td>
+      <td>${escapeHtml(rowEventTitle(r) || "—")}</td>
+      <td>${escapeHtml(rowEventDateForDisplay(r))}</td>
+      <td>${escapeHtml(String(rowHoursForDisplay(r)))}</td>
+      <td>${escapeHtml(statusIconForRow(r))}</td>
+      <td>${escapeHtml(rowComment(r))}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function escapeHtml(s){
+  return String(s == null ? "" : s)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+/* ===== CALENDAR ===== */
+function buildCalendar(events){
+  const el = document.getElementById("calendar");
+  if (!el) return;
+
+  if (!window.FullCalendar || !window.FullCalendar.Calendar){
+    return setTimeout(() => buildCalendar(events), 150);
+  }
+
+  const fcEvents = (events || []).map(ev => {
+    const category = ev.category || ev.type || "";
+    return {
+      id: String(ev.event_id),
+      title: ev.title,
+      start: ev.start,
+      end: ev.end || null,
+      classNames: [catClass(category)],
+      extendedProps: { ...ev, category }
+    };
+  });
+
+  if (calendarInstance){
+    calendarInstance.removeAllEvents();
+    fcEvents.forEach(evt => calendarInstance.addEvent(evt));
+    calendarInstance.render();
+    return;
+  }
+
+  calendarInstance = new FullCalendar.Calendar(el, {
+    initialView: "dayGridMonth",
+    height: "auto",
+    headerToolbar: {
+      left: "prev,next today",
+      center: "title",
+      right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek"
+    },
+    events: fcEvents,
+    eventClassNames: (arg) => [catClass(arg?.event?.extendedProps?.category)],
+    eventDidMount: (arg) => {
+      try { arg.el.classList.add(catClass(arg.event.extendedProps?.category)); } catch(_) {}
+    },
+    eventClick: async (info) => {
+      const ev = info.event.extendedProps || {};
+      const roster = await GET({ action:"eventroster", event_id: info.event.id });
+      openModal({
+        ev,
+        signupsAccepted: (roster && roster.signups && roster.signups.accepted) || [],
+        signupsWait: (roster && roster.signups && roster.signups.waitlisted) || []
+      });
+    }
+  });
+
+  calendarInstance.render();
+}
+
+/* ===== MODAL ===== */
+function openModal(data){
+  const ev = data.ev || {};
+  const sAcc = data.signupsAccepted || [];
+  const sWait = data.signupsWait || [];
+
+  _modalEventId = String(ev.event_id || ev.id || "").trim();
+
+  document.getElementById("mTitle").textContent = ev.title || ev.event_id || "Event";
+  document.getElementById("mWhen").textContent  = `${fmtDate(ev.start)}${ev.end ? (" → " + fmtDate(ev.end)) : ""}`;
+  document.getElementById("mWhere").textContent = ev.location ? `Location: ${ev.location}` : "";
+
+  const desc = ev.description || ev.details || ev.notes || "";
+  document.getElementById("mDesc").textContent = desc ? `Description: ${desc}` : "";
+
+  const capEl = document.getElementById("mCap");
+  const limit = Number(ev.signup_capacity || 0);
+  capEl.textContent = limit > 0 ? `Sign-ups: ${sAcc.length} / ${limit}` : `Sign-ups: ${sAcc.length} (no cap)`;
+
+  const sUL = document.getElementById("mSignups");
+  sUL.innerHTML = "";
+  sAcc.forEach(s => {
+    const li = document.createElement("li");
+    const hrs = (Number(s.requested_hours) > 0) ? ` · Hours: ${s.requested_hours}` : "";
+    const cmt = s.comment ? ` — ${s.comment}` : "";
+    li.textContent = `${s.student_id}${hrs}${cmt}`;
+    sUL.appendChild(li);
+  });
+
+  const wHdr = document.getElementById("waitHdr");
+  const wUL = document.getElementById("mWait");
+  wUL.innerHTML = "";
+  if (sWait.length){
+    wHdr.style.display = "block";
+    sWait.forEach(s => {
+      const li = document.createElement("li");
+      const hrs = (Number(s.requested_hours) > 0) ? ` · Hours: ${s.requested_hours}` : "";
+      const cmt = s.comment ? ` — ${s.comment}` : "";
+      li.textContent = `${s.student_id}${hrs}${cmt}`;
+      wUL.appendChild(li);
+    });
+  } else {
+    wHdr.style.display = "none";
+  }
+
+  document.getElementById("eventModal").style.display = "flex";
+}
+function closeModal(){
+  document.getElementById("eventModal").style.display = "none";
+}
+
+/* ===== MODAL QUICK ACTIONS ===== */
+function _setSelectIfExists(selectId, value){
+  const sel = document.getElementById(selectId);
+  if (!sel) return { ok:false, reason:"missing-select" };
+  const v = String(value || "").trim();
+  if (!v) return { ok:false, reason:"missing-value" };
+  const opt = Array.from(sel.options || []).find(o => String(o.value) === v);
+  if (!opt) return { ok:false, reason:"not-in-dropdown" };
+  sel.value = v;
+  return { ok:true };
+}
+function _jumpToForm(formId, focusId){
+  const form = document.getElementById(formId);
+  if (!form) return;
+  closeModal();
+  form.scrollIntoView({ behavior:"smooth", block:"start" });
+  if (focusId){
+    setTimeout(() => {
+      const el = document.getElementById(focusId);
+      if (el && typeof el.focus === "function") el.focus();
+    }, 250);
+  }
+}
+function modalSignup(){
+  const res = _setSelectIfExists("signupEvent", _modalEventId);
+  if (!res.ok){
+    openConfetti(
+      "Can’t sign up from this event",
+      "This event is not available in your Sign-up dropdown (it may be too far in the past or not open for sign-ups)."
+    );
+    return;
+  }
+  _jumpToForm("formSignup", "suComment");
+}
+function modalRequestAttendance(){
+  const res = _setSelectIfExists("reqEvent", _modalEventId);
+  if (!res.ok){
+    openConfetti(
+      "Can’t request attendance from this event",
+      "This event is not available in your Attendance Request dropdown right now."
+    );
+    return;
+  }
+  _jumpToForm("formRequest", "reqComment");
+}
+</script>
+
+
