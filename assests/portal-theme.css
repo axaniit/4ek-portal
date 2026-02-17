@@ -646,3 +646,13 @@ html body button{
   color:#111 !important;
 }
 */
+/* ===== LAST WORD HERO OVERRIDE (must be at bottom) ===== */
+html body section.portal-hero{
+  background: linear-gradient(90deg, #9c7412 0%, #c8a64b 45%, #ffcf57 100%) !important;
+  text-align: center !important;
+}
+html body section.portal-hero h1{
+  width:100% !important;
+  text-align:center !important;
+  margin:0 !important;
+}
