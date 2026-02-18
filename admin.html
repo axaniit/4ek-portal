@@ -170,42 +170,66 @@
   .ptable tbody tr:nth-child(odd) { background: #fff; }
   .ptable tbody tr:nth-child(even) { background: #f9f9f9; }
 
-  /* PENDING CENTER ACTIONS (Yellow Buttons + White Badge Emojis) */
-.pc-actions-cell {
-  text-align: center !important;
-  vertical-align: middle !important;
-  display: flex;                /* optional: helps align items nicely */
-  justify-content: center;      /* optional: centers flex items */
-  gap: 6px;                     /* optional: space between buttons */
-}
+  /* PENDING CENTER ACTIONS */
+
+  /* 1. TABLE CELL ALIGNMENT (Centers the Emoji Buttons) */
+  .pc-actions-cell {
+    text-align: center !important;
+    vertical-align: middle !important;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
   }
+
+  /* 2. BASE BUTTON STYLE (Shared) */
   .actBtn {
-    background-color: transparent;
     border: none;
-    border-radius: 8px;
-    width: 44px;  /* Larger button size */
-    height: 44px;
+    cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    margin: 2px 4px;
-    padding: 0;
     transition: opacity 0.2s;
   }
   .actBtn:hover { opacity: 0.85; }
-  
-  /* The White Circle Badge */
+
+  /* 3. TABLE ROW BUTTONS ONLY (Transparent Background) */
+  .pc-actions-cell .actBtn {
+    background-color: transparent !important;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    margin: 0;
+    border-radius: 50%; /* Circular hover area */
+  }
+  .pc-actions-cell .actBtn:hover {
+    background-color: rgba(0,0,0,0.05) !important; /* Faint grey hover */
+  }
+
+  /* 4. BOTTOM BATCH BUTTONS ONLY (Yellow, Rounded, Centered) */
+  #pcApproveSel, #pcDenySel {
+    background-color: #F4CA3D !important; /* Force Yellow */
+    color: #000 !important;
+    border-radius: 8px !important;
+    padding: 10px 20px !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    text-transform: uppercase !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    width: auto !important; /* Allow text to fit */
+    height: auto !important;
+  }
+
+  /* 5. WHITE EMOJI BADGE (Inside Table Buttons) */
   .emoji-badge {
     background: #fff;
     border-radius: 50%;
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px; /* Icon size */
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    font-size: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
   }
 
   /* Admin Comment Input in Table */
