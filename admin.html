@@ -8,7 +8,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 
 <style>
   @import url("https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css");
@@ -22,7 +22,8 @@
 
   body {
     margin: 0;
-    font-family: "Nunito", system-ui, -apple-system, sans-serif;
+    /* Restored original font stack for numbers/body */
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     background: #fff;
     color: #333;
   }
@@ -38,17 +39,22 @@
     text-align:center !important;
     padding:0 !important;
     margin-bottom: 24px;
+    width: 100%;
   }
 
   section.portal-hero h1{
     font-family:"Montserrat", sans-serif !important;
-    font-size:44px !important;            /* slightly larger */
+    font-size:44px !important;
     font-weight:700 !important;
     margin:0 !important;
     color:#111 !important;
   }
 
-  #admin-app { max-width:1100px; margin:0 auto; padding: 0 16px; }
+  #admin-app { 
+    max-width:1100px; 
+    margin:0 auto; 
+    /* Restored spacing logic */
+  }
 
   /* Calendar */
   #calendar{ min-height: 640px; }
@@ -56,7 +62,10 @@
 
   .amb-top{display:flex;justify-content:space-between;align-items:flex-end;margin:8px 0 16px}
   .muted{color:#666}.small{font-size:12px}.h-name{font-weight:600;font-size:18px}
-  .h-big{font-size:40px;font-weight:700}.hours{text-align:right}
+  
+  /* Restored original number styling */
+  .h-big{font-size:40px;font-weight:700;margin-top:4px}
+  .hours{text-align:right}
 
   .top-grid{display:grid;gap:16px;margin:0 0 16px;align-items:stretch}
   @media (min-width: 980px){ .top-grid{ grid-template-columns: 1fr 1fr; } }
@@ -67,13 +76,17 @@
   .card-h{padding:12px 16px;border-bottom:1px solid #eee;font-weight:600}
   .card-b{padding:16px}
 
-  /* HEADERS: +2px bigger */
-  .form h4 { margin:.25rem 0 .5rem; font-size: 18px; font-weight: 700; }
+  /* HEADERS: Increased size as requested (~20px) */
+  .form h4 { 
+    margin:.25rem 0 .5rem; 
+    font-size: 20px; 
+    font-weight: 700; 
+  }
   
   .form label{display:block;margin:8px 0}
   .form select, .form input, .form textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px; font-family: inherit;}
   
-  /* STANDARD BUTTONS (Left alone / Black) */
+  /* STANDARD BUTTONS (Black) */
   .form button, .btnPrimary {
     margin-top:6px;
     padding:10px 14px;
@@ -83,12 +96,18 @@
     border-radius:8px;
     cursor:pointer;
     font-family: inherit;
-    font-size: 14px; /* Default size */
+    font-size: 14px; 
   }
   .form button:hover, .btnPrimary:hover {opacity:.9}
   .form button:disabled, .btnPrimary:disabled {opacity:.6;cursor:not-allowed}
 
-  /* REFRESH BUTTON (History) - Small & White */
+  /* PENDING REFRESH - Yellow */
+  #pcRefresh {
+    background: var(--ucf-gold);
+    color: #000;
+  }
+
+  /* HISTORY REFRESH - Small & White */
   #btnMeRefresh {
     padding: 6px 10px !important;
     font-size: 12px !important;
@@ -101,11 +120,6 @@
     margin: 0;
   }
   #btnMeRefresh:hover { background: #fafafa !important; }
-
-  /* PENDING CENTER REFRESH - Keep normal size or small? Keeping primary for visibility, or standard secondary */
-  #pcRefresh {
-    /* If you want this small too, apply same styles. Keeping standard for now. */
-  }
 
   .secondary{padding:8px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer}
   .secondary:hover{background:#fafafa}
@@ -125,7 +139,7 @@
   .ptable tbody tr:nth-child(odd) { background: #fff; }
   .ptable tbody tr:nth-child(even) { background: #f9f9f9; }
 
-  /* PENDING CENTER BUTTONS (Yellow & Centered) */
+  /* PENDING CENTER ACTION BUTTONS (Yellow & Centered) */
   .actBtn {
     padding:6px 12px;
     border:0;
