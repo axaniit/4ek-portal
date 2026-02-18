@@ -4,73 +4,98 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>4EK Ambassador Portal</title>
-
   <meta name="robots" content="noindex, nofollow">
 
-  <!-- Keep your existing body font (Nunito), add a sharper headline font (Montserrat) -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Theme CSS (IMPORTANT: no leading slash for GitHub Pages project sites) -->
-  <link rel="stylesheet" href="assets/portal-theme.css?v=3">
+  <!-- Theme -->
+  <link rel="stylesheet" href="assets/portal-theme.css?v=4">
 
-  <!-- Page-specific overrides: ONLY what you requested -->
   <style>
-    :root{ --brand-gold:#c8a700; }
+    :root{
+      --brand-yellow:#f4ca3d;
+    }
 
-    /* Force hero bar color + centering (wins over theme) */
+    body{ margin:0; font-family:"Nunito", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+
+    /* HERO BAR */
     section.portal-hero{
-      background: var(--brand-gold) !important;
-      text-align: center !important;
-    }
-    section.portal-hero > h1{
-      font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif !important;
-      font-size: 43px !important; /* was ~40px → +3px */
-      font-weight: 800 !important;
-      text-align: center !important;
-      margin: 0 !important;
-      color:#111 !important;
+      background: var(--brand-yellow) !important;
+      padding: 35px 16px !important; /* thicker by ~3px */
+      text-align:center !important;
     }
 
-    /* The second “4EK Ambassador Portal” in the box */
+    section.portal-hero h1{
+      font-family:"Montserrat", sans-serif !important;
+      font-size:43px !important; /* +3px */
+      font-weight:800 !important;
+      margin:0 !important;
+      color:#111 !important;
+      text-align:center !important;
+    }
+
+    /* Accent line under hero */
+    .portal-accent-line{
+      height:4px !important;
+      background: var(--brand-yellow) !important;
+    }
+
+    /* Second title inside box */
     #box h2{
-      font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif !important;
-      font-size: 27px !important; /* +3px bump */
-      font-weight: 800 !important;
-      margin: 0 0 6px !important;
+      font-family:"Montserrat", sans-serif !important;
+      font-size:27px !important; /* +3px */
+      font-weight:800 !important;
+      margin:0 0 6px !important;
       color:#111 !important;
     }
 
-    /* Continue button color + thinner label */
-    #btnLogin.btn{
-      background: var(--brand-gold) !important;
-      color:#111 !important;
-      font-weight: 400 !important; /* thinner "Continue" */
-      letter-spacing: .2px !important;
-      box-shadow: 0 3px 0 rgba(0,0,0,.18) !important;
-    }
-
-    /* Keep layout consistent */
+    /* Login layout */
     .login-wrap{ max-width: 980px; margin: 0 auto; padding: 22px 16px 48px; }
-    body{ margin:0; }
-  </style>
+    #box{ margin: 18px auto 0 !important; }
 
-  <!-- Login form styling (kept from your version) -->
-  <style>
-    .field{display:block;margin:10px 0 12px;}
-    .input{width:100%;padding:10px 12px;border:1px solid #cfcfcf;border-radius:8px;margin-top:6px;box-sizing:border-box;}
-    .btn{width:100%;padding:12px;border:0;border-radius:8px;background:#111;color:#fff;cursor:pointer;font-weight:900;letter-spacing:.4px;text-transform:uppercase}
-    .btn:disabled{opacity:.6;cursor:not-allowed}
+    /* Inputs + labels stay Nunito */
+    .field{display:block;margin:10px 0 12px;font-weight:600;}
+    .input{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid #cfcfcf;
+      border-radius:8px;
+      margin-top:6px;
+      box-sizing:border-box;
+      font-family:"Nunito", sans-serif;
+    }
+
+    /* Continue button */
+    #btnLogin{
+      width:100%;
+      padding:12px;
+      border:0;
+      border-radius:8px;
+      background: var(--brand-yellow) !important;
+      color:#111 !important;
+      cursor:pointer;
+      font-weight:600 !important; /* thinner than bold but not light */
+      letter-spacing:.3px;
+      text-transform:uppercase;
+      box-shadow:0 3px 0 rgba(0,0,0,.18);
+    }
+
+    #btnLogin:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
     .hint{font-size:12px;color:#666;margin-top:6px;line-height:1.35}
     .hidden{display:none}
-    a{color:#111}
-    #box{ margin: 18px auto 0 !important; }
   </style>
 </head>
 
 <body>
-  <!-- Top bar removed (per your request). Only the gold hero remains. -->
+
+  <!-- HERO -->
   <section class="portal-hero">
     <h1>4EK Ambassador Portal</h1>
   </section>
@@ -90,17 +115,15 @@
         <label class="field">Password
           <input id="password" type="password" class="input" autocomplete="current-password">
         </label>
-        <button class="btn" id="btnLogin" type="submit">Continue</button>
+        <button id="btnLogin" type="submit">Continue</button>
       </form>
     </div>
   </main>
 
   <script>
-  /* ===== CONFIG ===== */
   const API = "https://script.google.com/macros/s/AKfycbxUUnLnZWfYGe0ZJ5NKtoLXa78qXCK-cEeCv2Ip_3Xm_XUDy-fFp-w0gShBxakcjJdCPg/exec";
   const SESSION_KEY = "portal_session_v1";
 
-  /* ===== UTIL ===== */
   const $ = (id) => document.getElementById(id);
 
   function setMsg(t, ok=false){
@@ -109,11 +132,9 @@
     el.style.color = ok ? "#1a7f37" : "#b00020";
     el.textContent = t;
   }
-  function hideMsg(){ $("msg").classList.add("hidden"); $("msg").textContent=""; }
 
   function saveSession(username, role){
-    const payload = { username, role, ts: Date.now() };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ username, role, ts: Date.now() }));
   }
 
   function getBase(){
@@ -124,10 +145,9 @@
 
   function redirectToPortal(role){
     const base = getBase();
-    const target = role === "admin"
+    window.location.href = role === "admin"
       ? base + "/admin.html"
       : base + "/student.html";
-    window.location.href = target;
   }
 
   async function POST_LOGIN(email, password){
@@ -138,28 +158,20 @@
       username: email
     }).toString();
 
-    const url = API + "?" + qs;
-
-    const r = await fetch(url, {
+    const r = await fetch(API + "?" + qs, {
       method: "POST",
       mode: "cors",
       cache: "no-cache",
-      body: JSON.stringify({
-        student_id: email,
-        email: email,
-        username: email,
-        password: password
-      })
+      body: JSON.stringify({ student_id: email, email, username: email, password })
     });
 
     const t = await r.text();
     try { return JSON.parse(t); }
-    catch { return { ok:false, error:"Invalid JSON", body:t }; }
+    catch { return { ok:false }; }
   }
 
   $("stepLogin").addEventListener("submit", async (e)=>{
     e.preventDefault();
-    hideMsg();
 
     const email = ($("email").value || "").trim().toLowerCase();
     const password = $("password").value || "";
@@ -172,7 +184,6 @@
 
     try{
       localStorage.removeItem(SESSION_KEY);
-
       const out = await POST_LOGIN(email, password);
 
       if(out?.ok && out.role){
@@ -181,15 +192,8 @@
         return;
       }
 
-      if(out?.status === "bad_password"){
-        setMsg("Incorrect password.");
-      } else if(out?.error){
-        setMsg("Login failed: " + out.error);
-      } else {
-        setMsg("Login failed.");
-      }
-
-    }catch(err){
+      setMsg("Login failed.");
+    }catch{
       setMsg("Could not reach login service.");
     }
 
@@ -197,5 +201,6 @@
     $("btnLogin").textContent = "Continue";
   });
   </script>
+
 </body>
 </html>
