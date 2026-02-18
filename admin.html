@@ -171,9 +171,13 @@
   .ptable tbody tr:nth-child(even) { background: #f9f9f9; }
 
   /* PENDING CENTER ACTIONS (Yellow Buttons + White Badge Emojis) */
-  .pc-actions-cell {
-    text-align: center;
-    vertical-align: middle;
+.pc-actions-cell {
+  text-align: center !important;
+  vertical-align: middle !important;
+  display: flex;                /* optional: helps align items nicely */
+  justify-content: center;      /* optional: centers flex items */
+  gap: 6px;                     /* optional: space between buttons */
+}
   }
   .actBtn {
     background-color: var(--ucf-gold);
