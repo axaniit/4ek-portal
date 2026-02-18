@@ -1,4 +1,8 @@
+<!-- ===== ADMIN PORTAL v5.9.12 (UI POLISH + OVERRIDES) ===== -->
 <meta name="robots" content="noindex, nofollow">
+
+<!-- Ensure Nunito font is available for the overrides -->
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <div id="admin-app" style="max-width:1100px;margin:0 auto;">
   <header class="amb-top">
@@ -13,7 +17,9 @@
     </div>
   </header>
 
+  <!-- TOP GRID: Quick Actions + Pending Center side-by-side (stretch equal height) -->
   <section class="top-grid">
+    <!-- Quick Actions -->
     <div class="card">
       <div class="card-h">Quick Actions (My Requests)</div>
       <div class="card-b">
@@ -23,6 +29,7 @@
             <select id="reqEvent"></select>
           </label>
 
+          <!-- SHIFT PICKER (shown only when shifts exist) -->
           <label id="reqShiftWrap" style="display:none;">Shift
             <select id="reqShift"></select>
             <div class="muted small" id="reqShiftHint" style="margin-top:6px;"></div>
@@ -52,6 +59,7 @@
             <select id="signupEvent"></select>
           </label>
 
+          <!-- SHIFT PICKER (shown only when shifts exist) -->
           <label id="suShiftWrap" style="display:none;">Shift
             <select id="suShift"></select>
             <div class="muted small" id="suShiftHint" style="margin-top:6px;"></div>
@@ -75,6 +83,7 @@
 
         <hr style="margin:16px 0;border:none;border-top:1px solid #eee;">
 
+        <!-- ===== MY HISTORY (table style like student version) ===== -->
         <div>
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
             <h4 style="margin:.25rem 0;">My History</h4>
@@ -103,6 +112,7 @@
             </div>
           </div>
 
+          <!-- Always-scroll wrapper -->
           <div class="hist-scroll" style="margin-top:10px;">
             <table class="hist-table">
               <thead>
@@ -126,6 +136,7 @@
       </div>
     </div>
 
+    <!-- Pending Center -->
     <div class="card" id="pcCard">
       <div class="card-h">Pending Center (All Events)</div>
       <div class="card-b" id="pcCardBody">
@@ -146,6 +157,7 @@
 
         <div id="pcStatus" class="muted small" style="margin-bottom:8px;">Loading…</div>
 
+        <!-- Scroll container: vertical + horizontal -->
         <div id="pcTableWrap">
           <table class="ptable">
             <thead>
@@ -163,6 +175,7 @@
           </table>
         </div>
 
+        <!-- Buttons centered -->
         <div style="display:flex;gap:12px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
           <button id="pcApproveSel" type="button" class="secondary">Approve selected</button>
           <button id="pcDenySel" type="button" class="secondary">Deny selected</button>
@@ -171,11 +184,13 @@
     </div>
   </section>
 
+  <!-- Calendar -->
   <div class="card">
     <div class="card-h">Calendar (click an event)</div>
     <div class="card-b"><div id="calendar"></div></div>
   </div>
 
+  <!-- Create / Update Event -->
   <div class="card" id="evCard">
     <div class="card-h">Create / Update Event</div>
     <div class="card-b">
@@ -207,6 +222,7 @@
             <input id="ev_notes">
           </label>
 
+          <!-- ===== SHIFT (CREATE/EDIT) ===== -->
           <div class="shift-admin">
             <div class="shift-admin-top">
               <label style="display:flex;align-items:center;gap:10px;margin:0;">
@@ -258,6 +274,7 @@
     </div>
   </div>
 
+  <!-- Requirements -->
   <div class="card">
     <div class="card-h">Requirements (Admin)</div>
     <div class="card-b">
@@ -293,10 +310,12 @@
   </div>
 </div>
 
+<!-- ===== FULL-SCREEN CONFETTI OVERLAY ===== -->
 <div id="confettiOverlay" style="display:none;position:fixed;inset:0;pointer-events:none;z-index:10001;">
   <canvas id="confettiCanvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
 </div>
 
+<!-- ===== CONFETTI POPUP (CONFIRMATION MODAL) ===== -->
 <div id="confettiModal" class="modal" style="display:none;">
   <div class="modal-dialog" style="width:min(560px,100%);position:relative;">
     <div class="modal-h">
@@ -312,6 +331,7 @@
   </div>
 </div>
 
+<!-- ===== STUDENT-STYLE POPUP (shared) ===== -->
 <div id="portalPopup" class="pp-wrap" style="display:none;">
   <div class="pp-card" role="dialog" aria-modal="true" aria-labelledby="ppTitle">
     <div class="pp-icon" id="ppIcon" aria-hidden="true">✓</div>
@@ -323,6 +343,7 @@
   </div>
 </div>
 
+<!-- EVENT MODAL -->
 <div id="eventModal" class="modal" style="display:none;">
   <div class="modal-dialog">
     <div class="modal-h">
@@ -335,6 +356,7 @@
       <div id="mDesc" class="muted"></div>
       <div id="mCap" class="cap"></div>
 
+      <!-- SHIFT PICKER (modal) -->
       <div id="mShiftWrap" class="self-actions" style="display:none;margin-top:10px;">
         <div class="muted small" style="margin-bottom:6px;">This event uses shifts:</div>
         <label style="margin:0;">Shift
@@ -731,6 +753,110 @@
 
 
 </style>
+
+<!-- HARD PROOF OVERRIDES -->
+<style id="admin-ui-overrides">
+  :root{
+    --ucf-gold:#C9A227;
+    --soft-shadow: 0 8px 22px rgba(0,0,0,.10);
+  }
+
+  /* Make sure everything uses the same font (inputs included) */
+  body,
+  input, select, textarea, button,
+  .form select, .form input, .form textarea{
+    font-family:"Nunito", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif !important;
+  }
+
+  /* Headers match index feel (sticky top bar) */
+  .ucf-topbar{
+    position:sticky;
+    top:0;
+    z-index:9998;
+  }
+
+  /* Slight grey shadow around ALL containers/cards */
+  .card,
+  .hist-card,
+  #pcTableWrap,
+  .shift-admin,
+  .self-actions,
+  .fc .fc-toolbar{
+    box-shadow: var(--soft-shadow) !important;
+    border-color:#e7e7e7 !important;
+  }
+
+  /* Attendance Request + Event Sign-Up titles +5px */
+  #formRequest h4,
+  #formSignup h4{
+    font-size:21px !important; /* default ~16px → 21px */
+    font-weight:800 !important;
+    margin:.25rem 0 .65rem !important;
+  }
+
+  /* Move the “If you didn’t attend…” / “If you plan to attend…” right by 5px */
+  #formRequest .grid2 > .muted.small,
+  #formSignup .grid2 > .muted.small{
+    padding-left:5px !important;
+  }
+
+  /* ALL buttons all-caps + slightly bigger (+2px feel) */
+  button,
+  .btnPrimary,
+  .secondary,
+  .form button,
+  .pp-btn{
+    text-transform:uppercase !important;
+    letter-spacing:.02em;
+    font-size: calc(14px + 2px) !important;
+  }
+
+  /* Slightly bigger padding on main button types */
+  .btnPrimary,
+  .form button{
+    padding:12px 16px !important; /* was ~10x14 */
+    border-radius:10px !important;
+  }
+  .secondary{
+    padding:10px 12px !important; /* was ~8x10 */
+    border-radius:10px !important;
+  }
+
+  /* Pending Center refresh button: yellow + bigger */
+  #pcRefresh{
+    background: var(--ucf-gold) !important;
+    color:#111 !important;
+    border:1px solid rgba(0,0,0,.15) !important;
+  }
+  #pcRefresh:hover{ filter:brightness(.97); }
+
+  /* Approve/Deny buttons (the icon buttons): yellow + larger button body */
+  .pcIcon{
+    width:40px !important;
+    height:40px !important;
+    border-radius:12px !important;
+    background: var(--ucf-gold) !important;
+    border:1px solid rgba(0,0,0,.18) !important;
+    color:#111 !important;
+  }
+  .pcIcon:hover{ filter:brightness(.97); }
+  .pcIcon svg{ width:20px; height:20px; }
+
+  /* Better spacing in Create/Update Event section */
+  #eventForm label{ margin:10px 0 !important; }
+  #eventForm > div[style*="grid-template-columns"]{
+    gap:16px !important;            /* was 12px */
+    padding-bottom:6px !important;
+  }
+  #eventForm .shift-admin{ margin-top:16px !important; }
+
+  /* Make sure Pending table headers look intentional */
+  .ptable th{
+    text-transform:uppercase;
+    letter-spacing:.02em;
+    font-size:12px;
+    color:#666;
+  }</style>
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 <script>
