@@ -7,63 +7,82 @@
 
   <meta name="robots" content="noindex, nofollow">
 
-  <!-- Font -->
+  <!-- Fonts: keep Nunito for body, add a sharper headline font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Theme CSS (IMPORTANT: no leading slash for GitHub Pages project sites) -->
-  <link rel="stylesheet" href="assets/portal-theme.css?v=1">
+  <!-- Theme CSS (no leading slash for GitHub Pages project sites) -->
+  <link rel="stylesheet" href="assets/portal-theme.css?v=2">
 
-  <!-- Login-specific tweaks -->
   <style>
+    :root{ --brand-gold:#c8a700; }
+
     body{ margin:0; }
 
+    /* Remove the entire top bar section (UCF Alumni header) */
+    .ucf-topbar{ display:none !important; }
+
+    /* Hero bar (gold) */
+    .portal-hero{
+      background: var(--brand-gold) !important;
+      text-align:center !important;
+      padding: 32px 16px !important;
+    }
+    .portal-hero h1{
+      font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif !important;
+      font-weight: 800 !important;
+      font-size: 43px !important; /* +3px from your prior 40px */
+      letter-spacing: .2px;
+      margin: 0 !important;
+      text-align:center !important;
+      color:#111 !important;
+    }
+    .portal-accent-line{ display:none !important; }
+
+    /* Center area under hero like the old page */
+    .login-wrap{ max-width: 980px; margin: 0 auto; padding: 22px 16px 48px; }
+    #box{ margin: 18px auto 0 !important; }
+
+    /* Login box typography */
+    #box h2{
+      font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif !important;
+      font-weight: 800 !important;
+      font-size: 27px !important; /* +3px from your prior ~24px default-ish */
+      letter-spacing: .2px;
+    }
+
+    /* Form bits */
     .field{display:block;margin:10px 0 12px;}
     .input{width:100%;padding:10px 12px;border:1px solid #cfcfcf;border-radius:8px;margin-top:6px;box-sizing:border-box;}
-    .btn{width:100%;padding:12px;border:0;border-radius:8px;background:#111;color:#fff;cursor:pointer;font-weight:900;letter-spacing:.4px;text-transform:uppercase}
-    .btn:disabled{opacity:.6;cursor:not-allowed}
     .hint{font-size:12px;color:#666;margin-top:6px;line-height:1.35}
     .hidden{display:none}
     a{color:#111}
 
-    .login-wrap{ max-width: 980px; margin: 0 auto; padding: 22px 16px 48px; }
-    #box{ margin: 18px auto 0 !important; }
+    /* Button: gold background, thinner "Continue" */
+    .btn{
+      width:100%;
+      padding:12px;
+      border:0;
+      border-radius:8px;
+      background: var(--brand-gold) !important;
+      color:#111 !important;
+      cursor:pointer;
+      font-family:"Nunito", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif !important;
+      font-weight: 400 !important; /* thinner */
+      letter-spacing:.25px;
+      text-transform:uppercase;
+      box-shadow: 0 3px 0 rgba(0,0,0,.18);
+    }
+    .btn:disabled{opacity:.6;cursor:not-allowed}
   </style>
 </head>
 
 <body>
-  <!-- Fake WP-style header + hero -->
-  <header class="ucf-topbar">
-    <div class="ucf-topbar__inner">
-      <div class="ucf-brand">
-        <div class="ucf-brand__badge">UCF Alumni</div>
-        <div class="ucf-brand__sub">UNIVERSITY OF CENTRAL FLORIDA</div>
-      </div>
-
-      <nav class="ucf-nav" aria-label="Primary">
-        <a href="#" class="ucf-nav__link">GET INVOLVED</a>
-        <a href="#" class="ucf-nav__link">EVENTS</a>
-        <a href="#" class="ucf-nav__link">GIVE TO UCF</a>
-        <a href="#" class="ucf-nav__link">ALUMNI BLOG</a>
-        <a href="#" class="ucf-nav__link">ALUMNI CENTER</a>
-        <a href="#" class="ucf-nav__link">ABOUT US</a>
-      </nav>
-
-      <div class="ucf-topbar__right">
-        <div class="ucf-search">
-          <input class="ucf-search__input" type="search" placeholder="Search UCF" aria-label="Search UCF">
-          <button class="ucf-search__btn" type="button">SEARCH</button>
-        </div>
-      </div>
-    </div>
-    <div class="ucf-topbar__goldline"></div>
-  </header>
-
+  <!-- Gold hero only (top bar removed) -->
   <section class="portal-hero">
     <h1>4EK Ambassador Portal</h1>
   </section>
-  <div class="portal-accent-line"></div>
 
   <main class="login-wrap">
     <div id="box" style="max-width:460px;margin:24px auto;padding:18px;border:1px solid #e2e2e2;border-radius:12px;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.06)">
@@ -105,17 +124,9 @@
     localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
   }
 
-  /**
-   * Host-agnostic base path resolver (works on GitHub Pages project sites)
-   * Examples:
-   * - https://user.github.io/repo/index.html -> base = https://user.github.io/repo
-   * - https://site.netlify.app/index.html     -> base = https://site.netlify.app
-   */
   function getBase(){
     const { origin, pathname } = window.location;
-    // remove filename (index.html) if present
     const dir = pathname.replace(/\/[^\/]*$/, "");
-    // if dir is "" then it’s root; otherwise keep it (GitHub Pages project path)
     return origin + (dir === "" ? "" : dir);
   }
 
