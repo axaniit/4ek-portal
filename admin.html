@@ -1,31 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin Portal</title>
 <meta name="robots" content="noindex, nofollow">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
-
-<style>
-  @import url("https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css");
-
-  :root { 
-    --ucf-gold:#F4CA3D; 
-    --ucf-black:#000; 
-    --ucf-purple:#6A0DAD; 
-    --ucf-red:#C1121F; 
-  }
-
-  body {
-    margin: 0;
-    font-family: "Nunito", system-ui, -apple-system, sans-serif;
-    background: #fff;
-    color: #333;
-  }
+}
 
   /* ========= HERO BANNER ========= */
   section.portal-hero{
@@ -39,418 +13,9 @@
     padding:0 !important;
     margin-bottom: 24px;
   }
+<div id="admin-app" style="max-width:1100px;margin:0 auto;">
+  <div class="hero-band"></div>
 
-  section.portal-hero h1{
-    font-family:"Montserrat", sans-serif !important;
-    font-size:44px !important;            /* slightly larger */
-    font-weight:700 !important;
-    margin:0 !important;
-    color:#111 !important;
-  }
-
-  #admin-app { max-width:1100px; margin:0 auto; padding: 0 16px; }
-
-  /* Calendar */
-  #calendar{ min-height: 640px; }
-  #calendar, #calendar * { font-family: inherit; }
-
-  .amb-top{display:flex;justify-content:space-between;align-items:flex-end;margin:8px 0 16px}
-  .muted{color:#666}.small{font-size:12px}.h-name{font-weight:600;font-size:18px}
-  .h-big{font-size:40px;font-weight:700}.hours{text-align:right}
-
-  .top-grid{display:grid;gap:16px;margin:0 0 16px;align-items:stretch}
-  @media (min-width: 980px){ .top-grid{ grid-template-columns: 1fr 1fr; } }
-  .top-grid > .card{ height:100%; display:flex; flex-direction:column; }
-  .top-grid > .card .card-b{ flex:1; min-height:0; }
-
-  .card{border:1px solid #e5e5e5;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.04);overflow:hidden;background:#fff;margin:12px 0}
-  .card-h{padding:12px 16px;border-bottom:1px solid #eee;font-weight:600}
-  .card-b{padding:16px}
-
-  /* HEADERS: +2px bigger */
-  .form h4 { margin:.25rem 0 .5rem; font-size: 18px; font-weight: 700; }
-  
-  .form label{display:block;margin:8px 0}
-  .form select, .form input, .form textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px; font-family: inherit;}
-  
-  /* STANDARD BUTTONS (Left alone / Black) */
-  .form button, .btnPrimary {
-    margin-top:6px;
-    padding:10px 14px;
-    border:0;
-    background:#111;
-    color:#fff;
-    border-radius:8px;
-    cursor:pointer;
-    font-family: inherit;
-    font-size: 14px; /* Default size */
-  }
-  .form button:hover, .btnPrimary:hover {opacity:.9}
-  .form button:disabled, .btnPrimary:disabled {opacity:.6;cursor:not-allowed}
-
-  /* REFRESH BUTTON (History) - Small & White */
-  #btnMeRefresh {
-    padding: 6px 10px !important;
-    font-size: 12px !important;
-    font-weight: 400 !important;
-    background: #fff !important;
-    border: 1px solid #ddd !important;
-    color: #333 !important;
-    border-radius: 8px;
-    cursor: pointer;
-    margin: 0;
-  }
-  #btnMeRefresh:hover { background: #fafafa !important; }
-
-  /* PENDING CENTER REFRESH - Keep normal size or small? Keeping primary for visibility, or standard secondary */
-  #pcRefresh {
-    /* If you want this small too, apply same styles. Keeping standard for now. */
-  }
-
-  .secondary{padding:8px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer}
-  .secondary:hover{background:#fafafa}
-
-  .msg{margin-top:8px;font-size:13px}.ok{color:#1a7f37}.err{color:#b00020}
-
-  .rq-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid #f4f4f4}
-  .rq-row:last-child{border-bottom:none}
-  .rq-lbl{display:flex;align-items:flex-start;gap:10px}
-  .rq-meta{color:#666;font-size:12px;margin-top:2px}
-  .rq-pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #e6e6e6;font-size:12px}
-
-  .ptable{width:100%;border-collapse:collapse}
-  .ptable th,.ptable td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
-  
-  /* Zebra Striping */
-  .ptable tbody tr:nth-child(odd) { background: #fff; }
-  .ptable tbody tr:nth-child(even) { background: #f9f9f9; }
-
-  /* PENDING CENTER BUTTONS (Yellow & Centered) */
-  .actBtn {
-    padding:6px 12px;
-    border:0;
-    border-radius:8px;
-    cursor:pointer;
-    font-weight: 600;
-    font-size: 12px;
-    margin: 0 2px;
-  }
-  .approve { background:var(--ucf-gold); color:#111; }
-  .deny    { background:var(--ucf-gold); color:#111; }
-  
-  .pc-actions-cell {
-    display:flex;
-    gap:4px;
-    flex-wrap:wrap;
-    justify-content: center; /* CENTERED */
-    align-items: center;
-  }
-
-  /* Emoji Background Badge */
-  .emoji-bg { 
-    background: #fff; 
-    border-radius: 50%; 
-    padding: 3px 5px; 
-    box-shadow: 0 1px 3px rgba(0,0,0,0.15); 
-    display: inline-block;
-  }
-
-  /* Pending Center: make table area scroll vertically + horizontally */
-  #pcCardBody{display:flex;flex-direction:column;min-height:0}
-  #pcTableWrap{
-    flex:1;
-    min-height:0;
-    overflow:auto;
-    border:1px solid #eee;
-    border-radius:10px;
-  }
-
-  /* ===== CREATE/EDIT EVENT: FORCE H-SCROLL ===== */
-  .ev-scroll{
-    overflow-x:auto;
-    overflow-y:hidden;
-    padding-bottom:6px;
-  }
-  .ev-scroll::-webkit-scrollbar{ height:10px }
-  .ev-scroll::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.22); border-radius:999px }
-  .ev-scroll::-webkit-scrollbar-track{ background:rgba(0,0,0,.05); border-radius:999px }
-
-  /* ===== SHIFT EDITOR ===== */
-  .shift-admin{
-    margin-top:12px;
-    border:1px solid #eee;
-    border-radius:12px;
-    background:#fafafa;
-    padding:12px;
-  }
-  .shift-admin-top{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    flex-wrap:wrap;
-  }
-  .shift-scroll{
-    overflow:auto;
-    border:1px solid #eee;
-    border-radius:12px;
-    background:#fff;
-  }
-  .shift-table{
-    width:100%;
-    border-collapse:collapse;
-    min-width:880px;
-  }
-  .shift-table th,.shift-table td{
-    padding:10px 8px;
-    border-bottom:1px solid #eee;
-    text-align:left;
-    vertical-align:top;
-    font-size:13px;
-  }
-  .shift-table th{
-    font-size:12px;
-    color:#666;
-    text-transform:uppercase;
-    letter-spacing:.02em;
-    background:#fafafa;
-    position:sticky;
-    top:0;
-    z-index:1;
-  }
-  .shift-table input[type="datetime-local"],
-  .shift-table input[type="number"],
-  .shift-table input[type="text"]{
-    width:100%;
-    padding:8px;
-    border:1px solid #ccc;
-    border-radius:8px;
-    background:#fff;
-  }
-  .shift-table input[type="checkbox"]{ width:auto; }
-
-  /* ===== HISTORY STYLES ===== */
-  .hist-top{display:grid;gap:10px}
-  @media (min-width: 900px){
-    .hist-top{ grid-template-columns: 1fr 1fr 1fr; }
-  }
-  .hist-card{
-    border:1px solid #eee;
-    border-radius:12px;
-    padding:12px;
-    background:#fafafa
-  }
-  .hist-big{
-    font-size:28px;
-    font-weight:700;
-    margin-top:4px
-  }
-  .hist-table{
-    width:100%;
-    border-collapse:collapse
-  }
-  .hist-table th,
-  .hist-table td{
-    border-bottom:1px solid #eee;
-    padding:10px 8px;
-    text-align:left;
-    vertical-align:top
-  }
-  /* Zebra Striping for History */
-  .hist-table tbody tr:nth-child(odd) { background: #fff; }
-  .hist-table tbody tr:nth-child(even) { background: #f9f9f9; }
-
-  .hist-table th{
-    font-size:12px;
-    color:#666;
-    text-transform:uppercase;
-    letter-spacing:.02em
-  }
-  .tag{
-    display:inline-block;
-    padding:2px 8px;
-    border:1px solid #ddd;
-    border-radius:999px;
-    font-size:12px;
-    color:#444;
-    background:#fff
-  }
-  .hist-scroll{
-    max-height:320px;
-    overflow-y:scroll;
-    overflow-x:auto;
-    border:1px solid #eee;
-    border-radius:12px
-  }
-  .hist-scroll::-webkit-scrollbar{ width:10px; height:10px }
-  .hist-scroll::-webkit-scrollbar-thumb{
-    background:rgba(0,0,0,.22);
-    border-radius:999px
-  }
-  .hist-scroll::-webkit-scrollbar-track{
-    background:rgba(0,0,0,.05);
-    border-radius:999px
-  }
-
-  /* Event modal */
-  .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9999}
-  #eventModal .modal-dialog{width:min(920px,100%);background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-  #eventModal .modal-h{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #eee}
-  #eventModal .modal-b{padding:16px}
-  #eventModal .modal-f{padding:12px 16px;border-top:1px solid #eee;text-align:right;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-  #eventModal .modal .x{background:transparent;border:0;font-size:22px;cursor:pointer}
-  .rosters{display:grid;gap:16px;margin-top:12px}
-  @media (min-width: 900px){ .rosters{ grid-template-columns: 1fr 1fr; } }
-  .roster{margin:.25rem 0 0;padding-left:18px}
-  .cap{margin:8px 0 0;font-weight:600}
-
-  .self-actions{margin:12px 0 0;padding:12px;border:1px solid #eee;border-radius:12px;background:#fafafa}
-  .self-row{display:grid;grid-template-columns:220px 1fr;gap:10px;align-items:end}
-  .self-row input{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px}
-  .self-btns{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
-
-  .fc, .fc * { pointer-events:auto; }
-  .fc-event, .fc-event * { pointer-events:auto !important; }
-
-  /* Toolbar readability */
-  .fc .fc-toolbar{
-    background:#fff;
-    border:1px solid #eee;
-    border-radius:12px;
-    padding:10px 12px;
-    margin-bottom:12px;
-  }
-  .fc .fc-toolbar-title{ font-weight:700; color:#111; }
-  .fc .fc-button{
-    background:#fff !important;
-    border:1px solid #ddd !important;
-    color:#111 !important;
-    box-shadow:none !important;
-    text-transform:none !important;
-    opacity:1 !important;
-  }
-  .fc .fc-button .fc-icon{ color:#111 !important; }
-  .fc .fc-button:hover{ background:#f7f7f7 !important; }
-  .fc .fc-button:disabled{ opacity:.55 !important; }
-  
-  .fc .fc-button-primary:not(:disabled).fc-button-active,
-  .fc .fc-button-primary:not(:disabled):active{
-    background: rgba(244,202,61,.15) !important;
-    border-color: rgba(244,202,61,.45) !important;
-    color:#111 !important;
-  }
-
-  /* Kill FullCalendar default blue */
-  .fc .fc-event,
-  .fc .fc-event-main,
-  .fc .fc-daygrid-event,
-  .fc .fc-timegrid-event{
-    background: transparent !important;
-    border-color: transparent !important;
-  }
-  .fc .fc-list-event:hover td{ background: rgba(0,0,0,.03) !important; }
-
-  .cat-gold  .fc-daygrid-event-dot, .cat-gold  .fc-list-event-dot { border-color:var(--ucf-gold) !important; background:var(--ucf-gold) !important; }
-  .cat-black .fc-daygrid-event-dot, .cat-black .fc-list-event-dot { border-color:var(--ucf-black)!important; background:var(--ucf-black)!important; }
-  .cat-purple .fc-daygrid-event-dot, .cat-purple .fc-list-event-dot { border-color:var(--ucf-purple)!important; background:var(--ucf-purple)!important; }
-  .cat-red   .fc-daygrid-event-dot, .cat-red   .fc-list-event-dot { border-color:var(--ucf-red)  !important; background:var(--ucf-red)  !important; }
-
-  .fc-timegrid-event{ border-radius:10px !important; overflow:hidden; }
-  .fc-timegrid-event.cat-gold  { border-left: 4px solid var(--ucf-gold) !important;  border:1px solid rgba(244,202,61,.35) !important; background: rgba(244,202,61,.10) !important; }
-  .fc-timegrid-event.cat-black { border-left: 4px solid var(--ucf-black)!important; border:1px solid rgba(0,0,0,.25) !important;     background: rgba(0,0,0,.06) !important; }
-  .fc-timegrid-event.cat-purple{ border-left: 4px solid var(--ucf-purple)!important;border:1px solid rgba(106,13,173,.30) !important;   background: rgba(106,13,173,.10) !important; }
-  .fc-timegrid-event.cat-red   { border-left: 4px solid var(--ucf-red)  !important;  border:1px solid rgba(193,18,31,.30) !important;    background: rgba(193,18,31,.10) !important; }
-
-  /* Student-style popup */
-  .pp-wrap{
-    position:fixed; inset:0;
-    background:rgba(0,0,0,.45);
-    display:flex; align-items:center; justify-content:center;
-    padding:16px;
-    z-index:100000;
-  }
-  .pp-card{
-    width:min(420px,100%);
-    background:#fff;
-    border-radius:14px;
-    box-shadow:0 20px 60px rgba(0,0,0,.25);
-    padding:18px 18px 14px;
-    text-align:center;
-  }
-  .pp-icon{
-    width:46px;height:46px;border-radius:999px;
-    background:#111;color:#fff;
-    display:flex;align-items:center;justify-content:center;
-    margin:0 auto 10px;
-    font-weight:800;
-  }
-  .pp-icon.bad{ background:#b00020; }
-  .pp-title{ font-weight:700;font-size:18px;margin:4px 0 6px; }
-  .pp-msg{
-    color:#333;font-size:14px;line-height:1.35;
-    margin:0 0 12px;
-    white-space:pre-wrap;
-  }
-  .pp-actions{ display:flex;justify-content:center; }
-  .pp-btn{
-    padding:10px 18px;border:0;border-radius:10px;
-    background:#111;color:#fff;cursor:pointer;
-  }
-  .pp-btn:hover{ opacity:.92; }
-
-  /* Confetti modal scoped */
-  #confettiModal{ z-index:10002; }
-  #confettiModal.modal{
-    position:fixed;inset:0;background:rgba(0,0,0,.4);
-    display:flex;align-items:center;justify-content:center;padding:16px;
-  }
-  #confettiModal .modal-dialog{
-    width:min(820px,100%);
-    background:#fff;border-radius:12px;overflow:hidden;
-    box-shadow:0 20px 60px rgba(0,0,0,.2)
-  }
-  #confettiModal .modal-h{
-    display:flex;justify-content:space-between;align-items:center;
-    padding:12px 16px;border-bottom:1px solid #eee
-  }
-  #confettiModal .modal-b{ padding:16px;min-height:140px }
-  #confettiModal .modal-f{
-    padding:12px 16px;border-top:1px solid #eee;text-align:right;
-    display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap
-  }
-  #confettiModal .x{background:transparent;border:0;font-size:22px;cursor:pointer}
-  #confettiModal .secondary{padding:10px 14px;border:1px solid #ddd;background:#fff;border-radius:8px;cursor:pointer}
-  #confettiModal .secondary:hover{background:#f7f7f7}
-  
-/* ===== FIX: Pending Center scroll + hard cap ===== */
-#pcCard{
-  display:flex;
-  flex-direction:column;
-}
-
-#pcCardBody{
-  display:flex;
-  flex-direction:column;
-  flex:1;
-  min-height:0;
-}
-
-#pcTableWrap{
-  flex:1;
-  min-height:0;
-  max-height:1000px;
-  overflow-y:auto;
-  overflow-x:auto;
-}
-</style>
-</head>
-<body>
-
-  <section class="portal-hero">
-    <h1>4EK Ambassador Portal</h1>
-  </section>
-
-<div id="admin-app">
   <header class="amb-top">
     <div>
       <div class="muted" id="adminGreet">Welcome</div>
@@ -528,7 +93,10 @@
         <div>
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
             <h4 style="margin:.25rem 0;">My History</h4>
-            <button id="btnMeRefresh" type="button">Refresh</button>
+            <button id="btnMeRefresh" type="button" class="secondary"
+              style="padding:8px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">
+              Refresh
+            </button>
           </div>
 
           <div class="muted small" style="margin-bottom:10px;">
@@ -602,7 +170,7 @@
                 <th>Student</th>
                 <th>Requested hours</th>
                 <th>Comment</th>
-                <th style="min-width:170px;text-align:center;">Actions</th>
+                <th style="min-width:170px;">Actions</th>
               </tr>
             </thead>
             <tbody id="pcBody"></tbody>
@@ -828,6 +396,391 @@
     </div>
   </div>
 </div>
+
+<style>
+  @import url("https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css");
+
+  :root { 
+    --ucf-gold:#F4CA3D; /* CORRECTED GOLD */
+    --ucf-black:#000; 
+    --ucf-purple:#6A0DAD; 
+    --ucf-red:#C1121F; 
+  }
+
+  #calendar{ min-height: 640px; }
+  #calendar, #calendar * { font-family: inherit; }
+
+  /* 2. Restored Hero Band Style */
+  .hero-band {
+    background: var(--ucf-gold);
+    height: 12px;
+    width: 100%;
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+
+  .amb-top{display:flex;justify-content:space-between;align-items:flex-end;margin:8px 0 16px}
+  .muted{color:#666}.small{font-size:12px}.h-name{font-weight:600;font-size:18px}
+  .h-big{font-size:40px;font-weight:700}.hours{text-align:right}
+
+  .top-grid{display:grid;gap:16px;margin:0 0 16px;align-items:stretch}
+  @media (min-width: 980px){ .top-grid{ grid-template-columns: 1fr 1fr; } }
+  .top-grid > .card{ height:100%; display:flex; flex-direction:column; }
+  .top-grid > .card .card-b{ flex:1; min-height:0; }
+
+  .card{border:1px solid #e5e5e5;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.04);overflow:hidden;background:#fff;margin:12px 0}
+  .card-h{padding:12px 16px;border-bottom:1px solid #eee;font-weight:600}
+  .card-b{padding:16px}
+
+  .form h4{margin:.25rem 0 .5rem}
+  .form label{display:block;margin:8px 0}
+  .form select, .form input, .form textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px}
+  
+  /* 5. Buttons: Thicker and Smaller (exclude refresh) */
+  .form button, .btnPrimary, .secondary, .actBtn {
+    margin-top:6px;
+    padding:10px 14px;
+    border:0;
+    border-radius:8px;
+    cursor:pointer;
+    font-size: 13px; /* Smaller */
+    font-weight: 600; /* Thicker */
+  }
+  
+  /* Refresh buttons - keep default size if preferred, or inherit but ensure weight */
+  #btnMeRefresh, #pcRefresh {
+    font-size: inherit; 
+    font-weight: normal; 
+  }
+
+  .form button, .btnPrimary { background:#111;color:#fff; }
+  .form button:hover, .btnPrimary:hover {opacity:.9}
+  .form button:disabled, .btnPrimary:disabled {opacity:.6;cursor:not-allowed}
+
+  .secondary{padding:8px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer}
+  .secondary:hover{background:#fafafa}
+
+  .msg{margin-top:8px;font-size:13px}.ok{color:#1a7f37}.err{color:#b00020}
+
+  .rq-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid #f4f4f4}
+  .rq-row:last-child{border-bottom:none}
+  .rq-lbl{display:flex;align-items:flex-start;gap:10px}
+  .rq-meta{color:#666;font-size:12px;margin-top:2px}
+  .rq-pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #e6e6e6;font-size:12px}
+
+  .ptable{width:100%;border-collapse:collapse}
+  .ptable th,.ptable td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
+  
+  /* 4. Zebra Striping (Alternating Grey/White) */
+  .ptable tbody tr:nth-child(odd) { background: #fff; }
+  .ptable tbody tr:nth-child(even) { background: #f9f9f9; }
+
+  .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #e6e6e6;font-size:12px}
+  .actBtn{padding:6px 10px;border:0;border-radius:8px;cursor:pointer}
+
+  /* 6. Approve/Deny Buttons: Yellow with Black Text */
+  .approve { background:var(--ucf-gold); color:#000; }
+  .deny    { background:var(--ucf-gold); color:#000; }
+  
+  /* 7. Emoji Background Badge */
+  .emoji-bg { 
+    background: #fff; 
+    border-radius: 50%; 
+    padding: 3px 5px; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15); 
+    display: inline-block;
+  }
+
+  /* Pending Center: make table area scroll vertically + horizontally */
+  #pcCardBody{display:flex;flex-direction:column;min-height:0}
+  #pcTableWrap{
+    flex:1;
+    min-height:0;
+    overflow:auto;
+    border:1px solid #eee;
+    border-radius:10px;
+  }
+
+  /* ===== CREATE/EDIT EVENT: FORCE H-SCROLL ===== */
+  .ev-scroll{
+    overflow-x:auto;
+    overflow-y:hidden;
+    padding-bottom:6px;
+  }
+  .ev-scroll::-webkit-scrollbar{ height:10px }
+  .ev-scroll::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.22); border-radius:999px }
+  .ev-scroll::-webkit-scrollbar-track{ background:rgba(0,0,0,.05); border-radius:999px }
+
+  /* ===== SHIFT EDITOR ===== */
+  .shift-admin{
+    margin-top:12px;
+    border:1px solid #eee;
+    border-radius:12px;
+    background:#fafafa;
+    padding:12px;
+  }
+  .shift-admin-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .shift-scroll{
+    overflow:auto;
+    border:1px solid #eee;
+    border-radius:12px;
+    background:#fff;
+  }
+  .shift-table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:880px;
+  }
+  .shift-table th,.shift-table td{
+    padding:10px 8px;
+    border-bottom:1px solid #eee;
+    text-align:left;
+    vertical-align:top;
+    font-size:13px;
+  }
+  .shift-table th{
+    font-size:12px;
+    color:#666;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+    background:#fafafa;
+    position:sticky;
+    top:0;
+    z-index:1;
+  }
+  .shift-table input[type="datetime-local"],
+  .shift-table input[type="number"],
+  .shift-table input[type="text"]{
+    width:100%;
+    padding:8px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    background:#fff;
+  }
+  .shift-table input[type="checkbox"]{ width:auto; }
+
+  /* ===== HISTORY STYLES ===== */
+  .hist-top{display:grid;gap:10px}
+  @media (min-width: 900px){
+    .hist-top{ grid-template-columns: 1fr 1fr 1fr; }
+  }
+  .hist-card{
+    border:1px solid #eee;
+    border-radius:12px;
+    padding:12px;
+    background:#fafafa
+  }
+  .hist-big{
+    font-size:28px;
+    font-weight:700;
+    margin-top:4px
+  }
+  .hist-table{
+    width:100%;
+    border-collapse:collapse
+  }
+  .hist-table th,
+  .hist-table td{
+    border-bottom:1px solid #eee;
+    padding:10px 8px;
+    text-align:left;
+    vertical-align:top
+  }
+  /* 4. Zebra Striping for History */
+  .hist-table tbody tr:nth-child(odd) { background: #fff; }
+  .hist-table tbody tr:nth-child(even) { background: #f9f9f9; }
+
+  .hist-table th{
+    font-size:12px;
+    color:#666;
+    text-transform:uppercase;
+    letter-spacing:.02em
+  }
+  .tag{
+    display:inline-block;
+    padding:2px 8px;
+    border:1px solid #ddd;
+    border-radius:999px;
+    font-size:12px;
+    color:#444;
+    background:#fff
+  }
+  .hist-scroll{
+    max-height:320px;
+    overflow-y:scroll;
+    overflow-x:auto;
+    border:1px solid #eee;
+    border-radius:12px
+  }
+  .hist-scroll::-webkit-scrollbar{ width:10px; height:10px }
+  .hist-scroll::-webkit-scrollbar-thumb{
+    background:rgba(0,0,0,.22);
+    border-radius:999px
+  }
+  .hist-scroll::-webkit-scrollbar-track{
+    background:rgba(0,0,0,.05);
+    border-radius:999px
+  }
+
+  /* Event modal */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9999}
+  #eventModal .modal-dialog{width:min(920px,100%);background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+  #eventModal .modal-h{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #eee}
+  #eventModal .modal-b{padding:16px}
+  #eventModal .modal-f{padding:12px 16px;border-top:1px solid #eee;text-align:right;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+  #eventModal .modal .x{background:transparent;border:0;font-size:22px;cursor:pointer}
+  .rosters{display:grid;gap:16px;margin-top:12px}
+  @media (min-width: 900px){ .rosters{ grid-template-columns: 1fr 1fr; } }
+  .roster{margin:.25rem 0 0;padding-left:18px}
+  .cap{margin:8px 0 0;font-weight:600}
+
+  .self-actions{margin:12px 0 0;padding:12px;border:1px solid #eee;border-radius:12px;background:#fafafa}
+  .self-row{display:grid;grid-template-columns:220px 1fr;gap:10px;align-items:end}
+  .self-row input{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px}
+  .self-btns{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+
+  .fc, .fc * { pointer-events:auto; }
+  .fc-event, .fc-event * { pointer-events:auto !important; }
+
+  /* Toolbar readability */
+  .fc .fc-toolbar{
+    background:#fff;
+    border:1px solid #eee;
+    border-radius:12px;
+    padding:10px 12px;
+    margin-bottom:12px;
+  }
+  .fc .fc-toolbar-title{ font-weight:700; color:#111; }
+  .fc .fc-button{
+    background:#fff !important;
+    border:1px solid #ddd !important;
+    color:#111 !important;
+    box-shadow:none !important;
+    text-transform:none !important;
+    opacity:1 !important;
+  }
+  .fc .fc-button .fc-icon{ color:#111 !important; }
+  .fc .fc-button:hover{ background:#f7f7f7 !important; }
+  .fc .fc-button:disabled{ opacity:.55 !important; }
+  
+  /* Update calendar active state to correct Gold */
+  .fc .fc-button-primary:not(:disabled).fc-button-active,
+  .fc .fc-button-primary:not(:disabled):active{
+    background: rgba(244,202,61,.15) !important;
+    border-color: rgba(244,202,61,.45) !important;
+    color:#111 !important;
+  }
+
+  /* Kill FullCalendar default blue */
+  .fc .fc-event,
+  .fc .fc-event-main,
+  .fc .fc-daygrid-event,
+  .fc .fc-timegrid-event{
+    background: transparent !important;
+    border-color: transparent !important;
+  }
+  .fc .fc-list-event:hover td{ background: rgba(0,0,0,.03) !important; }
+
+  .cat-gold  .fc-daygrid-event-dot, .cat-gold  .fc-list-event-dot { border-color:var(--ucf-gold) !important; background:var(--ucf-gold) !important; }
+  .cat-black .fc-daygrid-event-dot, .cat-black .fc-list-event-dot { border-color:var(--ucf-black)!important; background:var(--ucf-black)!important; }
+  .cat-purple .fc-daygrid-event-dot, .cat-purple .fc-list-event-dot { border-color:var(--ucf-purple)!important; background:var(--ucf-purple)!important; }
+  .cat-red   .fc-daygrid-event-dot, .cat-red   .fc-list-event-dot { border-color:var(--ucf-red)  !important; background:var(--ucf-red)  !important; }
+
+  .fc-timegrid-event{ border-radius:10px !important; overflow:hidden; }
+  /* Updated RGB for new gold approx 244,202,61 */
+  .fc-timegrid-event.cat-gold  { border-left: 4px solid var(--ucf-gold) !important;  border:1px solid rgba(244,202,61,.35) !important; background: rgba(244,202,61,.10) !important; }
+  .fc-timegrid-event.cat-black { border-left: 4px solid var(--ucf-black)!important; border:1px solid rgba(0,0,0,.25) !important;     background: rgba(0,0,0,.06) !important; }
+  .fc-timegrid-event.cat-purple{ border-left: 4px solid var(--ucf-purple)!important;border:1px solid rgba(106,13,173,.30) !important;   background: rgba(106,13,173,.10) !important; }
+  .fc-timegrid-event.cat-red   { border-left: 4px solid var(--ucf-red)  !important;  border:1px solid rgba(193,18,31,.30) !important;    background: rgba(193,18,31,.10) !important; }
+
+  /* Student-style popup */
+  .pp-wrap{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,.45);
+    display:flex; align-items:center; justify-content:center;
+    padding:16px;
+    z-index:100000;
+  }
+  .pp-card{
+    width:min(420px,100%);
+    background:#fff;
+    border-radius:14px;
+    box-shadow:0 20px 60px rgba(0,0,0,.25);
+    padding:18px 18px 14px;
+    text-align:center;
+  }
+  .pp-icon{
+    width:46px;height:46px;border-radius:999px;
+    background:#111;color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 10px;
+    font-weight:800;
+  }
+  .pp-icon.bad{ background:#b00020; }
+  .pp-title{ font-weight:700;font-size:18px;margin:4px 0 6px; }
+  .pp-msg{
+    color:#333;font-size:14px;line-height:1.35;
+    margin:0 0 12px;
+    white-space:pre-wrap;
+  }
+  .pp-actions{ display:flex;justify-content:center; }
+  .pp-btn{
+    padding:10px 18px;border:0;border-radius:10px;
+    background:#111;color:#fff;cursor:pointer;
+  }
+  .pp-btn:hover{ opacity:.92; }
+
+  /* Confetti modal scoped */
+  #confettiModal{ z-index:10002; }
+  #confettiModal.modal{
+    position:fixed;inset:0;background:rgba(0,0,0,.4);
+    display:flex;align-items:center;justify-content:center;padding:16px;
+  }
+  #confettiModal .modal-dialog{
+    width:min(820px,100%);
+    background:#fff;border-radius:12px;overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.2)
+  }
+  #confettiModal .modal-h{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:12px 16px;border-bottom:1px solid #eee
+  }
+  #confettiModal .modal-b{ padding:16px;min-height:140px }
+  #confettiModal .modal-f{
+    padding:12px 16px;border-top:1px solid #eee;text-align:right;
+    display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap
+  }
+  #confettiModal .x{background:transparent;border:0;font-size:22px;cursor:pointer}
+  #confettiModal .secondary{padding:10px 14px;border:1px solid #ddd;background:#fff;border-radius:8px;cursor:pointer}
+  #confettiModal .secondary:hover{background:#f7f7f7}
+  
+/* ===== FIX: Pending Center scroll + hard cap ===== */
+#pcCard{
+  display:flex;
+  flex-direction:column;
+}
+
+#pcCardBody{
+  display:flex;
+  flex-direction:column;
+  flex:1;
+  min-height:0;
+}
+
+#pcTableWrap{
+  flex:1;
+  min-height:0;
+  max-height:1000px;
+  overflow-y:auto;
+  overflow-x:auto;
+}
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 <script>
@@ -1862,6 +1815,7 @@ function meHist_renderHistory(semester){
 
   rows.forEach(r=>{
     const tr = document.createElement("tr");
+    /* 7. Added white background wrapper (emoji-bg) around status icon */
     tr.innerHTML = `
       <td><span class="tag">${esc(meHist_rowSemester(r))}</span></td>
       <td>${esc(meHist_rowEventTitle(r))}</td>
@@ -2496,3 +2450,360 @@ function initPendingCenter(activeEvents){
       if (f.event_id && String(f.event_id) !== String(evId)) return false;
       if (f.cat && String(f.cat) !== String(cat)) return false;
       if (f.q){
+        const hay = `${title} ${student} ${comment} ${evId}`.toLowerCase();
+        if (!hay.includes(f.q)) return false;
+      }
+      return true;
+    });
+
+    setStatus(rendered.length ? `${rendered.length} pending request(s)` : `No pending requests`);
+
+    bodyEl.innerHTML = rendered.map((r, idx)=>{
+      const evId = getReqEventId(r);
+      const ev = findEventById(evId);
+      const title = r.event_title || ev?.title || evId || "—";
+      const student = getReqStudent(r) || "—";
+      const hours = getReqHours(r);
+      const comment = getReqComment(r);
+      const cat = normCat(r.category || r.cat || r.event_category || ev?.category || ev?.type || "");
+      const sid = String(r.shift_id ?? r.shiftId ?? "").trim();
+      const sLab = sid ? (shiftLabelById.get(sid) || sid) : "";
+      const sTxt = sLab ? ` · shift: ${esc(sLab)}` : "";
+
+      return `
+        <tr data-idx="${idx}">
+          <td><input class="pcChk" type="checkbox"></td>
+          <td>
+            <div style="font-weight:600;">${esc(title)}</div>
+            <div class="muted small">${esc(cat)} · ${ev?.start ? esc(fmtShortDate(ev.start)) : ""}${sTxt}</div>
+            <div class="muted small">${esc(evId)}</div>
+          </td>
+          <td>${esc(student)}</td>
+          <td>${esc(hours || "")}</td>
+          <td style="white-space:pre-wrap;">${esc(comment)}</td>
+          <td style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="actBtn approve pcApproveOne" type="button">Approve</button>
+            <button class="actBtn deny pcDenyOne" type="button">Deny</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    bodyEl.querySelectorAll(".pcApproveOne").forEach((b, i)=> b.addEventListener("click", ()=> approveOne(i)));
+    bodyEl.querySelectorAll(".pcDenyOne").forEach((b, i)=> b.addEventListener("click", ()=> denyOne(i)));
+    if (allBox) allBox.checked = false;
+  }
+
+  async function loadPending(){
+    setStatus("Loading…");
+    bodyEl.innerHTML = "";
+    const resp = await GET_tryActions(
+      ["pending", "pendingRequests", "pending_requests", "requests_pending", "requests", "attendance_pending"],
+      {}
+    );
+    if (resp && resp.ok === false && (resp.error || resp.message)){
+      const err = resp.error || resp.message || "Failed to load pending requests";
+      setStatus(err);
+      return;
+    }
+    pendingRaw = normalizePending(resp) || [];
+    pendingRaw = pendingRaw.filter(isPendingRow);
+
+    const evIdsToPreload = new Set();
+    pendingRaw.forEach(r=>{
+      const evId = String(r.event_id ?? r.eventId ?? "").trim();
+      if (evId) evIdsToPreload.add(evId);
+    });
+    for (const evId of evIdsToPreload){
+      try{ await loadShiftsForEvent(evId); }catch(_){}
+    }
+    await renderTable();
+  }
+
+  function selectedIndexes(){
+    const rows = [...bodyEl.querySelectorAll("tr")];
+    const idxs = [];
+    rows.forEach((tr, i)=>{
+      const chk = tr.querySelector(".pcChk");
+      if (chk && chk.checked) idxs.push(i);
+    });
+    return idxs;
+  }
+
+  async function doApprove(row){
+    return POST_tryActions(
+      ["approve","approve_request","approverequest","setrequestapproved","set_request_approved","request_approve","attendanceapprove","attendance_approve"],
+      {
+        student_id: getReqStudent(row),
+        event_id: getReqEventId(row),
+        shift_id: row.shift_id ?? row.shiftId ?? null,
+        request_id: row.request_id ?? row.id ?? row.row_id ?? row._id ?? null,
+        notify: true,
+        source: "portal_admin",
+        current_semester: CURRENT_SEMESTER
+      }
+    );
+  }
+  async function doDeny(row){
+    return POST_tryActions(
+      ["deny","deny_request","denyrequest","setrequestdenied","set_request_denied","request_deny","attendancedeny","attendance_deny"],
+      {
+        student_id: getReqStudent(row),
+        event_id: getReqEventId(row),
+        shift_id: row.shift_id ?? row.shiftId ?? null,
+        request_id: row.request_id ?? row.id ?? row.row_id ?? row._id ?? null,
+        notify: true,
+        source: "portal_admin",
+        current_semester: CURRENT_SEMESTER
+      }
+    );
+  }
+
+  async function approveOne(renderIdx){
+    const row = rendered[renderIdx];
+    if (!row) return;
+    setStatus("Approving…");
+    const out = await doApprove(row);
+    if (out && out.ok){
+      openConfetti("Approved", "Request approved.");
+      await loadPending();
+      await refreshMe();
+    } else {
+      const err = (out && (out.error || out.message)) || "Approve failed";
+      showPopup(false, "Approve failed", err);
+      setStatus(err);
+    }
+  }
+
+  async function denyOne(renderIdx){
+    const row = rendered[renderIdx];
+    if (!row) return;
+    setStatus("Denying…");
+    const out = await doDeny(row);
+    if (out && out.ok){
+      openConfetti("Denied", "Request denied.");
+      await loadPending();
+      await refreshMe();
+    } else {
+      const err = (out && (out.error || out.message)) || "Deny failed";
+      showPopup(false, "Deny failed", err);
+      setStatus(err);
+    }
+  }
+
+  async function approveSelected(){
+    const idxs = selectedIndexes();
+    if (!idxs.length){
+      showPopup(false, "Nothing selected", "Select at least one request.");
+      return;
+    }
+    setStatus(`Approving ${idxs.length}…`);
+    for (const i of idxs){
+      const row = rendered[i];
+      if (!row) continue;
+      const out = await doApprove(row);
+      if (!(out && out.ok)){
+        const err = (out && (out.error || out.message)) || "Approve failed mid-batch";
+        showPopup(false, "Batch approve stopped", err);
+        setStatus(err);
+        return;
+      }
+    }
+    openConfetti("Approved", `${idxs.length} request(s) approved.`);
+    await loadPending();
+    await refreshMe();
+  }
+
+  async function denySelected(){
+    const idxs = selectedIndexes();
+    if (!idxs.length){
+      showPopup(false, "Nothing selected", "Select at least one request.");
+      return;
+    }
+    setStatus(`Denying ${idxs.length}…`);
+    for (const i of idxs){
+      const row = rendered[i];
+      if (!row) continue;
+      const out = await doDeny(row);
+      if (!(out && out.ok)){
+        const err = (out && (out.error || out.message)) || "Deny failed mid-batch";
+        showPopup(false, "Batch deny stopped", err);
+        setStatus(err);
+        return;
+      }
+    }
+    openConfetti("Denied", `${idxs.length} request(s) denied.`);
+    await loadPending();
+    await refreshMe();
+  }
+
+  btnRefresh.onclick = loadPending;
+  searchEl && searchEl.addEventListener("input", renderTable);
+  eventSel && eventSel.addEventListener("change", renderTable);
+  catSel && catSel.addEventListener("change", renderTable);
+
+  allBox && allBox.addEventListener("change", ()=>{
+    const on = allBox.checked;
+    bodyEl.querySelectorAll(".pcChk").forEach(chk => chk.checked = on);
+  });
+
+  btnApSel && (btnApSel.onclick = approveSelected);
+  btnDnSel && (btnDnSel.onclick = denySelected);
+
+  loadPending();
+}
+
+/* =========================
+   REQUIREMENTS (Admin)
+   ========================= */
+async function initReqAdmin(){
+  const elDL      = document.getElementById("rq_students");
+  const elSearch = document.getElementById("rq_search");
+  const elLoad    = document.getElementById("rq_load");
+  const elList    = document.getElementById("rq_list");
+  const elStatus = document.getElementById("rq_status");
+  const elSel     = document.getElementById("rq_sel");
+  const btnAll    = document.getElementById("rq_check_all");
+  const btnNone   = document.getElementById("rq_uncheck_all");
+
+  if (!elDL || !elSearch || !elLoad || !elList) return;
+
+  const keys = Object.keys(REQUIREMENT_LABELS);
+  let students = [];
+  let current = null;
+
+  function setStatus(t, isErr){
+    if (!elStatus) return;
+    elStatus.textContent = t || "";
+    elStatus.className = isErr ? "err" : "muted small";
+  }
+
+  setStatus("Loading students…");
+  const s = await GET({ action:"students" });
+  const arr = Array.isArray(s) ? s : (s && Array.isArray(s.students) ? s.students : []);
+  students = (arr || []).map(x => ({
+    student_id: (x.student_id || x.email || "").trim(),
+    email: (x.email || "").trim(),
+    name: (x.name || x.student_name || x.full_name || "").trim()
+  })).filter(x => x.student_id);
+
+  elDL.innerHTML = students.map(st => `<option value="${esc(st.student_id)}">${esc(st.name || st.email || st.student_id)}</option>`).join("");
+  setStatus("Ready. Pick a student and click Load.");
+
+  elLoad.onclick = async ()=>{
+    const input = (elSearch.value || "").trim();
+    if(!input) return setStatus("Enter or select a student email.", true);
+    current = students.find(s => _norm(s.student_id) === _norm(input))
+            || students.find(s => _norm(s.email) === _norm(input))
+            || students.find(s => (s.name||"").toLowerCase().includes(input.toLowerCase()))
+            || { student_id: input, email: input, name: "" };
+    await loadStudent(current.student_id, current.name || current.email || "");
+  };
+
+  btnAll && (btnAll.onclick = ()=> bulkSet(true));
+  btnNone && (btnNone.onclick = ()=> bulkSet(false));
+
+  async function loadStudent(student_id, displayName){
+    setStatus("Loading requirements…");
+    if (elSel){
+      elSel.innerHTML = `<span class="rq-pill">${esc(student_id)}</span>${displayName ? " · "+esc(displayName) : ""}`;
+    }
+    const sum = await GET({ action:"studentsummary", student_id });
+    if(!sum || sum.ok === false){
+      return setStatus("Failed to load: " + ((sum && (sum.error || sum.message)) || "unknown"), true);
+    }
+    const rows = Array.isArray(sum.requirements) ? sum.requirements : [];
+    const have = new Map(rows.map(r => [
+      String(r.requirement_key ?? r.key ?? ""),
+      (String(r.is_checked) === "true" || r.is_checked === true || String(r.is_checked).toLowerCase() === "yes" || r.is_checked === 1)
+    ]));
+
+    elList.innerHTML = keys.map(k=>{
+      const checked = have.get(k) === true;
+      const label = REQUIREMENT_LABELS[k] || k;
+      return `
+        <div class="rq-row" data-key="${esc(k)}">
+          <label class="rq-lbl">
+            <input type="checkbox" ${checked ? "checked" : ""} data-role="rq-cb">
+            <span>${esc(label)}</span>
+          </label>
+          <div class="rq-meta">${checked ? "checked" : "unchecked"}</div>
+        </div>`;
+    }).join("");
+
+    elList.querySelectorAll('input[type="checkbox"][data-role="rq-cb"]').forEach(cb=>{
+      cb.addEventListener("change", async (ev)=>{
+        const row = ev.target.closest(".rq-row");
+        const key = row && row.getAttribute("data-key");
+        if(!key) return;
+        const desired = !!ev.target.checked;
+        setStatus("Saving…");
+        const out = await POST_tryActions(
+          ["setrequirement","set_requirement","requirement_set","update_requirement"],
+          {
+            student_id,
+            requirement_key: key,
+            is_checked: desired,
+            updated_by: "admin",
+            notify: true,
+            source: "portal_admin",
+            current_semester: CURRENT_SEMESTER
+          }
+        );
+        if(!out || !out.ok){
+          ev.target.checked = !desired;
+          const err = (out && (out.error || out.message)) || "Save failed";
+          setStatus(`Save failed for "${key}": ${err}`, true);
+          showPopup(false, "Save failed", `Could not update "${key}".\n${err}`);
+        } else {
+          const meta = row.querySelector(".rq-meta");
+          if (meta) meta.textContent = desired ? "checked" : "unchecked";
+          setStatus(`Saved "${key}" → ${desired ? "checked" : "unchecked"}.`);
+          openConfetti("Saved", `"${key}" was updated.`);
+        }
+      });
+    });
+    setStatus(`Loaded ${keys.length} items.`);
+  }
+
+  async function bulkSet(val){
+    if(!current) return setStatus("Load a student first.", true);
+    const boxes = elList.querySelectorAll('input[type="checkbox"][data-role="rq-cb"]');
+    let okCount=0, failCount=0;
+    setStatus("Bulk saving…");
+    for (const cb of boxes){
+      const row = cb.closest(".rq-row");
+      const key = row && row.getAttribute("data-key");
+      if(!key) continue;
+      if ((cb.checked ? true : false) === val) continue;
+      cb.checked = val;
+      const out = await POST_tryActions(
+        ["setrequirement","set_requirement","requirement_set","update_requirement"],
+        {
+          student_id: current.student_id,
+          requirement_key: key,
+          is_checked: val,
+          updated_by: "admin",
+          notify: true,
+          source: "portal_admin",
+          current_semester: CURRENT_SEMESTER
+        }
+      );
+      if(!out || !out.ok){
+        cb.checked = !val;
+        failCount++;
+      } else {
+        okCount++;
+        const meta = row.querySelector(".rq-meta");
+        if (meta) meta.textContent = val ? "checked" : "unchecked";
+      }
+    }
+    setStatus(`Bulk saved: ${okCount} ok${failCount ? `, ${failCount} failed` : ""}`, !!failCount);
+    if (okCount && failCount === 0){
+      openConfetti("Bulk update", `Updated ${okCount} item(s).`);
+    } else {
+      showPopup(failCount === 0, "Bulk update", `Updated ${okCount} item(s).${failCount ? `\nFailed: ${failCount}` : ""}`);
+    }
+  }
+}
+</script>
