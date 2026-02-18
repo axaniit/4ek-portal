@@ -23,13 +23,12 @@
   body {
     margin: 0;
     padding: 0;
-    /* Restored original system font stack for body/numbers */
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     background: #fff;
     color: #333;
   }
 
-  /* ========= HERO BANNER (From Guide) ========= */
+  /* ========= HERO ========= */
   section.portal-hero{
     background:#F4CA3D !important;        
     background-image:none !important;     
@@ -58,7 +57,7 @@
     margin-bottom: 24px;
   }
 
-  /* Main Container - Restored Spacing */
+  /* Main Container */
   #admin-app { 
     max-width:1100px; 
     margin: 0 auto; 
@@ -69,33 +68,45 @@
   #calendar{ min-height: 640px; }
   #calendar, #calendar * { font-family: inherit; }
 
+  /* Top Header Stats */
   .amb-top{display:flex;justify-content:space-between;align-items:flex-end;margin:8px 0 16px}
   .muted{color:#666}.small{font-size:12px}.h-name{font-weight:600;font-size:18px}
-  
-  /* Restored Number Font Settings */
   .h-big{font-size:40px;font-weight:700;margin-top:4px}
   .hours{text-align:right}
 
-  .top-grid{display:grid;gap:16px;margin:0 0 16px;align-items:stretch}
-  @media (min-width: 980px){ .top-grid{ grid-template-columns: 1fr 1fr; } }
-  .top-grid > .card{ height:100%; display:flex; flex-direction:column; }
-  .top-grid > .card .card-b{ flex:1; min-height:0; }
-
-  .card{border:1px solid #e5e5e5;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.04);overflow:hidden;background:#fff;margin:12px 0}
-  .card-h{padding:12px 16px;border-bottom:1px solid #eee;font-weight:600}
-  .card-b{padding:16px}
-
-  /* HEADERS: Increased to ~20px */
-  .form h4 { 
-    margin:.25rem 0 .5rem; 
-    font-size: 20px; 
-    font-weight: 700; 
+  /* Grid Layout - REMOVED FIXED HEIGHTS TO FIX OVERLAP */
+  .top-grid{
+    display:grid;
+    gap:16px;
+    margin:0 0 16px;
+    align-items:start; /* Changed from stretch to start to prevent forcing height */
+  }
+  @media (min-width: 980px){ 
+    .top-grid{ grid-template-columns: 1fr 1fr; } 
   }
   
+  .card{
+    border:1px solid #e5e5e5;
+    border-radius:12px;
+    box-shadow:0 4px 14px rgba(0,0,0,.04);
+    overflow:hidden;
+    background:#fff;
+    margin:12px 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .card-h{padding:12px 16px;border-bottom:1px solid #eee;font-weight:600}
+  .card-b{
+    padding:16px;
+    flex: 1; /* Allows body to fill space if needed, but not force squash */
+  }
+
+  /* Forms & Inputs */
+  .form h4 { margin:.25rem 0 .5rem; font-size: 20px; font-weight: 700; }
   .form label{display:block;margin:8px 0}
-  .form select, .form input, .form textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px; font-family: inherit;}
+  .form select, .form input, .form textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px; font-family: inherit; box-sizing: border-box;}
   
-  /* STANDARD BUTTONS (Black, All Caps) */
+  /* MAIN BUTTONS (Black, Caps) */
   .form button, #btnReq, #btnSignup {
     margin-top:6px;
     padding:12px 16px;
@@ -107,13 +118,13 @@
     font-family: inherit;
     font-size: 13px; 
     font-weight: 700;
-    text-transform: uppercase; /* ALL CAPS RESTORED */
+    text-transform: uppercase; 
     letter-spacing: 0.5px;
   }
   .form button:hover {opacity:.9}
   .form button:disabled {opacity:.6;cursor:not-allowed}
 
-  /* PENDING REFRESH - Yellow */
+  /* PENDING REFRESH (Yellow) */
   #pcRefresh {
     padding:10px 14px;
     border:0;
@@ -125,7 +136,7 @@
   }
   #pcRefresh:hover { opacity: .9; }
 
-  /* HISTORY REFRESH - Small & White */
+  /* HISTORY REFRESH (Small White) */
   #btnMeRefresh {
     padding: 6px 10px !important;
     font-size: 12px !important;
@@ -136,50 +147,74 @@
     border-radius: 8px;
     cursor: pointer;
     margin: 0;
-    text-transform: none; /* Not caps */
+    text-transform: none;
   }
   #btnMeRefresh:hover { background: #fafafa !important; }
 
-  /* Generic Secondary */
+  /* Secondary Buttons */
   .secondary{padding:8px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer}
   .secondary:hover{background:#fafafa}
 
   .msg{margin-top:8px;font-size:13px}.ok{color:#1a7f37}.err{color:#b00020}
 
+  /* Requirements List */
   .rq-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid #f4f4f4}
   .rq-row:last-child{border-bottom:none}
   .rq-lbl{display:flex;align-items:flex-start;gap:10px}
   .rq-meta{color:#666;font-size:12px;margin-top:2px}
   .rq-pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #e6e6e6;font-size:12px}
 
+  /* Tables */
   .ptable{width:100%;border-collapse:collapse}
   .ptable th,.ptable td{padding:10px 8px;border-bottom:1px solid #eee;text-align:left;vertical-align:middle}
-  
-  /* Zebra Striping */
   .ptable tbody tr:nth-child(odd) { background: #fff; }
   .ptable tbody tr:nth-child(even) { background: #f9f9f9; }
 
-  /* PENDING ACTIONS (Larger, Yellow, Centered) */
+  /* PENDING CENTER ACTIONS (Yellow Buttons + White Badge Emojis) */
   .pc-actions-cell {
     text-align: center;
+    vertical-align: middle;
   }
   .actBtn {
-    padding:8px 14px; /* Larger */
-    border:0;
-    border-radius:8px;
-    cursor:pointer;
-    font-weight: 700;
-    font-size: 13px;
-    margin: 2px 4px;
-    text-transform: uppercase;
+    background-color: var(--ucf-gold);
+    border: none;
+    border-radius: 8px;
+    width: 44px;  /* Larger button size */
+    height: 44px;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    cursor: pointer;
+    margin: 2px 4px;
+    padding: 0;
+    transition: opacity 0.2s;
   }
-  .approve { background:var(--ucf-gold); color:#000; }
-  .deny    { background:var(--ucf-gold); color:#000; }
+  .actBtn:hover { opacity: 0.85; }
   
-  /* Emoji Background Badge (For History) */
+  /* The White Circle Badge */
+  .emoji-badge {
+    background: #fff;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px; /* Icon size */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  /* Admin Comment Input in Table */
+  .admin-reply-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 13px;
+    box-sizing: border-box;
+  }
+
+  /* History Table Status Badge */
   .emoji-bg { 
     background: #fff; 
     border-radius: 50%; 
@@ -190,7 +225,7 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.15); 
   }
 
-  /* Pending Center: make table area scroll vertically + horizontally */
+  /* Scroll areas */
   #pcCardBody{display:flex;flex-direction:column;min-height:0}
   #pcTableWrap{
     flex:1;
@@ -201,7 +236,6 @@
     border-radius:10px;
   }
 
-  /* ===== CREATE/EDIT EVENT: FORCE H-SCROLL ===== */
   .ev-scroll{
     overflow-x:auto;
     overflow-y:hidden;
@@ -211,7 +245,7 @@
   .ev-scroll::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.22); border-radius:999px }
   .ev-scroll::-webkit-scrollbar-track{ background:rgba(0,0,0,.05); border-radius:999px }
 
-  /* ===== SHIFT EDITOR ===== */
+  /* Shift Editor */
   .shift-admin{
     margin-top:12px;
     border:1px solid #eee;
@@ -265,7 +299,7 @@
   }
   .shift-table input[type="checkbox"]{ width:auto; }
 
-  /* ===== HISTORY STYLES ===== */
+  /* History */
   .hist-top{display:grid;gap:10px}
   @media (min-width: 900px){
     .hist-top{ grid-template-columns: 1fr 1fr 1fr; }
@@ -292,7 +326,6 @@
     text-align:left;
     vertical-align:top
   }
-  /* Zebra Striping for History */
   .hist-table tbody tr:nth-child(odd) { background: #fff; }
   .hist-table tbody tr:nth-child(even) { background: #f9f9f9; }
 
@@ -328,7 +361,7 @@
     border-radius:999px
   }
 
-  /* Event modal */
+  /* Modal */
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9999}
   #eventModal .modal-dialog{width:min(920px,100%);background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)}
   #eventModal .modal-h{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #eee}
@@ -345,10 +378,9 @@
   .self-row input{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px}
   .self-btns{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
 
+  /* FullCalendar Overrides */
   .fc, .fc * { pointer-events:auto; }
   .fc-event, .fc-event * { pointer-events:auto !important; }
-
-  /* Toolbar readability */
   .fc .fc-toolbar{
     background:#fff;
     border:1px solid #eee;
@@ -368,15 +400,12 @@
   .fc .fc-button .fc-icon{ color:#111 !important; }
   .fc .fc-button:hover{ background:#f7f7f7 !important; }
   .fc .fc-button:disabled{ opacity:.55 !important; }
-  
   .fc .fc-button-primary:not(:disabled).fc-button-active,
   .fc .fc-button-primary:not(:disabled):active{
     background: rgba(244,202,61,.15) !important;
     border-color: rgba(244,202,61,.45) !important;
     color:#111 !important;
   }
-
-  /* Kill FullCalendar default blue */
   .fc .fc-event,
   .fc .fc-event-main,
   .fc .fc-daygrid-event,
@@ -397,7 +426,6 @@
   .fc-timegrid-event.cat-purple{ border-left: 4px solid var(--ucf-purple)!important;border:1px solid rgba(106,13,173,.30) !important;   background: rgba(106,13,173,.10) !important; }
   .fc-timegrid-event.cat-red   { border-left: 4px solid var(--ucf-red)  !important;  border:1px solid rgba(193,18,31,.30) !important;    background: rgba(193,18,31,.10) !important; }
 
-  /* Student-style popup */
   .pp-wrap{
     position:fixed; inset:0;
     background:rgba(0,0,0,.45);
@@ -434,7 +462,6 @@
   }
   .pp-btn:hover{ opacity:.92; }
 
-  /* Confetti modal scoped */
   #confettiModal{ z-index:10002; }
   #confettiModal.modal{
     position:fixed;inset:0;background:rgba(0,0,0,.4);
@@ -457,27 +484,6 @@
   #confettiModal .x{background:transparent;border:0;font-size:22px;cursor:pointer}
   #confettiModal .secondary{padding:10px 14px;border:1px solid #ddd;background:#fff;border-radius:8px;cursor:pointer}
   #confettiModal .secondary:hover{background:#f7f7f7}
-  
-/* ===== FIX: Pending Center scroll + hard cap ===== */
-#pcCard{
-  display:flex;
-  flex-direction:column;
-}
-
-#pcCardBody{
-  display:flex;
-  flex-direction:column;
-  flex:1;
-  min-height:0;
-}
-
-#pcTableWrap{
-  flex:1;
-  min-height:0;
-  max-height:1000px;
-  overflow-y:auto;
-  overflow-x:auto;
-}
 </style>
 </head>
 <body>
@@ -637,9 +643,10 @@
                 <th style="width:28px"><input type="checkbox" id="pcAll"></th>
                 <th>Event</th>
                 <th>Student</th>
-                <th>Requested hours</th>
+                <th>Requested</th>
                 <th>Comment</th>
-                <th style="min-width:200px;text-align:center;">Actions</th>
+                <th style="min-width:140px;">Admin Comment</th>
+                <th style="min-width:120px;text-align:center;">Actions</th>
               </tr>
             </thead>
             <tbody id="pcBody"></tbody>
@@ -647,8 +654,8 @@
         </div>
 
         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;flex-wrap:wrap;">
-          <button id="pcApproveSel" type="button" class="actBtn approve">✅ Approve selected</button>
-          <button id="pcDenySel" type="button" class="actBtn deny">❌ Deny selected</button>
+          <button id="pcApproveSel" type="button" class="actBtn approve" style="width:auto;padding:8px 14px;">✅ Approve Selected</button>
+          <button id="pcDenySel" type="button" class="actBtn deny" style="width:auto;padding:8px 14px;">❌ Deny Selected</button>
         </div>
       </div>
     </div>
@@ -2564,9 +2571,14 @@ function initPendingCenter(activeEvents){
           <td>${esc(student)}</td>
           <td>${esc(hours || "")}</td>
           <td style="white-space:pre-wrap;">${esc(comment)}</td>
+          <td><input class="admin-reply-input" placeholder="Reply..." type="text"></td>
           <td class="pc-actions-cell">
-            <button class="actBtn approve pcApproveOne" type="button">✅ APPROVE</button>
-            <button class="actBtn deny pcDenyOne" type="button">❌ DENY</button>
+            <button class="actBtn approve pcApproveOne" type="button" title="Approve">
+              <span class="emoji-badge">✅</span>
+            </button>
+            <button class="actBtn deny pcDenyOne" type="button" title="Deny">
+              <span class="emoji-badge">❌</span>
+            </button>
           </td>
         </tr>
       `;
@@ -2613,7 +2625,14 @@ function initPendingCenter(activeEvents){
     return idxs;
   }
 
-  async function doApprove(row){
+  /* Helper to read admin reply from row input */
+  function getAdminReply(renderIdx){
+    const row = bodyEl.querySelector(`tr[data-idx="${renderIdx}"]`);
+    if (!row) return "";
+    return (row.querySelector(".admin-reply-input")?.value || "").trim();
+  }
+
+  async function doApprove(row, reply){
     return POST_tryActions(
       ["approve","approve_request","approverequest","setrequestapproved","set_request_approved","request_approve","attendanceapprove","attendance_approve"],
       {
@@ -2621,13 +2640,14 @@ function initPendingCenter(activeEvents){
         event_id: getReqEventId(row),
         shift_id: row.shift_id ?? row.shiftId ?? null,
         request_id: row.request_id ?? row.id ?? row.row_id ?? row._id ?? null,
+        admin_comment: reply,
         notify: true,
         source: "portal_admin",
         current_semester: CURRENT_SEMESTER
       }
     );
   }
-  async function doDeny(row){
+  async function doDeny(row, reply){
     return POST_tryActions(
       ["deny","deny_request","denyrequest","setrequestdenied","set_request_denied","request_deny","attendancedeny","attendance_deny"],
       {
@@ -2635,6 +2655,7 @@ function initPendingCenter(activeEvents){
         event_id: getReqEventId(row),
         shift_id: row.shift_id ?? row.shiftId ?? null,
         request_id: row.request_id ?? row.id ?? row.row_id ?? row._id ?? null,
+        admin_comment: reply,
         notify: true,
         source: "portal_admin",
         current_semester: CURRENT_SEMESTER
@@ -2646,7 +2667,8 @@ function initPendingCenter(activeEvents){
     const row = rendered[renderIdx];
     if (!row) return;
     setStatus("Approving…");
-    const out = await doApprove(row);
+    const reply = getAdminReply(renderIdx);
+    const out = await doApprove(row, reply);
     if (out && out.ok){
       openConfetti("Approved", "Request approved.");
       await loadPending();
@@ -2662,7 +2684,8 @@ function initPendingCenter(activeEvents){
     const row = rendered[renderIdx];
     if (!row) return;
     setStatus("Denying…");
-    const out = await doDeny(row);
+    const reply = getAdminReply(renderIdx);
+    const out = await doDeny(row, reply);
     if (out && out.ok){
       openConfetti("Denied", "Request denied.");
       await loadPending();
@@ -2684,7 +2707,8 @@ function initPendingCenter(activeEvents){
     for (const i of idxs){
       const row = rendered[i];
       if (!row) continue;
-      const out = await doApprove(row);
+      const reply = getAdminReply(i);
+      const out = await doApprove(row, reply);
       if (!(out && out.ok)){
         const err = (out && (out.error || out.message)) || "Approve failed mid-batch";
         showPopup(false, "Batch approve stopped", err);
@@ -2707,7 +2731,8 @@ function initPendingCenter(activeEvents){
     for (const i of idxs){
       const row = rendered[i];
       if (!row) continue;
-      const out = await doDeny(row);
+      const reply = getAdminReply(i);
+      const out = await doDeny(row, reply);
       if (!(out && out.ok)){
         const err = (out && (out.error || out.message)) || "Deny failed mid-batch";
         showPopup(false, "Batch deny stopped", err);
