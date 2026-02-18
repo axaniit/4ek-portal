@@ -1,6 +1,8 @@
 <meta name="robots" content="noindex, nofollow">
 
 <div id="admin-app" style="max-width:1100px;margin:0 auto;">
+  <div class="hero-band"></div>
+
   <header class="amb-top">
     <div>
       <div class="muted" id="adminGreet">Welcome</div>
@@ -163,8 +165,8 @@
         </div>
 
         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;flex-wrap:wrap;">
-          <button id="pcApproveSel" type="button" class="secondary">Approve selected</button>
-          <button id="pcDenySel" type="button" class="secondary">Deny selected</button>
+          <button id="pcApproveSel" type="button" class="actBtn approve">Approve selected</button>
+          <button id="pcDenySel" type="button" class="actBtn deny">Deny selected</button>
         </div>
       </div>
     </div>
@@ -385,8 +387,24 @@
 <style>
   @import url("https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css");
 
+  :root { 
+    --ucf-gold:#F4CA3D; /* CORRECTED GOLD */
+    --ucf-black:#000; 
+    --ucf-purple:#6A0DAD; 
+    --ucf-red:#C1121F; 
+  }
+
   #calendar{ min-height: 640px; }
   #calendar, #calendar * { font-family: inherit; }
+
+  /* 2. Restored Hero Band Style */
+  .hero-band {
+    background: var(--ucf-gold);
+    height: 12px;
+    width: 100%;
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
 
   .amb-top{display:flex;justify-content:space-between;align-items:flex-end;margin:8px 0 16px}
   .muted{color:#666}.small{font-size:12px}.h-name{font-weight:600;font-size:18px}
@@ -404,11 +422,28 @@
   .form h4{margin:.25rem 0 .5rem}
   .form label{display:block;margin:8px 0}
   .form select, .form input, .form textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px}
-  .form button{margin-top:6px;padding:10px 14px;border:0;background:#111;color:#fff;border-radius:8px;cursor:pointer}
-  .form button:hover{opacity:.9}
-  .form button:disabled{opacity:.6;cursor:not-allowed}
+  
+  /* 5. Buttons: Thicker and Smaller (exclude refresh) */
+  .form button, .btnPrimary, .secondary, .actBtn {
+    margin-top:6px;
+    padding:10px 14px;
+    border:0;
+    border-radius:8px;
+    cursor:pointer;
+    font-size: 13px; /* Smaller */
+    font-weight: 600; /* Thicker */
+  }
+  
+  /* Refresh buttons - keep default size if preferred, or inherit but ensure weight */
+  #btnMeRefresh, #pcRefresh {
+    font-size: inherit; 
+    font-weight: normal; 
+  }
 
-  .btnPrimary{padding:10px 14px;border:0;background:#111;color:#fff;border-radius:8px;cursor:pointer}
+  .form button, .btnPrimary { background:#111;color:#fff; }
+  .form button:hover, .btnPrimary:hover {opacity:.9}
+  .form button:disabled, .btnPrimary:disabled {opacity:.6;cursor:not-allowed}
+
   .secondary{padding:8px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer}
   .secondary:hover{background:#fafafa}
 
@@ -422,10 +457,26 @@
 
   .ptable{width:100%;border-collapse:collapse}
   .ptable th,.ptable td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
+  
+  /* 4. Zebra Striping (Alternating Grey/White) */
+  .ptable tbody tr:nth-child(odd) { background: #fff; }
+  .ptable tbody tr:nth-child(even) { background: #f9f9f9; }
+
   .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #e6e6e6;font-size:12px}
   .actBtn{padding:6px 10px;border:0;border-radius:8px;cursor:pointer}
-  .approve{background:#0f7b3d;color:#fff}
-  .deny{background:#b00020;color:#fff}
+
+  /* 6. Approve/Deny Buttons: Yellow with Black Text */
+  .approve { background:var(--ucf-gold); color:#000; }
+  .deny    { background:var(--ucf-gold); color:#000; }
+  
+  /* 7. Emoji Background Badge */
+  .emoji-bg { 
+    background: #fff; 
+    border-radius: 50%; 
+    padding: 3px 5px; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15); 
+    display: inline-block;
+  }
 
   /* Pending Center: make table area scroll vertically + horizontally */
   #pcCardBody{display:flex;flex-direction:column;min-height:0}
@@ -528,6 +579,10 @@
     text-align:left;
     vertical-align:top
   }
+  /* 4. Zebra Striping for History */
+  .hist-table tbody tr:nth-child(odd) { background: #fff; }
+  .hist-table tbody tr:nth-child(even) { background: #f9f9f9; }
+
   .hist-table th{
     font-size:12px;
     color:#666;
@@ -600,10 +655,12 @@
   .fc .fc-button .fc-icon{ color:#111 !important; }
   .fc .fc-button:hover{ background:#f7f7f7 !important; }
   .fc .fc-button:disabled{ opacity:.55 !important; }
+  
+  /* Update calendar active state to correct Gold */
   .fc .fc-button-primary:not(:disabled).fc-button-active,
   .fc .fc-button-primary:not(:disabled):active{
-    background: rgba(201,162,39,.15) !important;
-    border-color: rgba(201,162,39,.45) !important;
+    background: rgba(244,202,61,.15) !important;
+    border-color: rgba(244,202,61,.45) !important;
     color:#111 !important;
   }
 
@@ -617,15 +674,14 @@
   }
   .fc .fc-list-event:hover td{ background: rgba(0,0,0,.03) !important; }
 
-  :root { --ucf-gold:#C9A227; --ucf-black:#000; --ucf-purple:#6A0DAD; --ucf-red:#C1121F; }
-
   .cat-gold  .fc-daygrid-event-dot, .cat-gold  .fc-list-event-dot { border-color:var(--ucf-gold) !important; background:var(--ucf-gold) !important; }
   .cat-black .fc-daygrid-event-dot, .cat-black .fc-list-event-dot { border-color:var(--ucf-black)!important; background:var(--ucf-black)!important; }
   .cat-purple .fc-daygrid-event-dot, .cat-purple .fc-list-event-dot { border-color:var(--ucf-purple)!important; background:var(--ucf-purple)!important; }
   .cat-red   .fc-daygrid-event-dot, .cat-red   .fc-list-event-dot { border-color:var(--ucf-red)  !important; background:var(--ucf-red)  !important; }
 
   .fc-timegrid-event{ border-radius:10px !important; overflow:hidden; }
-  .fc-timegrid-event.cat-gold  { border-left: 4px solid var(--ucf-gold) !important;  border:1px solid rgba(201,162,39,.35) !important; background: rgba(201,162,39,.10) !important; }
+  /* Updated RGB for new gold approx 244,202,61 */
+  .fc-timegrid-event.cat-gold  { border-left: 4px solid var(--ucf-gold) !important;  border:1px solid rgba(244,202,61,.35) !important; background: rgba(244,202,61,.10) !important; }
   .fc-timegrid-event.cat-black { border-left: 4px solid var(--ucf-black)!important; border:1px solid rgba(0,0,0,.25) !important;     background: rgba(0,0,0,.06) !important; }
   .fc-timegrid-event.cat-purple{ border-left: 4px solid var(--ucf-purple)!important;border:1px solid rgba(106,13,173,.30) !important;   background: rgba(106,13,173,.10) !important; }
   .fc-timegrid-event.cat-red   { border-left: 4px solid var(--ucf-red)  !important;  border:1px solid rgba(193,18,31,.30) !important;    background: rgba(193,18,31,.10) !important; }
@@ -690,6 +746,7 @@
   #confettiModal .x{background:transparent;border:0;font-size:22px;cursor:pointer}
   #confettiModal .secondary{padding:10px 14px;border:1px solid #ddd;background:#fff;border-radius:8px;cursor:pointer}
   #confettiModal .secondary:hover{background:#f7f7f7}
+  
 /* ===== FIX: Pending Center scroll + hard cap ===== */
 #pcCard{
   display:flex;
@@ -710,8 +767,6 @@
   overflow-y:auto;
   overflow-x:auto;
 }
-
-
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
@@ -764,7 +819,6 @@ async function POST(action, payload){
   try { return JSON.parse(t); } catch { return { ok:false, error:"Non-JSON response", body:t }; }
 }
 
-/* Try multiple GET action names (helps when Apps Script names differ) */
 async function GET_tryActions(actions, params){
   let last = null;
   for (const act of actions){
@@ -778,7 +832,6 @@ async function GET_tryActions(actions, params){
   return last || { ok:false, error:"No matching GET action worked" };
 }
 
-/* Try multiple POST action names (helps when Apps Script names differ) */
 async function POST_tryActions(actions, payload){
   let last = null;
   for (const act of actions){
@@ -792,12 +845,14 @@ async function POST_tryActions(actions, payload){
 function fmtDate(dt){
   try{
     const d = new Date(dt);
+    if(isNaN(d)) return String(dt);
     return d.toLocaleString([], { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
   }catch(_){ return String(dt); }
 }
 function fmtShortDate(dt){
   try{
     const d = new Date(dt);
+    if(isNaN(d)) return String(dt);
     return d.toLocaleDateString([], { year:"numeric", month:"short", day:"numeric" });
   }catch(_){ return String(dt); }
 }
@@ -1036,27 +1091,39 @@ function isActiveEvent(ev){
   return String(v || "").toLowerCase() === "true";
 }
 
-/* ===== SHIFTS (cache + UI) — FIXED + HARDENED ===== */
-const shiftsCacheByEvent = new Map();       // event_id -> array of shifts
-const shiftMapById = new Map();            // shift_id -> shift object
-const shiftLabelById = new Map();          // shift_id -> pretty label (for display)
+/* ===== SHIFTS (cache + UI) ===== */
+const shiftsCacheByEvent = new Map();
+const shiftMapById = new Map();
+const shiftLabelById = new Map();
 
-/** Normalize whatever the script returns into a plain shift array */
+function shiftLabel(s){
+  if (!s) return "";
+  const title = s.title || s.name || "Shift";
+  const start = s.start || s.shift_start || s.start_local;
+  const end   = s.end   || s.shift_end   || s.end_local;
+  
+  if (!start) return title;
+  
+  try{
+    const d1 = new Date(start);
+    const d2 = end ? new Date(end) : null;
+    const t1 = d1.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+    const t2 = d2 ? d2.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}) : "";
+    return `${title} (${t1}${t2 ? "–"+t2 : ""})`;
+  } catch(_){ return title; }
+}
+
 function normalizeShiftsResp(resp){
   if (!resp) return [];
   if (Array.isArray(resp)) return resp;
-
   if (Array.isArray(resp.shifts)) return resp.shifts;
   if (Array.isArray(resp.rows)) return resp.rows;
   if (Array.isArray(resp.data)) return resp.data;
-
   if (resp.data && Array.isArray(resp.data.shifts)) return resp.data.shifts;
   if (resp.result && Array.isArray(resp.result.shifts)) return resp.result.shifts;
-
   return [];
 }
 
-/** Try to pull shifts off the event object itself if no endpoint exists */
 function shiftsFromEventObject(eventId){
   const evId = String(eventId || "").trim();
   if (!evId) return [];
@@ -1064,14 +1131,10 @@ function shiftsFromEventObject(eventId){
   const ev = (eventsCache || []).find(e => String(e.event_id || e.id || "").trim() === evId) || null;
   if (!ev) return [];
 
-  // Common shapes people store:
-  // ev.shifts = [...] or ev.shifts_json = "[...]"
   let raw = ev.shifts ?? ev.shift_list ?? ev.shiftList ?? ev.shifts_data ?? ev.shiftsData ?? null;
-
   if (!raw && typeof ev.shifts_json === "string") raw = ev.shifts_json;
   if (!raw && typeof ev.shiftsJson === "string") raw = ev.shiftsJson;
 
-  // If it's a JSON string, parse it
   if (typeof raw === "string"){
     const s = raw.trim();
     if (!s) return [];
@@ -1080,7 +1143,6 @@ function shiftsFromEventObject(eventId){
 
   if (!Array.isArray(raw)) return [];
 
-  // Coerce into shift objects
   return raw.map((s, i)=>({
     ...s,
     shift_id: String(s.shift_id ?? s.shiftId ?? s.id ?? `${evId}_shift_${i+1}`).trim(),
@@ -1088,30 +1150,19 @@ function shiftsFromEventObject(eventId){
   })).filter(s=>s.shift_id);
 }
 
-/** Load shifts for event, with aggressive fallback action names + event-object fallback */
 async function loadShiftsForEvent(eventId){
   const evId = String(eventId || "").trim();
   if (!evId) return [];
 
   if (shiftsCacheByEvent.has(evId)) return shiftsCacheByEvent.get(evId) || [];
 
-  // 1) Try server endpoints
   const resp = await GET_tryActions(
-    [
-      "shifts",
-      "eventshifts",
-      "event_shifts",
-      "getshifts",
-      "get_shifts",
-      "shifts_by_event",
-      "shiftsByEvent"
-    ],
+    [ "shifts", "eventshifts", "event_shifts", "getshifts", "get_shifts", "shifts_by_event", "shiftsByEvent" ],
     { event_id: evId }
   );
 
   let list = normalizeShiftsResp(resp);
 
-  // 2) If server gave nothing, fall back to shifts embedded on the event object
   if (!list || !list.length){
     list = shiftsFromEventObject(evId);
   }
@@ -1131,15 +1182,11 @@ async function loadShiftsForEvent(eventId){
   return cleaned;
 }
 
-
-
-/** does event require a shift selection? */
 function mustPickShiftForEvent(eventId){
   const ev = (eventsCache || []).find(e => String(e.event_id||"").trim() === String(eventId||"").trim()) || null;
   return isTrue(ev?.shifts_required) === true;
 }
 
-/** Populate a shift dropdown for a given prefix (req/su) */
 async function setShiftUI(prefix, eventId){
   const wrap = document.getElementById(prefix + "ShiftWrap");
   const sel  = document.getElementById(prefix + "Shift");
@@ -1155,10 +1202,8 @@ async function setShiftUI(prefix, eventId){
     return;
   }
 
-  // Always attempt load
   const shifts = await loadShiftsForEvent(evId);
 
-  // If no shifts, hide UI
   if (!shifts.length){
     wrap.style.display = "none";
     return;
@@ -1167,8 +1212,6 @@ async function setShiftUI(prefix, eventId){
   wrap.style.display = "block";
 
   const required = mustPickShiftForEvent(evId);
-
-  // placeholder option
   if (required){
     sel.appendChild(new Option("Select a shift…", ""));
   } else {
@@ -1186,7 +1229,6 @@ async function setShiftUI(prefix, eventId){
   }
 }
 
-/** Modal shift UI */
 async function setModalShiftUI(eventId){
   const wrap = document.getElementById("mShiftWrap");
   const sel  = document.getElementById("mShift");
@@ -1229,7 +1271,6 @@ async function setModalShiftUI(eventId){
   }
 }
 
-/** Get selected shift (req/su) */
 function getSelectedShift(prefix){
   const wrap = document.getElementById(prefix + "ShiftWrap");
   const sel  = document.getElementById(prefix + "Shift");
@@ -1238,7 +1279,6 @@ function getSelectedShift(prefix){
   return v || null;
 }
 
-/** Get selected shift from modal */
 function modalSelectedShift(){
   const wrap = document.getElementById("mShiftWrap");
   const sel  = document.getElementById("mShift");
@@ -1246,35 +1286,6 @@ function modalSelectedShift(){
   const v = String(sel.value || "").trim();
   return v || null;
 }
-
-/** Helper: attach extra shift fields to a payload so Apps Script can write them */
-function attachShiftToPayload(payload, shiftId){
-  const sid = String(shiftId || "").trim();
-  if (!sid){
-    // also send explicit empties so sheet columns can be cleared if you want
-    return { ...payload, shift_id:"", shiftId:"", shift:"", shift_label:"", shift_start:"", shift_end:"" };
-  }
-
-  const s = shiftMapById.get(sid) || null;
-  const label = shiftLabelById.get(sid) || (s ? shiftLabel(s) : sid);
-
-  const start = s?.start || s?.shift_start || "";
-  const end   = s?.end   || s?.shift_end   || "";
-
-  return {
-    ...payload,
-    // send in multiple keys so your backend catches at least one
-    shift_id: sid,
-    shiftId: sid,
-    shift: sid,
-    shift_label: label,
-    shiftLabel: label,
-    shift_start: start,
-    shift_end: end
-  };
-}
-
-
 
 /* ===== SHIFT EDITOR (Create/Edit) ===== */
 let _shiftEditorWired = false;
@@ -1314,6 +1325,8 @@ function wireShiftEditor(){
   setVisible(false);
 }
 
+function makeAutoShiftId(prefix, idx){ return `${prefix}_shift_${idx}_${Date.now()}`; }
+
 function addShiftRow(data){
   const tbody = document.getElementById("ev_shiftsBody");
   if (!tbody) return;
@@ -1324,11 +1337,10 @@ function addShiftRow(data){
   const cap   = (data?.capacity != null && data?.capacity !== "") ? Number(data.capacity) : 0;
   const active = (data?.active == null) ? true : isTrue(data.active);
 
-  // ✅ preserve existing shift_id when editing
   const sid = String(data?.shift_id ?? data?.shiftId ?? data?.id ?? "").trim();
 
   const tr = document.createElement("tr");
-  tr.dataset.shiftId = sid; // store on row (blank for brand-new shift)
+  tr.dataset.shiftId = sid; 
 
   tr.innerHTML = `
     <td><input type="text" data-k="title" placeholder="e.g., Setup / Check-in" value="${esc(title)}"></td>
@@ -1350,7 +1362,6 @@ function addShiftRow(data){
   const st = document.getElementById("ev_shiftStatus");
   if (st) st.textContent = "Editing shifts…";
 }
-
 
 function setShiftEditorFromEvent(eventId, shifts, shiftsRequired){
   const has = document.getElementById("ev_hasShifts");
@@ -1404,7 +1415,6 @@ function readShiftEditor(){
     const any = (String(title).trim() || startLocal || endLocal || (Number(capacity)||0) > 0);
     if (!any) return null;
 
-    // ✅ Keep existing shift_id if present, else stable auto
     let sid = String(tr.dataset.shiftId || "").trim();
     if (!sid){
       sid = makeAutoShiftId(evId || "EVT", autoIdx);
@@ -1423,7 +1433,6 @@ function readShiftEditor(){
 
   return { enabled:true, required, shifts, removeAll: !!_shiftEditorRemoveAllFlag };
 }
-
 
 function clearShiftEditorUI(){
   const has = document.getElementById("ev_hasShifts");
@@ -1450,7 +1459,6 @@ let eventsCache = [];
 let activeEventsCache = [];
 let calendarInstance = null;
 
-/* ===== Event ID auto-fill ===== */
 function nextEventIdFromCache(){
   const ids = (eventsCache || [])
     .map(ev => String(ev?.event_id ?? ev?.id ?? ev?.eventId ?? "").trim())
@@ -1491,7 +1499,7 @@ function autofillEventIdIfEmpty(){
   el.value = nextEventIdFromCache();
 }
 
-/* ===== BOOT (WRAPPED) ===== */
+/* ===== BOOT ===== */
 (async function(){
   try{
     const meHoursSub = document.getElementById("meHoursSub");
@@ -1562,10 +1570,6 @@ function autofillEventIdIfEmpty(){
     showPopup(false, "Startup error", String(err?.message || err));
   }
 })();
-
-
-
-
 
 /* ===== Quick actions ===== */
 function fillEventSelects(activeEvents){
@@ -1641,13 +1645,9 @@ async function submitMyRequest(e){
     {
       student_id: currentAdminId,
       event_id: evId,
-
-      // ✅ do NOT send "" — send null (or omit)
       shift_id: shiftId,
-      // ✅ compatibility aliases (harmless if ignored)
       shift: shiftId,
       shiftId: shiftId,
-
       requested_hours: requestedHours,
       comment: (document.getElementById("reqComment").value || "").trim(),
       notify: true,
@@ -1658,12 +1658,7 @@ async function submitMyRequest(e){
 
   if (out && out.ok){
     toast(msgEl, true, "Request submitted!");
-    openConfetti(
-      "Request submitted",
-      requestedHours == null
-        ? "Your attendance request was submitted."
-        : `Your attendance request was submitted.\nRequested hours: ${requestedHours}`
-    );
+    openConfetti("Request submitted", requestedHours == null ? "Your attendance request was submitted." : `Your attendance request was submitted.\nRequested hours: ${requestedHours}`);
     document.getElementById("reqHours").value = "";
     document.getElementById("reqComment").value = "";
     await refreshMe();
@@ -1672,9 +1667,7 @@ async function submitMyRequest(e){
     const err = (out && (out.error || out.message)) || "Request failed";
     toast(msgEl, false, err);
     showPopup(false, "Request failed", err);
-    if (out && out.body) console.log("POST body:", out.body);
   }
-
   btn.disabled = false;
 }
 
@@ -1709,13 +1702,9 @@ async function submitMySignup(e){
     {
       student_id: currentAdminId,
       event_id: evId,
-
-      // ✅ do NOT send "" — send null (or omit)
       shift_id: shiftId,
-      // ✅ compatibility aliases
       shift: shiftId,
       shiftId: shiftId,
-
       created_by: "admin",
       requested_hours: requestedHours,
       comment: (document.getElementById("suComment").value || "").trim(),
@@ -1728,12 +1717,7 @@ async function submitMySignup(e){
   if (out && out.ok){
     const statusTxt = out.status === "accepted" ? "confirmed ✅" : "submitted ✅";
     toast(msgEl, true, `Sign-up ${statusTxt}`);
-    openConfetti(
-      "Signed up",
-      requestedHours == null
-        ? `You are ${statusTxt}.`
-        : `You are ${statusTxt}.\nRequested hours: ${requestedHours}`
-    );
+    openConfetti("Signed up", requestedHours == null ? `You are ${statusTxt}.` : `You are ${statusTxt}.\nRequested hours: ${requestedHours}`);
     document.getElementById("suHours").value = "";
     document.getElementById("suComment").value = "";
     await refreshMe();
@@ -1741,13 +1725,9 @@ async function submitMySignup(e){
     const err = (out && (out.error || out.message)) || "Sign-up failed";
     toast(msgEl, false, err);
     showPopup(false, "Sign-up failed", err);
-    if (out && out.body) console.log("POST body:", out.body);
   }
-
   btn.disabled = false;
 }
-
-
 
 /* =========================
    MY HISTORY
@@ -1760,10 +1740,6 @@ let _meHistWired = false;
 function meHist_cleanSemesterLabel(x){
   const s = String(x || "").trim();
   return s || "Unknown";
-}
-function meHist_hoursNum(v){
-  const n = Number(v);
-  return isFinite(n) ? n : 0;
 }
 function meHist_normalizeStatus(raw){
   const s = String(raw ?? "").trim().toLowerCase();
@@ -1794,12 +1770,12 @@ function meHist_rowEventStart(row){
 }
 function meHist_rowEventDateForDisplay(row){
   const dt = meHist_rowEventStart(row);
-  return dt ? new Date(dt).toLocaleDateString() : "—";
+  return dt ? fmtDate(dt) : "—";
 }
 function meHist_rowHoursForDisplay(row){
   return row._type === "attendance"
-    ? meHist_hoursNum(row.hours_awarded ?? row.hours ?? row.awarded_hours ?? 0)
-    : meHist_hoursNum(row.requested_hours ?? row.hours_requested ?? row.hours ?? 0);
+    ? hoursNum(row.hours_awarded ?? row.hours ?? row.awarded_hours ?? 0)
+    : hoursNum(row.requested_hours ?? row.hours_requested ?? row.hours ?? 0);
 }
 function meHist_rowComment(row){
   return row.comments || row.comment || row.notes || "";
@@ -1817,16 +1793,22 @@ function meHist_renderHistory(semester){
     return;
   }
 
-  rows.sort((a,b)=>Date.parse(meHist_rowEventStart(b)||0)-Date.parse(meHist_rowEventStart(a)||0));
+  // FIX: Safeguard sort against NaN dates
+  rows.sort((a,b)=> {
+    const da = Date.parse(meHist_rowEventStart(a) || "");
+    const db = Date.parse(meHist_rowEventStart(b) || "");
+    return (isNaN(db)?0:db) - (isNaN(da)?0:da);
+  });
 
   rows.forEach(r=>{
     const tr = document.createElement("tr");
+    /* 7. Added white background wrapper (emoji-bg) around status icon */
     tr.innerHTML = `
       <td><span class="tag">${esc(meHist_rowSemester(r))}</span></td>
       <td>${esc(meHist_rowEventTitle(r))}</td>
       <td>${esc(meHist_rowEventDateForDisplay(r))}</td>
       <td>${esc(String(meHist_rowHoursForDisplay(r)))}</td>
-      <td>${esc(meHist_statusIconForRow(r))}</td>
+      <td><span class="emoji-bg">${esc(meHist_statusIconForRow(r))}</span></td>
       <td>${esc(meHist_rowComment(r))}</td>
     `;
     tbody.appendChild(tr);
@@ -1842,7 +1824,6 @@ async function meHist_getMyRequests(){
   if (resp && resp.ok === false && (resp.error || resp.message)){
     return { ok:false, error: resp.error || resp.message || "Failed to load requests", rows: [] };
   }
-
   const rows = normalizePending(resp);
   return { ok:true, rows: rows || [] };
 }
@@ -1884,11 +1865,11 @@ async function refreshMe(){
   _meHistFull = [..._meHistAttendance, ..._meHistRequests];
 
   const semAtt = _meHistAttendance.filter(r => meHist_rowSemester(r) === CURRENT_SEMESTER);
-  const semTotal = semAtt.reduce((acc,r)=> acc + meHist_hoursNum(r.hours_awarded ?? r.hours ?? r.awarded_hours ?? 0), 0);
+  const semTotal = semAtt.reduce((acc,r)=> acc + hoursNum(r.hours_awarded ?? r.hours ?? r.awarded_hours ?? 0), 0);
   document.getElementById("meHoursTotal").textContent = (Math.round(semTotal*100)/100).toString();
   document.getElementById("meHoursSub").textContent = CURRENT_SEMESTER;
 
-  const allTotal = _meHistAttendance.reduce((acc,r)=> acc + meHist_hoursNum(r.hours_awarded ?? r.hours ?? r.awarded_hours ?? 0), 0);
+  const allTotal = _meHistAttendance.reduce((acc,r)=> acc + hoursNum(r.hours_awarded ?? r.hours ?? r.awarded_hours ?? 0), 0);
 
   const semSet = new Set((_meHistFull || []).map(meHist_rowSemester));
   semSet.add(CURRENT_SEMESTER);
@@ -1919,7 +1900,7 @@ async function refreshMe(){
       sel.addEventListener("change", ()=>{
         const chosen = sel.value;
         const semApproved = _meHistAttendance.filter(r => meHist_rowSemester(r) === chosen);
-        const semTot = semApproved.reduce((acc,r)=> acc + meHist_hoursNum(r.hours_awarded ?? r.hours ?? r.awarded_hours ?? 0), 0);
+        const semTot = semApproved.reduce((acc,r)=> acc + hoursNum(r.hours_awarded ?? r.hours ?? r.awarded_hours ?? 0), 0);
         document.getElementById("histSemTotal").textContent = (Math.round(semTot*100)/100).toString();
         document.getElementById("histAllTotal").textContent = (Math.round(allTotal*100)/100).toString();
         meHist_renderHistory(chosen);
@@ -1929,7 +1910,7 @@ async function refreshMe(){
 
     const chosen = sel.value || CURRENT_SEMESTER;
     const chosenApproved = _meHistAttendance.filter(r => meHist_rowSemester(r) === chosen);
-    const chosenTot = chosenApproved.reduce((acc,r)=> acc + meHist_hoursNum(r.hours_awarded ?? r.hours ?? r.awarded_hours ?? 0), 0);
+    const chosenTot = chosenApproved.reduce((acc,r)=> acc + hoursNum(r.hours_awarded ?? r.hours ?? r.awarded_hours ?? 0), 0);
 
     document.getElementById("histSemTotal").textContent = (Math.round(chosenTot*100)/100).toString();
     document.getElementById("histAllTotal").textContent = (Math.round(allTotal*100)/100).toString();
@@ -1985,43 +1966,30 @@ function buildCalendar(events){
     height: "auto",
     headerToolbar: { left:"prev,next today", center:"title", right: desiredRight },
     events: fcEvents,
-
     views: {
       dayGridMonth: { eventDisplay: "list-item" },
       listWeek:     { eventDisplay: "auto" },
       timeGridWeek: { eventDisplay: "block" },
       timeGridDay:  { eventDisplay: "block" }
     },
-
     nowIndicator: true,
     navLinks: true,
     dayMaxEvents: true,
-
     eventClassNames: (arg) => [catClass(arg?.event?.extendedProps?.category)],
     eventDidMount: (arg) => { try { arg.el.classList.add(catClass(arg.event.extendedProps?.category)); } catch(_) {} },
-
     windowResize: () => {
       try{
         const v = isMobileCal() ? "listWeek" : "dayGridMonth";
-        const r = isMobileCal()
-          ? "listWeek,dayGridMonth"
-          : "dayGridMonth,timeGridWeek,timeGridDay,listWeek";
+        const r = isMobileCal() ? "listWeek,dayGridMonth" : "dayGridMonth,timeGridWeek,timeGridDay,listWeek";
         if (calendarInstance.view.type !== v) calendarInstance.changeView(v);
         calendarInstance.setOption("headerToolbar", { left:"prev,next today", center:"title", right:r });
       }catch(_){}
     },
-
     eventClick: async (info) => {
       const ev = info.event.extendedProps || {};
       const eventId = info.event.id;
-
-      const roster = await GET_tryActions(
-        ["eventroster","roster","event_roster","getroster","get_roster"],
-        { event_id: eventId }
-      );
-
+      const roster = await GET_tryActions(["eventroster","roster","event_roster","getroster","get_roster"], { event_id: eventId });
       await loadShiftsForEvent(eventId);
-
       openModal({
         ev,
         roster,
@@ -2031,11 +1999,9 @@ function buildCalendar(events){
       });
     }
   });
-
   calendarInstance.render();
 }
 
-/* Roster extractors */
 function extractApproved(roster){
   if (!roster) return [];
   if (Array.isArray(roster.approved)) return roster.approved;
@@ -2078,7 +2044,6 @@ function openModal(data){
   const limit = Number(ev.signup_capacity || 0);
   capEl.textContent = limit > 0 ? `Sign-ups: ${sAcc.length} / ${limit}` : `Sign-ups: ${sAcc.length} (no cap)`;
 
-  /* FIX: populate modal shifts reliably */
   setModalShiftUI(_modalEventId);
 
   document.getElementById("mMyHours").value = "";
@@ -2162,13 +2127,6 @@ function closeModal(){ document.getElementById("eventModal").style.display = "no
 document.getElementById("mClose").addEventListener("click", closeModal);
 document.getElementById("closeBtn").addEventListener("click", closeModal);
 
-function modalSelectedShift(){
-  const wrap = document.getElementById("mShiftWrap");
-  const sel  = document.getElementById("mShift");
-  if (!wrap || wrap.style.display === "none" || !sel) return null;
-  return String(sel.value || "").trim() || null;
-}
-
 async function modalSignupMe(eventId){
   const st = document.getElementById("mMyStatus");
   if (!eventId){ st.textContent = "No event id."; return; }
@@ -2181,7 +2139,6 @@ async function modalSignupMe(eventId){
   }
 
   st.textContent = "Submitting…";
-
   const requestedHours = safeHours(document.getElementById("mMyHours").value);
   const comment = (document.getElementById("mMyComment").value || "").trim();
 
@@ -2201,12 +2158,7 @@ async function modalSignupMe(eventId){
   );
 
   if (out && out.ok){
-    openConfetti(
-      "Signed up",
-      requestedHours == null
-        ? "You have been added to the sign-up list."
-        : `You have been added to the sign-up list.\nRequested hours: ${requestedHours}`
-    );
+    openConfetti("Signed up", requestedHours == null ? "You have been added to the sign-up list." : `You have been added to the sign-up list.\nRequested hours: ${requestedHours}`);
     st.textContent = "Done.";
     try{ document.getElementById("pcRefresh")?.click(); }catch(_){}
     await refreshMe();
@@ -2214,7 +2166,6 @@ async function modalSignupMe(eventId){
     const err = (out && (out.error || out.message)) || "Sign-up failed";
     showPopup(false, "Sign-up failed", err);
     st.textContent = "Failed.";
-    if (out && out.body) console.log("POST body:", out.body);
   }
 }
 
@@ -2230,7 +2181,6 @@ async function modalRequestMe(eventId){
   }
 
   st.textContent = "Submitting…";
-
   const requestedHours = safeHours(document.getElementById("mMyHours").value);
   const comment = (document.getElementById("mMyComment").value || "").trim();
 
@@ -2249,12 +2199,7 @@ async function modalRequestMe(eventId){
   );
 
   if (out && out.ok){
-    openConfetti(
-      "Request submitted",
-      requestedHours == null
-        ? "Your attendance request was submitted."
-        : `Your attendance request was submitted.\nRequested hours: ${requestedHours}`
-    );
+    openConfetti("Request submitted", requestedHours == null ? "Your attendance request was submitted." : `Your attendance request was submitted.\nRequested hours: ${requestedHours}`);
     st.textContent = "Done.";
     try{ document.getElementById("pcRefresh")?.click(); }catch(_){}
     await refreshMe();
@@ -2262,7 +2207,6 @@ async function modalRequestMe(eventId){
     const err = (out && (out.error || out.message)) || "Request failed";
     showPopup(false, "Request failed", err);
     st.textContent = "Failed.";
-    if (out && out.body) console.log("POST body:", out.body);
   }
 }
 
@@ -2271,47 +2215,41 @@ async function saveEvent(){
   const msgEl = document.getElementById('evMsg');
   function setMsg(ok, text){ msgEl.className = "msg " + (ok ? "ok" : "err"); msgEl.textContent = text || ""; }
 
-  const shiftPack = readShiftEditor(); // {enabled, required, shifts, removeAll}
+  const shiftPack = readShiftEditor(); 
 
   const payload = {
-  event_id: (document.getElementById('ev_id').value || '').trim(),
-  title: (document.getElementById('ev_title').value || '').trim(),
-  category: document.getElementById('ev_cat').value || 'Events',
-  start: document.getElementById('ev_start').value || '',
-  end: document.getElementById('ev_end').value || '',
-  location: (document.getElementById('ev_loc').value || '').trim(),
-  hours_value: Number(document.getElementById('ev_hours').value || 0),
-  signup_capacity: Number(document.getElementById('ev_cap').value || 0),
-  notes: (document.getElementById('ev_notes').value || '').trim(),
-  active: true,
+    event_id: (document.getElementById('ev_id').value || '').trim(),
+    title: (document.getElementById('ev_title').value || '').trim(),
+    category: document.getElementById('ev_cat').value || 'Events',
+    start: document.getElementById('ev_start').value || '',
+    end: document.getElementById('ev_end').value || '',
+    location: (document.getElementById('ev_loc').value || '').trim(),
+    hours_value: Number(document.getElementById('ev_hours').value || 0),
+    signup_capacity: Number(document.getElementById('ev_cap').value || 0),
+    notes: (document.getElementById('ev_notes').value || '').trim(),
+    active: true,
+    shifts_enabled: !!shiftPack.enabled,
+    shifts_required: shiftPack.enabled ? !!shiftPack.required : false,
+    shifts_remove_all: !!shiftPack.removeAll,
+    shifts: Array.isArray(shiftPack.shifts) ? shiftPack.shifts : [],
+    notify: true,
+    source: "portal_admin",
+    current_semester: CURRENT_SEMESTER
+  };
 
-  /* ===== SHIFTS (sent ONLY via upsertevent) ===== */
-  shifts_enabled: !!shiftPack.enabled,
-  shifts_required: shiftPack.enabled ? !!shiftPack.required : false,
-  shifts_remove_all: !!shiftPack.removeAll,
-  shifts: Array.isArray(shiftPack.shifts) ? shiftPack.shifts : [],
-
-  notify: true,
-  source: "portal_admin",
-  current_semester: CURRENT_SEMESTER
-};
-
-if (!payload.event_id || !payload.title || !payload.start){
-  setMsg(false, "Please fill Event ID, Title, and Start.");
-  showPopup(false, "Save failed", "Please fill Event ID, Title, and Start.");
-  return;
-}
-
-if (payload.end && new Date(payload.end) < new Date(payload.start)){
-  setMsg(false, "End time cannot be before Start.");
-  showPopup(false, "Save failed", "End time cannot be before Start.");
-  return;
-}
-
+  if (!payload.event_id || !payload.title || !payload.start){
+    setMsg(false, "Please fill Event ID, Title, and Start.");
+    showPopup(false, "Save failed", "Please fill Event ID, Title, and Start.");
+    return;
+  }
+  if (payload.end && new Date(payload.end) < new Date(payload.start)){
+    setMsg(false, "End time cannot be before Start.");
+    showPopup(false, "Save failed", "End time cannot be before Start.");
+    return;
+  }
 
   setMsg(true, "Saving…");
 
-  /* Try multiple event upsert action names (prevents Unknown action) */
   const out = await POST_tryActions(
     ["upsertevent","upsert_event","saveevent","save_event","addevent","add_event","editevent","edit_event"],
     payload
@@ -2321,11 +2259,9 @@ if (payload.end && new Date(payload.end) < new Date(payload.start)){
     const err = (out.error || out.message || "Save failed") + (out.body ? " (see console)" : "");
     setMsg(false, err);
     showPopup(false, "Save failed", err);
-    if (out.body) console.log("POST body:", out.body);
     return;
   }
 
-  /* Best-effort shift sync (if your Apps Script has separate shift endpoints) */
   try{
     if (shiftPack.enabled){
       if (shiftPack.removeAll){
@@ -2394,31 +2330,20 @@ function normalizePending(resp){
   return asArray(resp);
 }
 function isPendingRow(r){
-  const s = String(
-    r?.status ??
-    r?.request_status ??
-    r?.state ??
-    r?.decision ??
-    r?.approval_status ??
-    ""
-  ).trim().toLowerCase();
-
+  const s = String(r?.status ?? r?.request_status ?? r?.state ?? r?.decision ?? r?.approval_status ?? "").trim().toLowerCase();
   const approvedFlag = r?.approved ?? r?.is_approved ?? r?.isApproved ?? null;
   const deniedFlag   = r?.denied ?? r?.is_denied ?? r?.isDenied ?? null;
 
   if (approvedFlag === true || deniedFlag === true) return false;
-
   if (!s) return true;
   if (s.includes("pending")) return true;
   if (s.includes("submitted")) return true;
   if (s.includes("await")) return true;
   if (s.includes("review")) return true;
-
   if (s.includes("approv")) return false;
   if (s.includes("deny")) return false;
   if (s.includes("reject")) return false;
   if (s.includes("cancel")) return false;
-
   return false;
 }
 
@@ -2456,7 +2381,6 @@ function findEventById(eventId){
    ========================= */
 function initPendingCenter(activeEvents){
   const $ = (id)=>document.getElementById(id);
-
   const btnRefresh = $("pcRefresh");
   const statusEl   = $("pcStatus");
   const bodyEl     = $("pcBody");
@@ -2479,7 +2403,6 @@ function initPendingCenter(activeEvents){
       if (isNaN(tb)) return -1;
       return tb - ta;
     });
-
     eventSel.innerHTML = `<option value="">All events</option>`;
     list.forEach(ev=>{
       const opt = document.createElement("option");
@@ -2494,7 +2417,6 @@ function initPendingCenter(activeEvents){
   let rendered = [];
 
   function setStatus(txt){ statusEl.textContent = txt || ""; }
-
   function currentFilters(){
     return {
       q: (searchEl?.value || "").trim().toLowerCase(),
@@ -2505,7 +2427,6 @@ function initPendingCenter(activeEvents){
 
   async function renderTable(){
     const f = currentFilters();
-
     rendered = (pendingRaw || []).filter(r=>{
       const evId = getReqEventId(r);
       const ev = findEventById(evId);
@@ -2513,7 +2434,6 @@ function initPendingCenter(activeEvents){
       const title = (r.event_title || ev?.title || "").toLowerCase();
       const student = getReqStudent(r).toLowerCase();
       const comment = getReqComment(r).toLowerCase();
-
       if (f.event_id && String(f.event_id) !== String(evId)) return false;
       if (f.cat && String(f.cat) !== String(cat)) return false;
       if (f.q){
@@ -2533,7 +2453,6 @@ function initPendingCenter(activeEvents){
       const hours = getReqHours(r);
       const comment = getReqComment(r);
       const cat = normCat(r.category || r.cat || r.event_category || ev?.category || ev?.type || "");
-
       const sid = String(r.shift_id ?? r.shiftId ?? "").trim();
       const sLab = sid ? (shiftLabelById.get(sid) || sid) : "";
       const sTxt = sLab ? ` · shift: ${esc(sLab)}` : "";
@@ -2559,29 +2478,22 @@ function initPendingCenter(activeEvents){
 
     bodyEl.querySelectorAll(".pcApproveOne").forEach((b, i)=> b.addEventListener("click", ()=> approveOne(i)));
     bodyEl.querySelectorAll(".pcDenyOne").forEach((b, i)=> b.addEventListener("click", ()=> denyOne(i)));
-
     if (allBox) allBox.checked = false;
   }
 
   async function loadPending(){
     setStatus("Loading…");
     bodyEl.innerHTML = "";
-
     const resp = await GET_tryActions(
       ["pending", "pendingRequests", "pending_requests", "requests_pending", "requests", "attendance_pending"],
       {}
     );
-
     if (resp && resp.ok === false && (resp.error || resp.message)){
       const err = resp.error || resp.message || "Failed to load pending requests";
       setStatus(err);
       return;
     }
-
-    // normalize response into an array
     pendingRaw = normalizePending(resp) || [];
-
-    // ✅ filter to ONLY pending rows
     pendingRaw = pendingRaw.filter(isPendingRow);
 
     const evIdsToPreload = new Set();
@@ -2592,7 +2504,6 @@ function initPendingCenter(activeEvents){
     for (const evId of evIdsToPreload){
       try{ await loadShiftsForEvent(evId); }catch(_){}
     }
-
     await renderTable();
   }
 
@@ -2606,7 +2517,6 @@ function initPendingCenter(activeEvents){
     return idxs;
   }
 
-  /* FIX: Approve/Deny now try multiple action names to avoid Unknown action */
   async function doApprove(row){
     return POST_tryActions(
       ["approve","approve_request","approverequest","setrequestapproved","set_request_approved","request_approve","attendanceapprove","attendance_approve"],
@@ -2639,10 +2549,8 @@ function initPendingCenter(activeEvents){
   async function approveOne(renderIdx){
     const row = rendered[renderIdx];
     if (!row) return;
-
     setStatus("Approving…");
     const out = await doApprove(row);
-
     if (out && out.ok){
       openConfetti("Approved", "Request approved.");
       await loadPending();
@@ -2651,17 +2559,14 @@ function initPendingCenter(activeEvents){
       const err = (out && (out.error || out.message)) || "Approve failed";
       showPopup(false, "Approve failed", err);
       setStatus(err);
-      if (out?.body) console.log("approve body:", out.body);
     }
   }
 
   async function denyOne(renderIdx){
     const row = rendered[renderIdx];
     if (!row) return;
-
     setStatus("Denying…");
     const out = await doDeny(row);
-
     if (out && out.ok){
       openConfetti("Denied", "Request denied.");
       await loadPending();
@@ -2670,7 +2575,6 @@ function initPendingCenter(activeEvents){
       const err = (out && (out.error || out.message)) || "Deny failed";
       showPopup(false, "Deny failed", err);
       setStatus(err);
-      if (out?.body) console.log("deny body:", out.body);
     }
   }
 
@@ -2681,7 +2585,6 @@ function initPendingCenter(activeEvents){
       return;
     }
     setStatus(`Approving ${idxs.length}…`);
-
     for (const i of idxs){
       const row = rendered[i];
       if (!row) continue;
@@ -2693,7 +2596,6 @@ function initPendingCenter(activeEvents){
         return;
       }
     }
-
     openConfetti("Approved", `${idxs.length} request(s) approved.`);
     await loadPending();
     await refreshMe();
@@ -2706,7 +2608,6 @@ function initPendingCenter(activeEvents){
       return;
     }
     setStatus(`Denying ${idxs.length}…`);
-
     for (const i of idxs){
       const row = rendered[i];
       if (!row) continue;
@@ -2718,7 +2619,6 @@ function initPendingCenter(activeEvents){
         return;
       }
     }
-
     openConfetti("Denied", `${idxs.length} request(s) denied.`);
     await loadPending();
     await refreshMe();
@@ -2742,7 +2642,6 @@ function initPendingCenter(activeEvents){
 
 /* =========================
    REQUIREMENTS (Admin)
-   (unchanged from your version)
    ========================= */
 async function initReqAdmin(){
   const elDL      = document.getElementById("rq_students");
@@ -2757,7 +2656,6 @@ async function initReqAdmin(){
   if (!elDL || !elSearch || !elLoad || !elList) return;
 
   const keys = Object.keys(REQUIREMENT_LABELS);
-
   let students = [];
   let current = null;
 
@@ -2769,31 +2667,23 @@ async function initReqAdmin(){
 
   setStatus("Loading students…");
   const s = await GET({ action:"students" });
-
   const arr = Array.isArray(s) ? s : (s && Array.isArray(s.students) ? s.students : []);
-  students = (arr || [])
-    .map(x => ({
-      student_id: (x.student_id || x.email || "").trim(),
-      email: (x.email || "").trim(),
-      name: (x.name || x.student_name || x.full_name || "").trim()
-    }))
-    .filter(x => x.student_id);
+  students = (arr || []).map(x => ({
+    student_id: (x.student_id || x.email || "").trim(),
+    email: (x.email || "").trim(),
+    name: (x.name || x.student_name || x.full_name || "").trim()
+  })).filter(x => x.student_id);
 
-  elDL.innerHTML = students
-    .map(st => `<option value="${esc(st.student_id)}">${esc(st.name || st.email || st.student_id)}</option>`)
-    .join("");
-
+  elDL.innerHTML = students.map(st => `<option value="${esc(st.student_id)}">${esc(st.name || st.email || st.student_id)}</option>`).join("");
   setStatus("Ready. Pick a student and click Load.");
 
   elLoad.onclick = async ()=>{
     const input = (elSearch.value || "").trim();
     if(!input) return setStatus("Enter or select a student email.", true);
-
     current = students.find(s => _norm(s.student_id) === _norm(input))
             || students.find(s => _norm(s.email) === _norm(input))
             || students.find(s => (s.name||"").toLowerCase().includes(input.toLowerCase()))
             || { student_id: input, email: input, name: "" };
-
     await loadStudent(current.student_id, current.name || current.email || "");
   };
 
@@ -2805,13 +2695,10 @@ async function initReqAdmin(){
     if (elSel){
       elSel.innerHTML = `<span class="rq-pill">${esc(student_id)}</span>${displayName ? " · "+esc(displayName) : ""}`;
     }
-
     const sum = await GET({ action:"studentsummary", student_id });
-
     if(!sum || sum.ok === false){
       return setStatus("Failed to load: " + ((sum && (sum.error || sum.message)) || "unknown"), true);
     }
-
     const rows = Array.isArray(sum.requirements) ? sum.requirements : [];
     const have = new Map(rows.map(r => [
       String(r.requirement_key ?? r.key ?? ""),
@@ -2836,10 +2723,8 @@ async function initReqAdmin(){
         const row = ev.target.closest(".rq-row");
         const key = row && row.getAttribute("data-key");
         if(!key) return;
-
         const desired = !!ev.target.checked;
         setStatus("Saving…");
-
         const out = await POST_tryActions(
           ["setrequirement","set_requirement","requirement_set","update_requirement"],
           {
@@ -2852,13 +2737,11 @@ async function initReqAdmin(){
             current_semester: CURRENT_SEMESTER
           }
         );
-
         if(!out || !out.ok){
           ev.target.checked = !desired;
           const err = (out && (out.error || out.message)) || "Save failed";
           setStatus(`Save failed for "${key}": ${err}`, true);
           showPopup(false, "Save failed", `Could not update "${key}".\n${err}`);
-          if (out && out.body) console.log("POST body:", out.body);
         } else {
           const meta = row.querySelector(".rq-meta");
           if (meta) meta.textContent = desired ? "checked" : "unchecked";
@@ -2867,27 +2750,20 @@ async function initReqAdmin(){
         }
       });
     });
-
     setStatus(`Loaded ${keys.length} items.`);
   }
 
   async function bulkSet(val){
     if(!current) return setStatus("Load a student first.", true);
-
     const boxes = elList.querySelectorAll('input[type="checkbox"][data-role="rq-cb"]');
     let okCount=0, failCount=0;
-
     setStatus("Bulk saving…");
-
     for (const cb of boxes){
       const row = cb.closest(".rq-row");
       const key = row && row.getAttribute("data-key");
       if(!key) continue;
-
       if ((cb.checked ? true : false) === val) continue;
-
       cb.checked = val;
-
       const out = await POST_tryActions(
         ["setrequirement","set_requirement","requirement_set","update_requirement"],
         {
@@ -2900,18 +2776,15 @@ async function initReqAdmin(){
           current_semester: CURRENT_SEMESTER
         }
       );
-
       if(!out || !out.ok){
         cb.checked = !val;
         failCount++;
-        if (out && out.body) console.log("POST body:", out.body);
       } else {
         okCount++;
         const meta = row.querySelector(".rq-meta");
         if (meta) meta.textContent = val ? "checked" : "unchecked";
       }
     }
-
     setStatus(`Bulk saved: ${okCount} ok${failCount ? `, ${failCount} failed` : ""}`, !!failCount);
     if (okCount && failCount === 0){
       openConfetti("Bulk update", `Updated ${okCount} item(s).`);
