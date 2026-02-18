@@ -1,7 +1,10 @@
 <meta name="robots" content="noindex, nofollow">
 
 <div id="admin-app" style="max-width:1100px;margin:0 auto;">
-  <div class="hero-band"></div>
+  
+  <div class="hero-band">
+    4EK Ambassador Portal
+  </div>
 
   <header class="amb-top">
     <div>
@@ -80,8 +83,7 @@
         <div>
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
             <h4 style="margin:.25rem 0;">My History</h4>
-            <button id="btnMeRefresh" type="button" class="secondary"
-              style="padding:8px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">
+            <button id="btnMeRefresh" type="button" class="btnPrimary">
               Refresh
             </button>
           </div>
@@ -157,7 +159,7 @@
                 <th>Student</th>
                 <th>Requested hours</th>
                 <th>Comment</th>
-                <th style="min-width:170px;">Actions</th>
+                <th style="min-width:170px;text-align:center;">Actions</th>
               </tr>
             </thead>
             <tbody id="pcBody"></tbody>
@@ -165,8 +167,8 @@
         </div>
 
         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;flex-wrap:wrap;">
-          <button id="pcApproveSel" type="button" class="actBtn approve">Approve selected</button>
-          <button id="pcDenySel" type="button" class="actBtn deny">Deny selected</button>
+          <button id="pcApproveSel" type="button" class="actBtn">Approve selected</button>
+          <button id="pcDenySel" type="button" class="actBtn">Deny selected</button>
         </div>
       </div>
     </div>
@@ -388,22 +390,35 @@
   @import url("https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css");
 
   :root { 
-    --ucf-gold:#F4CA3D; /* CORRECTED GOLD */
+    --ucf-gold:#F4CA3D; 
     --ucf-black:#000; 
     --ucf-purple:#6A0DAD; 
     --ucf-red:#C1121F; 
   }
 
+  /* FIX: Clean Font Stack */
+  #admin-app, #admin-app input, #admin-app select, #admin-app button, #admin-app textarea {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  }
+
   #calendar{ min-height: 640px; }
   #calendar, #calendar * { font-family: inherit; }
 
-  /* 2. Restored Hero Band Style */
+  /* FIX: Hero Band - Taller (110px), Yellow, Black Centered Text */
   .hero-band {
     background: var(--ucf-gold);
-    height: 12px;
+    height: 110px;
     width: 100%;
-    border-radius: 4px;
-    margin-bottom: 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    font-size: 32px;
+    font-weight: 800;
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   }
 
   .amb-top{display:flex;justify-content:space-between;align-items:flex-end;margin:8px 0 16px}
@@ -423,29 +438,60 @@
   .form label{display:block;margin:8px 0}
   .form select, .form input, .form textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px}
   
-  /* 5. Buttons: Thicker and Smaller (exclude refresh) */
+  /* FIX: Buttons - Thicker, All Caps, Correct Yellow */
   .form button, .btnPrimary, .secondary, .actBtn {
     margin-top:6px;
-    padding:10px 14px;
+    padding:12px 20px; /* Larger padding */
     border:0;
     border-radius:8px;
     cursor:pointer;
-    font-size: 13px; /* Smaller */
-    font-weight: 600; /* Thicker */
+    font-size: 14px;
+    font-weight: 700; /* Bold/Thick */
+    text-transform: uppercase; /* ALL CAPS */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
   
-  /* Refresh buttons - keep default size if preferred, or inherit but ensure weight */
-  #btnMeRefresh, #pcRefresh {
-    font-size: inherit; 
-    font-weight: normal; 
+  /* All Primary Buttons (including Refresh) are Yellow (#F4CA3D) with Black Text */
+  .form button, .btnPrimary, .actBtn { 
+    background: var(--ucf-gold) !important;
+    color: #000 !important;
   }
 
-  .form button, .btnPrimary { background:#111;color:#fff; }
-  .form button:hover, .btnPrimary:hover {opacity:.9}
+  .form button:hover, .btnPrimary:hover, .actBtn:hover {
+    filter: brightness(105%);
+    transform: translateY(-1px);
+  }
   .form button:disabled, .btnPrimary:disabled {opacity:.6;cursor:not-allowed}
 
-  .secondary{padding:8px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer}
+  /* Secondary buttons (like in shift editor) remain white/grey */
+  .secondary{
+    padding:10px 14px; /* Slightly smaller than primary */
+    border:1px solid #ddd;
+    border-radius:8px;
+    background:#fff;
+    cursor:pointer;
+    color: #333;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
   .secondary:hover{background:#fafafa}
+
+  /* FIX: Approve/Deny Buttons - Larger, Centered in cell */
+  .actBtn {
+    min-width: 110px; /* Ensure they are wide/large */
+    text-align: center;
+    justify-content: center;
+    font-size: 13px;
+  }
+  
+  /* Used to center buttons in the Pending Center Table */
+  .pc-actions-cell {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+  }
 
   .msg{margin-top:8px;font-size:13px}.ok{color:#1a7f37}.err{color:#b00020}
 
@@ -456,20 +502,14 @@
   .rq-pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #e6e6e6;font-size:12px}
 
   .ptable{width:100%;border-collapse:collapse}
-  .ptable th,.ptable td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
+  .ptable th,.ptable td{padding:10px 8px;border-bottom:1px solid #eee;text-align:left;vertical-align:middle}
   
-  /* 4. Zebra Striping (Alternating Grey/White) */
+  /* Zebra Striping */
   .ptable tbody tr:nth-child(odd) { background: #fff; }
   .ptable tbody tr:nth-child(even) { background: #f9f9f9; }
 
   .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #e6e6e6;font-size:12px}
-  .actBtn{padding:6px 10px;border:0;border-radius:8px;cursor:pointer}
-
-  /* 6. Approve/Deny Buttons: Yellow with Black Text */
-  .approve { background:var(--ucf-gold); color:#000; }
-  .deny    { background:var(--ucf-gold); color:#000; }
   
-  /* 7. Emoji Background Badge */
   .emoji-bg { 
     background: #fff; 
     border-radius: 50%; 
@@ -579,7 +619,7 @@
     text-align:left;
     vertical-align:top
   }
-  /* 4. Zebra Striping for History */
+  /* Zebra Striping */
   .hist-table tbody tr:nth-child(odd) { background: #fff; }
   .hist-table tbody tr:nth-child(even) { background: #f9f9f9; }
 
@@ -680,7 +720,6 @@
   .cat-red   .fc-daygrid-event-dot, .cat-red   .fc-list-event-dot { border-color:var(--ucf-red)  !important; background:var(--ucf-red)  !important; }
 
   .fc-timegrid-event{ border-radius:10px !important; overflow:hidden; }
-  /* Updated RGB for new gold approx 244,202,61 */
   .fc-timegrid-event.cat-gold  { border-left: 4px solid var(--ucf-gold) !important;  border:1px solid rgba(244,202,61,.35) !important; background: rgba(244,202,61,.10) !important; }
   .fc-timegrid-event.cat-black { border-left: 4px solid var(--ucf-black)!important; border:1px solid rgba(0,0,0,.25) !important;     background: rgba(0,0,0,.06) !important; }
   .fc-timegrid-event.cat-purple{ border-left: 4px solid var(--ucf-purple)!important;border:1px solid rgba(106,13,173,.30) !important;   background: rgba(106,13,173,.10) !important; }
@@ -1802,7 +1841,6 @@ function meHist_renderHistory(semester){
 
   rows.forEach(r=>{
     const tr = document.createElement("tr");
-    /* 7. Added white background wrapper (emoji-bg) around status icon */
     tr.innerHTML = `
       <td><span class="tag">${esc(meHist_rowSemester(r))}</span></td>
       <td>${esc(meHist_rowEventTitle(r))}</td>
@@ -2468,9 +2506,11 @@ function initPendingCenter(activeEvents){
           <td>${esc(student)}</td>
           <td>${esc(hours || "")}</td>
           <td style="white-space:pre-wrap;">${esc(comment)}</td>
-          <td style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button class="actBtn approve pcApproveOne" type="button">Approve</button>
-            <button class="actBtn deny pcDenyOne" type="button">Deny</button>
+          <td>
+            <div class="pc-actions-cell">
+              <button class="actBtn pcApproveOne" type="button">Approve</button>
+              <button class="actBtn pcDenyOne" type="button">Deny</button>
+            </div>
           </td>
         </tr>
       `;
@@ -2671,126 +2711,4 @@ async function initReqAdmin(){
   students = (arr || []).map(x => ({
     student_id: (x.student_id || x.email || "").trim(),
     email: (x.email || "").trim(),
-    name: (x.name || x.student_name || x.full_name || "").trim()
-  })).filter(x => x.student_id);
-
-  elDL.innerHTML = students.map(st => `<option value="${esc(st.student_id)}">${esc(st.name || st.email || st.student_id)}</option>`).join("");
-  setStatus("Ready. Pick a student and click Load.");
-
-  elLoad.onclick = async ()=>{
-    const input = (elSearch.value || "").trim();
-    if(!input) return setStatus("Enter or select a student email.", true);
-    current = students.find(s => _norm(s.student_id) === _norm(input))
-            || students.find(s => _norm(s.email) === _norm(input))
-            || students.find(s => (s.name||"").toLowerCase().includes(input.toLowerCase()))
-            || { student_id: input, email: input, name: "" };
-    await loadStudent(current.student_id, current.name || current.email || "");
-  };
-
-  btnAll && (btnAll.onclick = ()=> bulkSet(true));
-  btnNone && (btnNone.onclick = ()=> bulkSet(false));
-
-  async function loadStudent(student_id, displayName){
-    setStatus("Loading requirements…");
-    if (elSel){
-      elSel.innerHTML = `<span class="rq-pill">${esc(student_id)}</span>${displayName ? " · "+esc(displayName) : ""}`;
-    }
-    const sum = await GET({ action:"studentsummary", student_id });
-    if(!sum || sum.ok === false){
-      return setStatus("Failed to load: " + ((sum && (sum.error || sum.message)) || "unknown"), true);
-    }
-    const rows = Array.isArray(sum.requirements) ? sum.requirements : [];
-    const have = new Map(rows.map(r => [
-      String(r.requirement_key ?? r.key ?? ""),
-      (String(r.is_checked) === "true" || r.is_checked === true || String(r.is_checked).toLowerCase() === "yes" || r.is_checked === 1)
-    ]));
-
-    elList.innerHTML = keys.map(k=>{
-      const checked = have.get(k) === true;
-      const label = REQUIREMENT_LABELS[k] || k;
-      return `
-        <div class="rq-row" data-key="${esc(k)}">
-          <label class="rq-lbl">
-            <input type="checkbox" ${checked ? "checked" : ""} data-role="rq-cb">
-            <span>${esc(label)}</span>
-          </label>
-          <div class="rq-meta">${checked ? "checked" : "unchecked"}</div>
-        </div>`;
-    }).join("");
-
-    elList.querySelectorAll('input[type="checkbox"][data-role="rq-cb"]').forEach(cb=>{
-      cb.addEventListener("change", async (ev)=>{
-        const row = ev.target.closest(".rq-row");
-        const key = row && row.getAttribute("data-key");
-        if(!key) return;
-        const desired = !!ev.target.checked;
-        setStatus("Saving…");
-        const out = await POST_tryActions(
-          ["setrequirement","set_requirement","requirement_set","update_requirement"],
-          {
-            student_id,
-            requirement_key: key,
-            is_checked: desired,
-            updated_by: "admin",
-            notify: true,
-            source: "portal_admin",
-            current_semester: CURRENT_SEMESTER
-          }
-        );
-        if(!out || !out.ok){
-          ev.target.checked = !desired;
-          const err = (out && (out.error || out.message)) || "Save failed";
-          setStatus(`Save failed for "${key}": ${err}`, true);
-          showPopup(false, "Save failed", `Could not update "${key}".\n${err}`);
-        } else {
-          const meta = row.querySelector(".rq-meta");
-          if (meta) meta.textContent = desired ? "checked" : "unchecked";
-          setStatus(`Saved "${key}" → ${desired ? "checked" : "unchecked"}.`);
-          openConfetti("Saved", `"${key}" was updated.`);
-        }
-      });
-    });
-    setStatus(`Loaded ${keys.length} items.`);
-  }
-
-  async function bulkSet(val){
-    if(!current) return setStatus("Load a student first.", true);
-    const boxes = elList.querySelectorAll('input[type="checkbox"][data-role="rq-cb"]');
-    let okCount=0, failCount=0;
-    setStatus("Bulk saving…");
-    for (const cb of boxes){
-      const row = cb.closest(".rq-row");
-      const key = row && row.getAttribute("data-key");
-      if(!key) continue;
-      if ((cb.checked ? true : false) === val) continue;
-      cb.checked = val;
-      const out = await POST_tryActions(
-        ["setrequirement","set_requirement","requirement_set","update_requirement"],
-        {
-          student_id: current.student_id,
-          requirement_key: key,
-          is_checked: val,
-          updated_by: "admin",
-          notify: true,
-          source: "portal_admin",
-          current_semester: CURRENT_SEMESTER
-        }
-      );
-      if(!out || !out.ok){
-        cb.checked = !val;
-        failCount++;
-      } else {
-        okCount++;
-        const meta = row.querySelector(".rq-meta");
-        if (meta) meta.textContent = val ? "checked" : "unchecked";
-      }
-    }
-    setStatus(`Bulk saved: ${okCount} ok${failCount ? `, ${failCount} failed` : ""}`, !!failCount);
-    if (okCount && failCount === 0){
-      openConfetti("Bulk update", `Updated ${okCount} item(s).`);
-    } else {
-      showPopup(failCount === 0, "Bulk update", `Updated ${okCount} item(s).${failCount ? `\nFailed: ${failCount}` : ""}`);
-    }
-  }
-}
-</script>
+    name: (x.name || x.student_name || x.full_
