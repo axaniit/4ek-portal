@@ -18,6 +18,7 @@
     --ucf-black:#000; 
     --ucf-purple:#6A0DAD; 
     --ucf-red:#C1121F; 
+    --portal-green: #2e7d32; /* New Green for Checks */
   }
 
   body {
@@ -28,7 +29,7 @@
     color: #333;
   }
 
-  /* ========= HERO BANNER ========= */
+  /* ========= HERO ========= */
   section.portal-hero{
     background:#F4CA3D !important;        
     background-image:none !important;     
@@ -74,12 +75,12 @@
   .h-big{font-size:40px;font-weight:700;margin-top:4px}
   .hours{text-align:right}
 
-  /* Grid Layout */
+  /* Grid Layout - FIXED STRETCHING */
   .amb-grid{
     display:grid;
     gap:16px;
     margin:0 0 16px;
-    align-items:start; /* Prevents stretching/overlapping */
+    align-items: stretch; /* Forces equal height */
   }
   @media (min-width: 980px){ 
     .amb-grid{ grid-template-columns: 1fr 1fr; } 
@@ -94,24 +95,36 @@
     margin:12px 0;
     display: flex;
     flex-direction: column;
+    height: 100%; /* Fills the grid cell */
   }
   .card-h{padding:12px 16px;border-bottom:1px solid #eee;font-weight:600}
-  .card-b{ padding:16px; flex: 1; }
+  .card-b{ 
+    padding:16px; 
+    flex: 1; /* Pushes content to fill space */
+  }
 
-  /* Requirements List (Student Specific) */
+  /* Requirements List - GREEN CHECKMARKS */
   .req-list{list-style:none;margin:0;padding:0}
   .req-list li{display:flex;gap:8px;margin:8px 0;align-items:center}
+  
   .req-list .box{
     width:18px;height:18px;
-    border:2px solid #888;
+    border:2px solid #ccc;
     border-radius:4px;
     display:inline-flex;align-items:center;justify-content:center;
     font-size:14px;line-height:1;
-    color:var(--ucf-gold); /* Gold Check */
+    color: transparent;
     background:transparent;
     font-weight: 700;
+    transition: all 0.2s;
   }
-  .req-list .done{border-color:var(--ucf-black)}
+  
+  /* When checked */
+  .req-list .box.done {
+    border-color: var(--portal-green);
+    color: var(--portal-green);
+    background: rgba(46, 125, 50, 0.1);
+  }
 
   /* Forms */
   .form h4 { margin:.25rem 0 .5rem; font-size: 20px; font-weight: 700; }
@@ -278,7 +291,7 @@
       <div class="card-h">Your Requirements</div>
       <div class="card-b">
         <ul id="reqList" class="req-list"></ul>
-        <div class="muted small">Admins control these checkboxes.</div>
+        <div class="muted small" style="margin-top: 12px;">Admins control these checkboxes.</div>
       </div>
     </div>
 
@@ -772,7 +785,21 @@ let _requestsCache = [];
 let _fullHistoryCache = [];
 let _modalEventId = null;
 
-/* ===== BOOT ===== */
+/* ===== BOOT & CALENDAR LOADER ===== */
+function initCalendarSafe(events){
+  // RETRY LOGIC: Wait for FullCalendar global to be ready
+  let attempts = 0;
+  const poller = setInterval(() => {
+    if (window.FullCalendar && window.FullCalendar.Calendar) {
+      clearInterval(poller);
+      buildCalendar(events);
+    } else {
+      attempts++;
+      if (attempts > 30) clearInterval(poller); // Stop after 3s
+    }
+  }, 100);
+}
+
 (async function(){
   document.getElementById("hoursLabel").textContent = "My Semester Total Hours";
   document.getElementById("hoursSub").textContent = CURRENT_SEMESTER;
@@ -806,6 +833,9 @@ let _modalEventId = null;
   const evResp = await GET({ action:"events" });
   eventsCache = Array.isArray(evResp) ? evResp : (evResp && Array.isArray(evResp.events) ? evResp.events : (evResp && Array.isArray(evResp.rows) ? evResp.rows : []));
   const activeEvents = eventsCache.filter(isActiveEvent);
+
+  /* ✅ START CALENDAR IMMEDIATELY AFTER FETCH (Don't wait for history) */
+  initCalendarSafe(activeEvents);
 
   const reqSel = document.getElementById("reqEvent");
   const btnReq = document.getElementById("btnReq");
@@ -895,7 +925,6 @@ let _modalEventId = null;
   });
 
   await loadHistory();
-  buildCalendar(activeEvents);
 })();
 
 async function fetchRequestsWithFallback(studentId){
@@ -964,7 +993,6 @@ function renderHistory(sem){
   rows.sort((a,b)=>rowDateKey(b)-rowDateKey(a));
   rows.forEach(r => {
     const tr = document.createElement("tr");
-    /* ✅ Match the new table styling with emoji wrapper */
     tr.innerHTML = `
       <td><span class="tag">${rowSemester(r)}</span></td>
       <td>${rowEventTitle(r) || "—"}</td>
