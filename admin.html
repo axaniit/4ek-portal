@@ -22,24 +22,25 @@
 
   body {
     margin: 0;
-    /* Restored original font stack for numbers/body */
+    padding: 0;
+    /* Restored original system font stack for body/numbers */
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     background: #fff;
     color: #333;
   }
 
-  /* ========= HERO BANNER ========= */
+  /* ========= HERO BANNER (From Guide) ========= */
   section.portal-hero{
-    background:#F4CA3D !important;        /* HARD color */
-    background-image:none !important;     /* kill gradients */
-    min-height:110px !important;          /* thicker hero */
+    background:#F4CA3D !important;        
+    background-image:none !important;     
+    min-height:110px !important;          
     display:flex !important;
     align-items:center !important;
     justify-content:center !important;
     text-align:center !important;
     padding:0 !important;
-    margin-bottom: 24px;
     width: 100%;
+    margin-bottom: 24px;
   }
 
   section.portal-hero h1{
@@ -50,10 +51,18 @@
     color:#111 !important;
   }
 
+  .portal-accent-line{
+    height:6px !important;
+    background:#F4CA3D !important;
+    margin-top: -24px; 
+    margin-bottom: 24px;
+  }
+
+  /* Main Container - Restored Spacing */
   #admin-app { 
     max-width:1100px; 
-    margin:0 auto; 
-    /* Restored spacing logic */
+    margin: 0 auto; 
+    padding: 0 16px 40px 16px;
   }
 
   /* Calendar */
@@ -63,7 +72,7 @@
   .amb-top{display:flex;justify-content:space-between;align-items:flex-end;margin:8px 0 16px}
   .muted{color:#666}.small{font-size:12px}.h-name{font-weight:600;font-size:18px}
   
-  /* Restored original number styling */
+  /* Restored Number Font Settings */
   .h-big{font-size:40px;font-weight:700;margin-top:4px}
   .hours{text-align:right}
 
@@ -76,7 +85,7 @@
   .card-h{padding:12px 16px;border-bottom:1px solid #eee;font-weight:600}
   .card-b{padding:16px}
 
-  /* HEADERS: Increased size as requested (~20px) */
+  /* HEADERS: Increased to ~20px */
   .form h4 { 
     margin:.25rem 0 .5rem; 
     font-size: 20px; 
@@ -86,26 +95,35 @@
   .form label{display:block;margin:8px 0}
   .form select, .form input, .form textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px; font-family: inherit;}
   
-  /* STANDARD BUTTONS (Black) */
-  .form button, .btnPrimary {
+  /* STANDARD BUTTONS (Black, All Caps) */
+  .form button, #btnReq, #btnSignup {
     margin-top:6px;
-    padding:10px 14px;
+    padding:12px 16px;
     border:0;
     background:#111;
     color:#fff;
     border-radius:8px;
     cursor:pointer;
     font-family: inherit;
-    font-size: 14px; 
+    font-size: 13px; 
+    font-weight: 700;
+    text-transform: uppercase; /* ALL CAPS RESTORED */
+    letter-spacing: 0.5px;
   }
-  .form button:hover, .btnPrimary:hover {opacity:.9}
-  .form button:disabled, .btnPrimary:disabled {opacity:.6;cursor:not-allowed}
+  .form button:hover {opacity:.9}
+  .form button:disabled {opacity:.6;cursor:not-allowed}
 
   /* PENDING REFRESH - Yellow */
   #pcRefresh {
+    padding:10px 14px;
+    border:0;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight: 700;
     background: var(--ucf-gold);
     color: #000;
   }
+  #pcRefresh:hover { opacity: .9; }
 
   /* HISTORY REFRESH - Small & White */
   #btnMeRefresh {
@@ -118,9 +136,11 @@
     border-radius: 8px;
     cursor: pointer;
     margin: 0;
+    text-transform: none; /* Not caps */
   }
   #btnMeRefresh:hover { background: #fafafa !important; }
 
+  /* Generic Secondary */
   .secondary{padding:8px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer}
   .secondary:hover{background:#fafafa}
 
@@ -133,40 +153,41 @@
   .rq-pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #e6e6e6;font-size:12px}
 
   .ptable{width:100%;border-collapse:collapse}
-  .ptable th,.ptable td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
+  .ptable th,.ptable td{padding:10px 8px;border-bottom:1px solid #eee;text-align:left;vertical-align:middle}
   
   /* Zebra Striping */
   .ptable tbody tr:nth-child(odd) { background: #fff; }
   .ptable tbody tr:nth-child(even) { background: #f9f9f9; }
 
-  /* PENDING CENTER ACTION BUTTONS (Yellow & Centered) */
+  /* PENDING ACTIONS (Larger, Yellow, Centered) */
+  .pc-actions-cell {
+    text-align: center;
+  }
   .actBtn {
-    padding:6px 12px;
+    padding:8px 14px; /* Larger */
     border:0;
     border-radius:8px;
     cursor:pointer;
-    font-weight: 600;
-    font-size: 12px;
-    margin: 0 2px;
-  }
-  .approve { background:var(--ucf-gold); color:#111; }
-  .deny    { background:var(--ucf-gold); color:#111; }
-  
-  .pc-actions-cell {
-    display:flex;
-    gap:4px;
-    flex-wrap:wrap;
-    justify-content: center; /* CENTERED */
+    font-weight: 700;
+    font-size: 13px;
+    margin: 2px 4px;
+    text-transform: uppercase;
+    display: inline-flex;
     align-items: center;
+    gap: 6px;
   }
-
-  /* Emoji Background Badge */
+  .approve { background:var(--ucf-gold); color:#000; }
+  .deny    { background:var(--ucf-gold); color:#000; }
+  
+  /* Emoji Background Badge (For History) */
   .emoji-bg { 
     background: #fff; 
     border-radius: 50%; 
-    padding: 3px 5px; 
+    padding: 4px; 
+    width: 24px; height: 24px;
+    display: inline-flex;
+    align-items: center; justify-content: center;
     box-shadow: 0 1px 3px rgba(0,0,0,0.15); 
-    display: inline-block;
   }
 
   /* Pending Center: make table area scroll vertically + horizontally */
@@ -174,6 +195,7 @@
   #pcTableWrap{
     flex:1;
     min-height:0;
+    max-height:1000px;
     overflow:auto;
     border:1px solid #eee;
     border-radius:10px;
@@ -463,6 +485,7 @@
   <section class="portal-hero">
     <h1>4EK Ambassador Portal</h1>
   </section>
+  <div class="portal-accent-line"></div>
 
 <div id="admin-app">
   <header class="amb-top">
@@ -616,7 +639,7 @@
                 <th>Student</th>
                 <th>Requested hours</th>
                 <th>Comment</th>
-                <th style="min-width:170px;text-align:center;">Actions</th>
+                <th style="min-width:200px;text-align:center;">Actions</th>
               </tr>
             </thead>
             <tbody id="pcBody"></tbody>
@@ -624,8 +647,8 @@
         </div>
 
         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;flex-wrap:wrap;">
-          <button id="pcApproveSel" type="button" class="actBtn approve">Approve selected</button>
-          <button id="pcDenySel" type="button" class="actBtn deny">Deny selected</button>
+          <button id="pcApproveSel" type="button" class="actBtn approve">✅ Approve selected</button>
+          <button id="pcDenySel" type="button" class="actBtn deny">❌ Deny selected</button>
         </div>
       </div>
     </div>
@@ -2542,8 +2565,8 @@ function initPendingCenter(activeEvents){
           <td>${esc(hours || "")}</td>
           <td style="white-space:pre-wrap;">${esc(comment)}</td>
           <td class="pc-actions-cell">
-            <button class="actBtn approve pcApproveOne" type="button">Approve</button>
-            <button class="actBtn deny pcDenyOne" type="button">Deny</button>
+            <button class="actBtn approve pcApproveOne" type="button">✅ APPROVE</button>
+            <button class="actBtn deny pcDenyOne" type="button">❌ DENY</button>
           </td>
         </tr>
       `;
