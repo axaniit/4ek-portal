@@ -456,233 +456,88 @@
 <style>
   @import url("https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css");
 
-  /* =========================
-     GLOBAL FONT CONSISTENCY
-     ========================= */
-  body{ font-family:"Nunito", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-  input, select, textarea, button, table, th, td { font-family: inherit; }
-  input::placeholder, textarea::placeholder { font-family: inherit; }
-
   #calendar{ min-height: 640px; }
   #calendar, #calendar * { font-family: inherit; }
 
-  /* =========================
-     "HEADERS fixed to look like index"
-     (make the admin top header feel like the index hero/cards)
-     ========================= */
-  .amb-top{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-end;
-    margin:12px 0 18px;
-    padding:14px 16px;
-    border:1px solid #e5e5e5;
-    border-radius:14px;
-    background:#fff;
-    box-shadow:0 8px 20px rgba(0,0,0,.06);
-  }
-
-  .muted{color:#666}
-  .small{font-size:12px}
-  .h-name{font-weight:700;font-size:18px}
-  .h-big{font-size:40px;font-weight:800}
-  .hours{text-align:right}
+  .amb-top{display:flex;justify-content:space-between;align-items:flex-end;margin:8px 0 16px}
+  .muted{color:#666}.small{font-size:12px}.h-name{font-weight:600;font-size:18px}
+  .h-big{font-size:40px;font-weight:700}.hours{text-align:right}
 
   .top-grid{display:grid;gap:16px;margin:0 0 16px;align-items:stretch}
   @media (min-width: 980px){ .top-grid{ grid-template-columns: 1fr 1fr; } }
   .top-grid > .card{ height:100%; display:flex; flex-direction:column; }
   .top-grid > .card .card-b{ flex:1; min-height:0; }
 
-  /* =========================
-     CARDS / CONTAINERS SHADOWS
-     ========================= */
-  .card{
-    border:1px solid #e5e5e5;
-    border-radius:12px;
-    box-shadow:0 8px 22px rgba(0,0,0,.07); /* slightly stronger grey shadow */
-    overflow:hidden;
-    background:#fff;
-    margin:12px 0
-  }
-  .card-h{padding:12px 16px;border-bottom:1px solid #eee;font-weight:700}
+  .card{border:1px solid #e5e5e5;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.04);overflow:hidden;background:#fff;margin:12px 0}
+  .card-h{padding:12px 16px;border-bottom:1px solid #eee;font-weight:600}
   .card-b{padding:16px}
 
-  /* Give common inner containers a subtle grey shadow too */
-  #pcTableWrap,
-  .hist-scroll,
-  .shift-admin,
-  .shift-scroll,
-  .self-actions,
-  #rq_list{
-    box-shadow:0 6px 16px rgba(0,0,0,.06);
-  }
-
-  /* =========================
-     FORM TYPOGRAPHY + YOUR 5PX CHANGES
-     ========================= */
   .form h4{margin:.25rem 0 .5rem}
-
-  /* +5px for the two headers */
-  #formRequest h4,
-  #formSignup h4{
-    font-size: calc(1em + 5px);
-    font-weight:800;
-    letter-spacing:.01em;
-  }
-
   .form label{display:block;margin:8px 0}
-  .form select, .form input, .form textarea{
-    width:100%;
-    padding:8px;
-    border:1px solid #ccc;
-    border-radius:8px
-  }
-
-  /* Move the helper sentences right by 5px so they stop overlapping */
-  #formRequest .grid2 > .muted.small,
-  #formSignup  .grid2 > .muted.small{
-    padding-left:5px;
-  }
-
-  /* =========================
-     BUTTONS: ALL CAPS + +2px SIZE + YELLOW RULES
-     ========================= */
-  :root { --ucf-gold:#C9A227; --ucf-black:#000; --ucf-purple:#6A0DAD; --ucf-red:#C1121F; }
-
-  /* ALL buttons uppercase (NOT checkboxes) */
-  button{
-    text-transform:uppercase;
-    letter-spacing:.02em;
-    font-weight:800;
-  }
-
-  /* Increase button size by ~2px across the board */
-  .form button,
-  .btnPrimary,
-  .secondary,
-  .pp-btn,
-  #confettiModal .secondary{
-    font-size:16px;                 /* +2ish from typical 14 */
-    padding:12px 16px;              /* +2ish padding */
-    border-radius:10px;
-  }
-
-  .form button{
-    margin-top:6px;
-    border:0;
-    background:#111;
-    color:#fff;
-    cursor:pointer
-  }
-  .form button:hover{opacity:.92}
+  .form select, .form input, .form textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px}
+  .form button{margin-top:6px;padding:10px 14px;border:0;background:#111;color:#fff;border-radius:8px;cursor:pointer}
+  .form button:hover{opacity:.9}
   .form button:disabled{opacity:.6;cursor:not-allowed}
 
-  .btnPrimary{
-    border:0;
-    background:#111;
-    color:#fff;
-    cursor:pointer
-  }
-
-  .secondary{
-    border:1px solid #ddd;
-    background:#fff;
-    cursor:pointer
-  }
+  .btnPrimary{padding:10px 14px;border:0;background:#111;color:#fff;border-radius:8px;cursor:pointer}
+  .secondary{padding:8px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer}
   .secondary:hover{background:#fafafa}
 
-  /* Pending Center refresh button MUST be yellow */
-  #pcRefresh{
-    background: var(--ucf-gold) !important;
-    color:#111 !important;
-    border:1px solid rgba(0,0,0,.12) !important;
-    box-shadow:0 8px 18px rgba(0,0,0,.10);
-  }
-  #pcRefresh:hover{ filter:brightness(.98); }
-
-  /* Approve/Deny selected buttons MUST be yellow + larger button body */
-  #pcApproveSel,
-  #pcDenySel{
-    background: var(--ucf-gold) !important;
-    color:#111 !important;
-    border:1px solid rgba(0,0,0,.12) !important;
-    padding:14px 18px !important;   /* extra “button body” size */
-    font-size:16px !important;
-    border-radius:12px !important;
-    box-shadow:0 8px 18px rgba(0,0,0,.10);
-  }
-  #pcApproveSel:hover,
-  #pcDenySel:hover{ filter:brightness(.98); }
-
-  /* Row-level approve/deny icon buttons: make the BUTTON (not just icon) bigger + yellow */
-  .pcIcon{
-    width:40px;
-    height:40px;
-    border-radius:12px;
-    border:1px solid rgba(0,0,0,.12);
-    background: var(--ucf-gold);
-    color:#111;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    box-shadow:0 8px 18px rgba(0,0,0,.10);
-  }
-  .pcIcon:hover{ filter:brightness(.98); }
-  .pcIcon svg{ width:20px; height:20px; }
-
-  /* =========================
-     TABLE / PENDING CENTER
-     ========================= */
   .msg{margin-top:8px;font-size:13px}.ok{color:#1a7f37}.err{color:#b00020}
+
+  .rq-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid #f4f4f4}
+  .rq-row:last-child{border-bottom:none}
+  .rq-lbl{display:flex;align-items:flex-start;gap:10px}
+  .rq-meta{color:#666;font-size:12px;margin-top:2px}
+  .rq-pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #e6e6e6;font-size:12px}
 
   .ptable{width:100%;border-collapse:collapse}
   .ptable th,.ptable td{padding:8px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
   .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #e6e6e6;font-size:12px}
+  .actBtn{padding:6px 10px;border:0;border-radius:8px;cursor:pointer}
+  .approve{background:#0f7b3d;color:#fff}
+  .deny{background:#b00020;color:#fff}
+  
+  /* NEW ICONS for Pending Actions */
+  .pcIcon{
+    width:34px;height:34px;
+    border-radius:10px;
+    border:1px solid #ddd;
+    background:#fff;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .pcIcon:hover{ background:#fafafa; }
+  .pcIcon.pcApproveOne{ color:#0f7b3d; }
+  .pcIcon.pcDenyOne{ color:#b00020; }
 
   /* Pending Center: make table area scroll vertically + horizontally */
-  #pcCard{display:flex;flex-direction:column;}
-  #pcCardBody{display:flex;flex-direction:column;flex:1;min-height:0}
+  #pcCardBody{display:flex;flex-direction:column;min-height:0}
   #pcTableWrap{
     flex:1;
     min-height:0;
-    max-height:1000px;
-    overflow-y:auto;
-    overflow-x:auto;
+    overflow:auto;
     border:1px solid #eee;
-    border-radius:12px;
-    background:#fff;
+    border-radius:10px;
   }
 
-  /* =========================
-     CREATE / UPDATE EVENT SPACING
-     ========================= */
+  /* ===== CREATE/EDIT EVENT: FORCE H-SCROLL ===== */
   .ev-scroll{
     overflow-x:auto;
     overflow-y:hidden;
-    padding-bottom:10px;
+    padding-bottom:6px;
   }
   .ev-scroll::-webkit-scrollbar{ height:10px }
   .ev-scroll::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.22); border-radius:999px }
   .ev-scroll::-webkit-scrollbar-track{ background:rgba(0,0,0,.05); border-radius:999px }
 
-  /* Better spacing in Create an Event section */
-  #evCard .card-b{ padding:18px; }
-  #eventForm label{ margin:10px 0; }
-  #eventForm > div[style*="grid-template-columns"]{
-    gap:16px !important;
-  }
-  #saveEventBtn{
-    margin-top:14px;
-  }
-
   /* ===== SHIFT EDITOR ===== */
   .shift-admin{
-    margin-top:14px;
+    margin-top:12px;
     border:1px solid #eee;
-    border-radius:14px;
+    border-radius:12px;
     background:#fafafa;
-    padding:14px;
+    padding:12px;
   }
   .shift-admin-top{
     display:flex;
@@ -694,7 +549,7 @@
   .shift-scroll{
     overflow:auto;
     border:1px solid #eee;
-    border-radius:14px;
+    border-radius:12px;
     background:#fff;
   }
   .shift-table{
@@ -730,21 +585,39 @@
   }
   .shift-table input[type="checkbox"]{ width:auto; }
 
-  /* =========================
-     HISTORY STYLES
-     ========================= */
+  /* ===== HISTORY STYLES ===== */
   .hist-top{display:grid;gap:10px}
-  @media (min-width: 900px){ .hist-top{ grid-template-columns: 1fr 1fr 1fr; } }
+  @media (min-width: 900px){
+    .hist-top{ grid-template-columns: 1fr 1fr 1fr; }
+  }
   .hist-card{
     border:1px solid #eee;
     border-radius:12px;
     padding:12px;
     background:#fafafa
   }
-  .hist-big{font-size:28px;font-weight:800;margin-top:4px}
-  .hist-table{width:100%;border-collapse:collapse}
-  .hist-table th,.hist-table td{border-bottom:1px solid #eee;padding:10px 8px;text-align:left;vertical-align:top}
-  .hist-table th{font-size:12px;color:#666;text-transform:uppercase;letter-spacing:.02em}
+  .hist-big{
+    font-size:28px;
+    font-weight:700;
+    margin-top:4px
+  }
+  .hist-table{
+    width:100%;
+    border-collapse:collapse
+  }
+  .hist-table th,
+  .hist-table td{
+    border-bottom:1px solid #eee;
+    padding:10px 8px;
+    text-align:left;
+    vertical-align:top
+  }
+  .hist-table th{
+    font-size:12px;
+    color:#666;
+    text-transform:uppercase;
+    letter-spacing:.02em
+  }
   .tag{
     display:inline-block;
     padding:2px 8px;
@@ -759,29 +632,31 @@
     overflow-y:scroll;
     overflow-x:auto;
     border:1px solid #eee;
-    border-radius:12px;
-    background:#fff;
+    border-radius:12px
   }
   .hist-scroll::-webkit-scrollbar{ width:10px; height:10px }
-  .hist-scroll::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.22); border-radius:999px }
-  .hist-scroll::-webkit-scrollbar-track{ background:rgba(0,0,0,.05); border-radius:999px }
+  .hist-scroll::-webkit-scrollbar-thumb{
+    background:rgba(0,0,0,.22);
+    border-radius:999px
+  }
+  .hist-scroll::-webkit-scrollbar-track{
+    background:rgba(0,0,0,.05);
+    border-radius:999px
+  }
 
-  /* =========================
-     EVENT MODAL
-     ========================= */
+  /* Event modal */
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9999}
   #eventModal .modal-dialog{width:min(920px,100%);background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)}
   #eventModal .modal-h{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #eee}
   #eventModal .modal-b{padding:16px}
   #eventModal .modal-f{padding:12px 16px;border-top:1px solid #eee;text-align:right;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
   #eventModal .modal .x{background:transparent;border:0;font-size:22px;cursor:pointer}
-
   .rosters{display:grid;gap:16px;margin-top:12px}
   @media (min-width: 900px){ .rosters{ grid-template-columns: 1fr 1fr; } }
   .roster{margin:.25rem 0 0;padding-left:18px}
-  .cap{margin:8px 0 0;font-weight:700}
+  .cap{margin:8px 0 0;font-weight:600}
 
-  .self-actions{margin:12px 0 0;padding:12px;border:1px solid #eee;border-radius:14px;background:#fafafa}
+  .self-actions{margin:12px 0 0;padding:12px;border:1px solid #eee;border-radius:12px;background:#fafafa}
   .self-row{display:grid;grid-template-columns:220px 1fr;gap:10px;align-items:end}
   .self-row input{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px}
   .self-btns{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
@@ -796,20 +671,15 @@
     border-radius:12px;
     padding:10px 12px;
     margin-bottom:12px;
-    box-shadow:0 6px 16px rgba(0,0,0,.06);
   }
-  .fc .fc-toolbar-title{ font-weight:800; color:#111; }
-
-  /* Make FullCalendar buttons match your all-caps rule */
+  .fc .fc-toolbar-title{ font-weight:700; color:#111; }
   .fc .fc-button{
     background:#fff !important;
     border:1px solid #ddd !important;
     color:#111 !important;
     box-shadow:none !important;
-    text-transform:uppercase !important;
+    text-transform:none !important;
     opacity:1 !important;
-    font-weight:800 !important;
-    letter-spacing:.02em !important;
   }
   .fc .fc-button .fc-icon{ color:#111 !important; }
   .fc .fc-button:hover{ background:#f7f7f7 !important; }
@@ -830,6 +700,8 @@
     border-color: transparent !important;
   }
   .fc .fc-list-event:hover td{ background: rgba(0,0,0,.03) !important; }
+
+  :root { --ucf-gold:#C9A227; --ucf-black:#000; --ucf-purple:#6A0DAD; --ucf-red:#C1121F; }
 
   .cat-gold  .fc-daygrid-event-dot, .cat-gold  .fc-list-event-dot { border-color:var(--ucf-gold) !important; background:var(--ucf-gold) !important; }
   .cat-black .fc-daygrid-event-dot, .cat-black .fc-list-event-dot { border-color:var(--ucf-black)!important; background:var(--ucf-black)!important; }
@@ -863,17 +735,20 @@
     background:#111;color:#fff;
     display:flex;align-items:center;justify-content:center;
     margin:0 auto 10px;
-    font-weight:900;
+    font-weight:800;
   }
   .pp-icon.bad{ background:#b00020; }
-  .pp-title{ font-weight:800;font-size:18px;margin:4px 0 6px; }
+  .pp-title{ font-weight:700;font-size:18px;margin:4px 0 6px; }
   .pp-msg{
     color:#333;font-size:14px;line-height:1.35;
     margin:0 0 12px;
     white-space:pre-wrap;
   }
   .pp-actions{ display:flex;justify-content:center; }
-  .pp-btn{ border:0; background:#111; color:#fff; cursor:pointer; }
+  .pp-btn{
+    padding:10px 18px;border:0;border-radius:10px;
+    background:#111;color:#fff;cursor:pointer;
+  }
   .pp-btn:hover{ opacity:.92; }
 
   /* Confetti modal scoped */
@@ -897,10 +772,31 @@
     display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap
   }
   #confettiModal .x{background:transparent;border:0;font-size:22px;cursor:pointer}
-  #confettiModal .secondary{ border:1px solid #ddd;background:#fff;cursor:pointer }
+  #confettiModal .secondary{padding:10px 14px;border:1px solid #ddd;background:#fff;border-radius:8px;cursor:pointer}
   #confettiModal .secondary:hover{background:#f7f7f7}
-</style>
+/* ===== FIX: Pending Center scroll + hard cap ===== */
+#pcCard{
+  display:flex;
+  flex-direction:column;
+}
 
+#pcCardBody{
+  display:flex;
+  flex-direction:column;
+  flex:1;
+  min-height:0;
+}
+
+#pcTableWrap{
+  flex:1;
+  min-height:0;
+  max-height:1000px;
+  overflow-y:auto;
+  overflow-x:auto;
+}
+
+
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 <script>
@@ -3138,4 +3034,3 @@ async function initReqAdmin(){
 </main>
 </body>
 </html>
-
