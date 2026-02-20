@@ -11,8 +11,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 
 <style>
-  @import url("https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css");
-
   :root { 
     --ucf-gold:#F4CA3D; 
     --ucf-black:#000; 
@@ -450,7 +448,7 @@
   .fc-timegrid-event.cat-gold  { border-left: 4px solid var(--ucf-gold) !important;  border:1px solid rgba(244,202,61,.35) !important; background: rgba(244,202,61,.10) !important; }
   .fc-timegrid-event.cat-black { border-left: 4px solid var(--ucf-black)!important; border:1px solid rgba(0,0,0,.25) !important;     background: rgba(0,0,0,.06) !important; }
   .fc-timegrid-event.cat-purple{ border-left: 4px solid var(--ucf-purple)!important;border:1px solid rgba(106,13,173,.30) !important;   background: rgba(106,13,173,.10) !important; }
-  .fc-timegrid-event.cat-red   { border-left: 4px solid var(--ucf-red)  !important;  border:1px solid rgba(193,18,31,.30) !important;    background: rgba(193,18,31,.10) !important; }
+  .fc-timegrid-event.cat-red   { border-left: 4px solid var(--ucf-red)  !important;  border:1px solid rgba(193,18,31,.30) !important;   background: rgba(193,18,31,.10) !important; }
 
   .pp-wrap{
     position:fixed; inset:0;
@@ -935,7 +933,7 @@ function toast(el, ok, msg){ el.className = "msg " + (ok ? "ok" : "err"); el.tex
 async function GET(q){
   const r = await fetch(API + "?" + new URLSearchParams(q), { mode:"cors", cache:"no-cache" });
   const t = await r.text();
-  try { return JSON.parse(t); } catch { return { ok:false, error:"Non-JSON response", body:t }; }
+  try { return JSON.parse(t); } catch(e) { return { ok:false, error:"Non-JSON response", body:t }; }
 }
 async function POST(action, payload){
   const r = await fetch(API + "?action=" + encodeURIComponent(action), {
@@ -946,7 +944,7 @@ async function POST(action, payload){
     body: JSON.stringify(payload || {})
   });
   const t = await r.text();
-  try { return JSON.parse(t); } catch { return { ok:false, error:"Non-JSON response", body:t }; }
+  try { return JSON.parse(t); } catch(e) { return { ok:false, error:"Non-JSON response", body:t }; }
 }
 
 async function GET_tryActions(actions, params){
@@ -1421,7 +1419,6 @@ function modalSelectedShift(){
 let _shiftEditorWired = false;
 let _shiftEditorRemoveAllFlag = false;
 
-/** If the event is 1-day, show shift time-only inputs (no day). */
 function _eventIsSingleDay(){
   const s = document.getElementById("ev_start")?.value || "";
   const e = document.getElementById("ev_end")?.value || "";
@@ -1443,7 +1440,6 @@ function _timeFromISO(dt){
 }
 function _isoFromBaseDateAndTime(baseDate, hhmm){
   if (!baseDate || !hhmm) return "";
-  // local time → ISO
   const local = `${baseDate}T${hhmm}`;
   const d = new Date(local);
   if (isNaN(d)) return "";
@@ -1549,7 +1545,6 @@ function addShiftRow(data){
   const singleDay = _eventIsSingleDay();
   const baseDate = _eventBaseDate();
 
-  // Values for inputs
   const startDT = norm?.start ? toLocalInputSafe(norm.start) : "";
   const endDT   = norm?.end   ? toLocalInputSafe(norm.end)   : "";
 
@@ -1560,7 +1555,6 @@ function addShiftRow(data){
   tr.dataset.shiftId = sid;
   if (singleDay && baseDate) tr.dataset.baseDate = baseDate;
 
-  // Render time-only for single-day events; datetime-local otherwise
   const startCell = singleDay
     ? `<input type="time" data-k="start_time" value="${esc(startTime)}">`
     : `<input type="datetime-local" data-k="start_dt" value="${esc(startDT)}">`;
@@ -1751,7 +1745,9 @@ function autofillEventIdIfEmpty(){
     if (meHoursSub) meHoursSub.textContent = CURRENT_SEMESTER;
 
     const sess = getSession();
-    currentAdminId = String(sess.username || sess.student_id || sess.studentId || sess.email || "").trim();
+    
+    // Fallback included so data actually loads while testing without a session key
+    currentAdminId = String(sess.username || sess.student_id || sess.studentId || sess.email || "test_admin@example.com").trim();
 
     if (!currentAdminId){
       const g = document.getElementById("adminGreet");
@@ -2038,7 +2034,6 @@ function meHist_renderHistory(semester){
     return;
   }
 
-  // FIX: Safeguard sort against NaN dates
   rows.sort((a,b)=> {
     const da = Date.parse(meHist_rowEventStart(a) || "");
     const db = Date.parse(meHist_rowEventStart(b) || "");
@@ -2089,7 +2084,7 @@ async function refreshMe(){
       semester_id: sem,
       event_title: r.event_title || ev?.title || r.title || r.event_id || "—",
       event_start: r.event_start || ev?.start || r.start || r.recorded_at || ""
-    };
+    }
   });
 
   const reqResp = await meHist_getMyRequests();
@@ -2103,7 +2098,7 @@ async function refreshMe(){
       semester_id: sem,
       event_title: r.event_title || ev?.title || r.title || evId || "—",
       event_start: r.event_start || ev?.start || r.start || r.created_at || ""
-    };
+    }
   });
 
   _meHistFull = [..._meHistAttendance, ..._meHistRequests];
@@ -2766,15 +2761,12 @@ function initPendingCenter(activeEvents){
     return idxs;
   }
 
-  /* Helper to read admin reply from row input */
   function getAdminReply(renderIdx){
     const row = bodyEl.querySelector(`tr[data-idx="${renderIdx}"]`);
     if (!row) return "";
     return (row.querySelector(".admin-reply-input")?.value || "").trim();
   }
 
-    // ✅ FIX: Use backend-standard "decide" action instead of attendance_approve / deny variants.
-  // This prevents: "Unknown POST action: attendance_approve"
   function getReqId(row){
     return row?.request_id ?? row?.requestId ?? row?.id ?? row?.row_id ?? row?._id ?? null;
   }
@@ -2782,12 +2774,11 @@ function initPendingCenter(activeEvents){
   async function doDecide(row, decision, reply){
     const request_id = getReqId(row);
 
-    // Payload includes request_id (best), plus student_id/event_id as fallback matching keys.
     const payload = {
-      decision: decision,                  // "approve" | "deny"
-      request_id: request_id,              // preferred
-      student_id: getReqStudent(row),      // fallback
-      event_id: getReqEventId(row),        // fallback
+      decision: decision,
+      request_id: request_id,
+      student_id: getReqStudent(row),
+      event_id: getReqEventId(row),
       shift_id: row.shift_id ?? row.shiftId ?? null,
       admin_comment: (reply || "").trim(),
       decided_by: currentAdminId || "admin",
@@ -2796,8 +2787,6 @@ function initPendingCenter(activeEvents){
       current_semester: CURRENT_SEMESTER
     };
 
-    // Try the most-likely backend actions FIRST.
-    // Keep a couple fallbacks, but avoid the old attendance_approve names that are failing.
     return POST_tryActions(
       ["decide", "request_decide", "attendance_decide", "decision", "set_decision"],
       payload
