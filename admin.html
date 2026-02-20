@@ -1421,25 +1421,35 @@ function modalSelectedShift(){
 let _shiftEditorWired = false;
 let _shiftEditorRemoveAllFlag = false;
 
-function wireShiftEditor(){
-  if (_shiftEditorWired) return;
-  _shiftEditorWired = true;
+/** If the event is 1-day, show shift time-only inputs (no day). */
+function _eventIsSingleDay(){
+  const s = document.getElementById("ev_start")?.value || "";
+  const e = document.getElementById("ev_end")?.value || "";
+  if (!s) return false;
+  const sd = s.slice(0,10);
+  const ed = (e ? e.slice(0,10) : sd);
+  return sd && ed && sd === ed;
+}
+function _eventBaseDate(){
+  const s = document.getElementById("ev_start")?.value || "";
+  return s ? s.slice(0,10) : "";
+}
+function _timeFromISO(dt){
+  if (!dt) return "";
+  const d = new Date(dt);
+  if (isNaN(d)) return "";
+  const p = n => String(n).padStart(2,"0");
+  return `${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function _isoFromBaseDateAndTime(baseDate, hhmm){
+  if (!baseDate || !hhmm) return "";
+  // local time → ISO
+  const local = `${baseDate}T${hhmm}`;
+  const d = new Date(local);
+  if (isNaN(d)) return "";
+  return d.toISOString();
+}
 
-  const has = document.getElementById("ev_hasShifts");
-  const box = document.getElementById("ev_shiftsBox");
-  const add = document.getElementById("ev_addShift");
-  const remAll = document.getElementById("ev_removeAllShifts");
-
-  if (!has || !box || !add || !remAll) return;
-
-  const setVisible = (on)=>{
-    box.style.display = on ? "block" : "none";
-    add.style.display = on ? "inline-flex" : "none";
-    remAll.style.display = on ? "inline-flex" : "none";
-    if (!on){
-      _shiftEditorRemoveAllFlag = false;
-    }
-  };
 function normalizeShiftForEditor(s, fallbackEventId){
   if (!s) return null;
 
@@ -1481,13 +1491,33 @@ function normalizeShiftForEditor(s, fallbackEventId){
 
 function toLocalInputSafe(dt){
   if (!dt) return "";
-  // If it's already in datetime-local format, keep it
   if (typeof dt === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(dt)) return dt.slice(0,16);
   const d = new Date(dt);
   if (isNaN(d)) return "";
   const p = n => String(n).padStart(2,'0');
   return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
+
+function wireShiftEditor(){
+  if (_shiftEditorWired) return;
+  _shiftEditorWired = true;
+
+  const has = document.getElementById("ev_hasShifts");
+  const box = document.getElementById("ev_shiftsBox");
+  const add = document.getElementById("ev_addShift");
+  const remAll = document.getElementById("ev_removeAllShifts");
+
+  if (!has || !box || !add || !remAll) return;
+
+  const setVisible = (on)=>{
+    box.style.display = on ? "block" : "none";
+    add.style.display = on ? "inline-flex" : "none";
+    remAll.style.display = on ? "inline-flex" : "none";
+    if (!on){
+      _shiftEditorRemoveAllFlag = false;
+    }
+  };
+
   has.addEventListener("change", ()=> setVisible(has.checked));
   add.addEventListener("click", ()=> addShiftRow());
 
@@ -1508,22 +1538,41 @@ function addShiftRow(data){
   const tbody = document.getElementById("ev_shiftsBody");
   if (!tbody) return;
 
-  const title = data?.title ?? data?.name ?? "";
-  const start = toLocalInput(data?.start ?? data?.start_local ?? "");
-  const end   = toLocalInput(data?.end ?? data?.end_local ?? "");
-  const cap   = Number(data?.capacity ?? 0);
-  const active = data?.active ?? true;
-  const sid = String(data?.shift_id ?? data?.id ?? "").trim();
+  const evId = String(document.getElementById("ev_id")?.value || "").trim();
+  const norm = data ? normalizeShiftForEditor(data, evId) : null;
+
+  const sid = String(norm?.shift_id || "").trim();
+  const title = norm?.title || "";
+  const cap = isFinite(norm?.capacity) ? Number(norm.capacity) : 0;
+  const active = (norm?.active == null) ? true : !!norm.active;
+
+  const singleDay = _eventIsSingleDay();
+  const baseDate = _eventBaseDate();
+
+  // Values for inputs
+  const startDT = norm?.start ? toLocalInputSafe(norm.start) : "";
+  const endDT   = norm?.end   ? toLocalInputSafe(norm.end)   : "";
+
+  const startTime = norm?.start ? _timeFromISO(norm.start) : "";
+  const endTime   = norm?.end   ? _timeFromISO(norm.end)   : "";
 
   const tr = document.createElement("tr");
+  tr.dataset.shiftId = sid;
+  if (singleDay && baseDate) tr.dataset.baseDate = baseDate;
 
-  const tr = document.createElement("tr");
-  tr.dataset.shiftId = sid; 
+  // Render time-only for single-day events; datetime-local otherwise
+  const startCell = singleDay
+    ? `<input type="time" data-k="start_time" value="${esc(startTime)}">`
+    : `<input type="datetime-local" data-k="start_dt" value="${esc(startDT)}">`;
+
+  const endCell = singleDay
+    ? `<input type="time" data-k="end_time" value="${esc(endTime)}">`
+    : `<input type="datetime-local" data-k="end_dt" value="${esc(endDT)}">`;
 
   tr.innerHTML = `
     <td><input type="text" data-k="title" placeholder="e.g., Setup / Check-in" value="${esc(title)}"></td>
-    <td><input type="datetime-local" data-k="start" value="${esc(start)}"></td>
-    <td><input type="datetime-local" data-k="end" value="${esc(end)}"></td>
+    <td>${startCell}</td>
+    <td>${endCell}</td>
     <td><input type="number" data-k="capacity" value="${esc(String(isFinite(cap)?cap:0))}" min="0"></td>
     <td style="text-align:left;">
       <label style="display:flex;align-items:center;gap:8px;margin:0;">
@@ -1533,6 +1582,7 @@ function addShiftRow(data){
     </td>
     <td><button type="button" class="secondary" data-act="rm">Remove</button></td>
   `;
+
   tr.querySelector('[data-act="rm"]')?.addEventListener("click", ()=> tr.remove());
   tbody.appendChild(tr);
 
@@ -1580,17 +1630,34 @@ function readShiftEditor(){
   const required = !!(req && req.checked);
   if (!enabled) return { enabled:false, required:false, shifts:[], removeAll:false };
 
+  const singleDay = _eventIsSingleDay();
+  const baseDate = _eventBaseDate();
+
   const rows = tbody ? [...tbody.querySelectorAll("tr")] : [];
   let autoIdx = 0;
 
   const shifts = rows.map(tr=>{
     const title = tr.querySelector('[data-k="title"]')?.value || "";
-    const startLocal = tr.querySelector('[data-k="start"]')?.value || "";
-    const endLocal   = tr.querySelector('[data-k="end"]')?.value || "";
     const capacity = Number(tr.querySelector('[data-k="capacity"]')?.value || 0);
     const active = !!tr.querySelector('[data-k="active"]')?.checked;
 
-    const any = (String(title).trim() || startLocal || endLocal || (Number(capacity)||0) > 0);
+    let startISO = "";
+    let endISO = "";
+
+    if (singleDay){
+      const bd = tr.dataset.baseDate || baseDate;
+      const st = tr.querySelector('[data-k="start_time"]')?.value || "";
+      const en = tr.querySelector('[data-k="end_time"]')?.value || "";
+      startISO = _isoFromBaseDateAndTime(bd, st);
+      endISO   = _isoFromBaseDateAndTime(bd, en);
+    } else {
+      const stLocal = tr.querySelector('[data-k="start_dt"]')?.value || "";
+      const enLocal = tr.querySelector('[data-k="end_dt"]')?.value || "";
+      startISO = stLocal ? new Date(stLocal).toISOString() : "";
+      endISO   = enLocal ? new Date(enLocal).toISOString() : "";
+    }
+
+    const any = (String(title).trim() || startISO || endISO || (Number(capacity)||0) > 0);
     if (!any) return null;
 
     let sid = String(tr.dataset.shiftId || "").trim();
@@ -1602,8 +1669,8 @@ function readShiftEditor(){
     return {
       shift_id: sid,
       title: String(title).trim(),
-      start: startLocal ? new Date(startLocal).toISOString() : "",
-      end: endLocal ? new Date(endLocal).toISOString() : "",
+      start: startISO,
+      end: endISO,
       capacity: isFinite(capacity) ? capacity : 0,
       active
     };
