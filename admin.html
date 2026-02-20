@@ -1440,7 +1440,54 @@ function wireShiftEditor(){
       _shiftEditorRemoveAllFlag = false;
     }
   };
+function normalizeShiftForEditor(s, fallbackEventId){
+  if (!s) return null;
 
+  const title =
+    s.title ?? s.name ?? s.shift_title ?? s.shiftTitle ?? s.label ?? "";
+
+  const startRaw =
+    s.start ?? s.shift_start ?? s.shiftStart ?? s.start_time ?? s.startTime ??
+    s.start_local ?? s.startLocal ?? s.start_utc ?? s.startUTC ?? "";
+
+  const endRaw =
+    s.end ?? s.shift_end ?? s.shiftEnd ?? s.end_time ?? s.endTime ??
+    s.end_local ?? s.endLocal ?? s.end_utc ?? s.endUTC ?? "";
+
+  const capRaw =
+    s.capacity ?? s.cap ?? s.max ?? s.max_capacity ?? s.maxCapacity ?? 0;
+
+  const activeRaw =
+    (s.active != null ? s.active :
+     (s.is_active != null ? s.is_active :
+      (s.isActive != null ? s.isActive : true)));
+
+  const shift_id =
+    String(s.shift_id ?? s.shiftId ?? s.id ?? s._id ?? "").trim();
+
+  const event_id =
+    String(s.event_id ?? s.eventId ?? fallbackEventId ?? "").trim();
+
+  return {
+    shift_id,
+    event_id,
+    title: String(title || "").trim(),
+    start: startRaw,
+    end: endRaw,
+    capacity: (capRaw === "" || capRaw == null) ? 0 : Number(capRaw),
+    active: isTrue(activeRaw)
+  };
+}
+
+function toLocalInputSafe(dt){
+  if (!dt) return "";
+  // If it's already in datetime-local format, keep it
+  if (typeof dt === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(dt)) return dt.slice(0,16);
+  const d = new Date(dt);
+  if (isNaN(d)) return "";
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
   has.addEventListener("change", ()=> setVisible(has.checked));
   add.addEventListener("click", ()=> addShiftRow());
 
@@ -1461,13 +1508,14 @@ function addShiftRow(data){
   const tbody = document.getElementById("ev_shiftsBody");
   if (!tbody) return;
 
-  const title = String(data?.title ?? data?.name ?? "").trim();
-  const start = data?.start ? toLocalInput(data.start) : (data?.start_local || "");
-  const end   = data?.end ? toLocalInput(data.end) : (data?.end_local || "");
-  const cap   = (data?.capacity != null && data?.capacity !== "") ? Number(data.capacity) : 0;
-  const active = (data?.active == null) ? true : isTrue(data.active);
+  const title = data?.title ?? data?.name ?? "";
+  const start = toLocalInput(data?.start ?? data?.start_local ?? "");
+  const end   = toLocalInput(data?.end ?? data?.end_local ?? "");
+  const cap   = Number(data?.capacity ?? 0);
+  const active = data?.active ?? true;
+  const sid = String(data?.shift_id ?? data?.id ?? "").trim();
 
-  const sid = String(data?.shift_id ?? data?.shiftId ?? data?.id ?? "").trim();
+  const tr = document.createElement("tr");
 
   const tr = document.createElement("tr");
   tr.dataset.shiftId = sid; 
