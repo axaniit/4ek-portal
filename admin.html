@@ -842,15 +842,15 @@
       <div id="mDesc" class="muted"></div>
       <div id="mCap" class="cap"></div>
 
-      <div id="mShiftWrap" class="self-actions" style="display:none;margin-top:10px;">
-        <div class="muted small" style="margin-bottom:6px;">This event uses shifts:</div>
-        <label style="margin:0;">Shift
-          <select id="mShift" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;"></select>
-        </label>
-        <div class="muted small" id="mShiftHint" style="margin-top:6px;"></div>
-      </div>
-
       <div class="self-actions">
+        <div id="mShiftWrap" style="display:none; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #ddd;">
+          <div class="muted small" style="margin-bottom:6px;">This event uses shifts:</div>
+          <label style="margin:0;">Shift
+            <select id="mShift" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;margin-top:4px;"></select>
+          </label>
+          <div class="muted small" id="mShiftHint" style="margin-top:6px;"></div>
+        </div>
+
         <div class="muted small" style="margin-bottom:6px;">Quick action for you (admin) on this event:</div>
         <div class="self-row">
           <label style="margin:0;">Hours (optional)
@@ -1521,7 +1521,7 @@ function wireShiftEditor(){
   setVisible(false);
 }
 
-function makeAutoShiftId(prefix, idx){ return `${prefix}_shift_${idx}_${Date.now()}`; }
+function makeAutoShiftId(idx){ return `TEMP_SHF_${Date.now()}_${idx}`; }
 
 function addShiftRow(data){
   const tbody = document.getElementById("ev_shiftsBody");
@@ -1649,7 +1649,7 @@ function readShiftEditor(){
 
     let sid = String(tr.dataset.shiftId || "").trim();
     if (!sid){
-      sid = makeAutoShiftId(evId || "EVT", autoIdx);
+      sid = makeAutoShiftId(autoIdx);
       autoIdx++;
     }
 
@@ -2093,21 +2093,17 @@ async function refreshMe(){
     }
   });
 
-  // ========== DEDUPLICATION FIX START ==========
-  // Find all events (and shifts) that are already in the "approved attendance" list.
   const attKeys = new Set(_meHistAttendance.map(a => {
     const eId = String(a.event_id || a.eventId || "").trim();
     const sId = String(a.shift_id || a.shiftId || "").trim();
     return eId + "::" + sId;
   }));
 
-  // Filter out any requests that already have a corresponding approved attendance record.
   _meHistRequests = _meHistRequests.filter(r => {
     const eId = String(r.event_id || r.eventId || r.event || "").trim();
     const sId = String(r.shift_id || r.shiftId || "").trim();
     return !attKeys.has(eId + "::" + sId);
   });
-  // ========== DEDUPLICATION FIX END ==========
 
   _meHistFull = [..._meHistAttendance, ..._meHistRequests];
 
@@ -2306,8 +2302,12 @@ function openModal(data){
     const li = document.createElement("li");
     const hrs = (Number(a.hours_awarded) > 0) ? ` · Hours: ${a.hours_awarded}` : "";
     const cmt = (a.comments || a.comment) ? ` — ${(a.comments || a.comment)}` : "";
-    const sid = String(a.shift_id ?? a.shiftId ?? "").trim();
-    const sLab = sid ? (shiftLabelById.get(sid) || sid) : "";
+    const sid = String(a.shift_id ?? a.shiftId ?? a.shift ?? "").trim();
+    
+    // Improved shift label resolution
+    let sLab = a.shift_title || a.shiftTitle || a.shift_name || "";
+    if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
+    
     const sTxt = sLab ? ` · Shift: ${sLab}` : "";
     li.textContent = `${a.student_id}${sTxt}${hrs}${cmt}`;
     aUL.appendChild(li);
@@ -2319,8 +2319,12 @@ function openModal(data){
     const li = document.createElement("li");
     const hrs = (Number(s.requested_hours ?? s.hours_requested ?? 0) > 0) ? ` · Hours: ${s.requested_hours ?? s.hours_requested}` : "";
     const cmt = (s.comment || s.comments) ? ` — ${(s.comment || s.comments)}` : "";
-    const sid = String(s.shift_id ?? s.shiftId ?? "").trim();
-    const sLab = sid ? (shiftLabelById.get(sid) || sid) : "";
+    const sid = String(s.shift_id ?? s.shiftId ?? s.shift ?? "").trim();
+    
+    // Improved shift label resolution
+    let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
+    if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
+    
     const sTxt = sLab ? ` · Shift: ${sLab}` : "";
     li.textContent = `${s.student_id}${sTxt}${hrs}${cmt}`;
     sUL.appendChild(li);
@@ -2335,8 +2339,11 @@ function openModal(data){
       const li = document.createElement("li");
       const hrs = (Number(s.requested_hours ?? s.hours_requested ?? 0) > 0) ? ` · Hours: ${s.requested_hours ?? s.hours_requested}` : "";
       const cmt = (s.comment || s.comments) ? ` — ${(s.comment || s.comments)}` : "";
-      const sid = String(s.shift_id ?? s.shiftId ?? "").trim();
-      const sLab = sid ? (shiftLabelById.get(sid) || sid) : "";
+      const sid = String(s.shift_id ?? s.shiftId ?? s.shift ?? "").trim();
+      
+      let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
+      if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
+      
       const sTxt = sLab ? ` · Shift: ${sLab}` : "";
       li.textContent = `${s.student_id}${sTxt}${hrs}${cmt}`;
       wUL.appendChild(li);
