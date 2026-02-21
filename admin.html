@@ -392,7 +392,6 @@
 
   .self-actions{margin:12px 0 0;padding:12px;border:1px solid #eee;border-radius:12px;background:#fafafa;box-sizing:border-box;}
   
-  /* FIXED: Modal input spacing so they do not overlap the right side */
   .self-row {
     display: flex;
     flex-wrap: wrap;
@@ -1241,7 +1240,6 @@ const shiftLabelById = new Map();
 
 function shiftLabel(s){
   if (!s) return "";
-  // FIXED: Explicitly look for shift_title key
   const title = s.shift_title || s.shiftTitle || s.title || s.name || "Shift";
   const start = s.start || s.shift_start || s.start_local;
   const end   = s.end   || s.shift_end   || s.end_local;
@@ -1362,7 +1360,6 @@ async function setShiftUI(prefix, eventId){
     sel.appendChild(new Option("No shift (not required)", ""));
   }
 
-  // FIXED: Ensure dropdown options rigidly attach to the ID value
   shifts.forEach(s=>{
     const opt = document.createElement("option");
     opt.value = s.shift_id;
@@ -1408,7 +1405,6 @@ async function setModalShiftUI(eventId){
     sel.appendChild(new Option("No shift (not required)", ""));
   }
 
-  // FIXED: Ensure dropdown options rigidly attach to the ID value
   shifts.forEach(s=>{
     const opt = document.createElement("option");
     opt.value = s.shift_id;
@@ -2335,7 +2331,6 @@ function openModal(data){
     const cmt = (a.comments || a.comment) ? ` — ${(a.comments || a.comment)}` : "";
     const sid = String(a.shift_id ?? a.shiftId ?? a.shift ?? "").trim();
     
-    // Improved shift label resolution
     let sLab = a.shift_title || a.shiftTitle || a.shift_name || "";
     if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
     
@@ -2352,7 +2347,6 @@ function openModal(data){
     const cmt = (s.comment || s.comments) ? ` — ${(s.comment || s.comments)}` : "";
     const sid = String(s.shift_id ?? s.shiftId ?? s.shift ?? "").trim();
     
-    // Improved shift label resolution
     let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
     if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
     
@@ -2502,14 +2496,28 @@ async function saveEvent(){
 
   const shiftPack = readShiftEditor(); 
 
+  // --- AUTO-CALCULATE HOURS LOGIC ---
+  let startDt = document.getElementById('ev_start').value || '';
+  let endDt = document.getElementById('ev_end').value || '';
+  let hoursInput = Number(document.getElementById('ev_hours').value || 0);
+
+  if (hoursInput === 0 && startDt && endDt) {
+    let d1 = new Date(startDt);
+    let d2 = new Date(endDt);
+    if (!isNaN(d1) && !isNaN(d2) && d2 > d1) {
+      hoursInput = (d2 - d1) / (1000 * 60 * 60);
+      hoursInput = Math.round(hoursInput * 4) / 4; // Round to nearest 0.25 increment
+    }
+  }
+
   const payload = {
     event_id: (document.getElementById('ev_id').value || '').trim(),
     title: (document.getElementById('ev_title').value || '').trim(),
     category: document.getElementById('ev_cat').value || 'Events',
-    start: document.getElementById('ev_start').value || '',
-    end: document.getElementById('ev_end').value || '',
+    start: startDt,
+    end: endDt,
     location: (document.getElementById('ev_loc').value || '').trim(),
-    hours_value: Number(document.getElementById('ev_hours').value || 0),
+    hours_value: hoursInput,
     signup_capacity: Number(document.getElementById('ev_cap').value || 0),
     notes: (document.getElementById('ev_notes').value || '').trim(),
     active: true,
