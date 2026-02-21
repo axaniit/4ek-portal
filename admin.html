@@ -391,8 +391,9 @@
   .cap{margin:8px 0 0;font-weight:600}
 
   .self-actions{margin:12px 0 0;padding:12px;border:1px solid #eee;border-radius:12px;background:#fafafa}
-  .self-row{display:grid;grid-template-columns:220px 1fr;gap:10px;align-items:end}
-  .self-row input{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px}
+  /* FIXED: Adjusted modal input spacing so they are further apart and padded */
+  .self-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:end;margin-bottom:12px;}
+  .self-row input{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;margin-top:6px;}
   .self-btns{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
 
   /* FullCalendar Overrides */
@@ -1219,7 +1220,8 @@ const shiftLabelById = new Map();
 
 function shiftLabel(s){
   if (!s) return "";
-  const title = s.title || s.name || "Shift";
+  // FIXED: Looks for backend key shift_title primarily now
+  const title = s.shift_title || s.shiftTitle || s.title || s.name || "Shift";
   const start = s.start || s.shift_start || s.start_local;
   const end   = s.end   || s.shift_end   || s.end_local;
   
