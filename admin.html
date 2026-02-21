@@ -390,10 +390,31 @@
   .roster{margin:.25rem 0 0;padding-left:18px}
   .cap{margin:8px 0 0;font-weight:600}
 
-  .self-actions{margin:12px 0 0;padding:12px;border:1px solid #eee;border-radius:12px;background:#fafafa}
-  /* FIXED: Adjusted modal input spacing so they are further apart and padded */
-  .self-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:end;margin-bottom:12px;}
-  .self-row input{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;margin-top:6px;}
+  .self-actions{margin:12px 0 0;padding:12px;border:1px solid #eee;border-radius:12px;background:#fafafa;box-sizing:border-box;}
+  
+  /* FIXED: Modal input spacing so they do not overlap the right side */
+  .self-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+    margin-bottom: 12px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .self-row > label {
+    flex: 1;
+    min-width: 140px;
+    margin: 0;
+  }
+  .self-row input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-top: 6px;
+    box-sizing: border-box;
+  }
   .self-btns{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
 
   /* FullCalendar Overrides */
@@ -854,10 +875,10 @@
 
         <div class="muted small" style="margin-bottom:6px;">Quick action for you (admin) on this event:</div>
         <div class="self-row">
-          <label style="margin:0;">Hours (optional)
+          <label>Hours (optional)
             <input id="mMyHours" type="number" step="0.25" min="0" placeholder="e.g., 2.5">
           </label>
-          <label style="margin:0;">Comment (optional)
+          <label>Comment (optional)
             <input id="mMyComment" type="text" placeholder="Notes…">
           </label>
         </div>
@@ -1220,7 +1241,7 @@ const shiftLabelById = new Map();
 
 function shiftLabel(s){
   if (!s) return "";
-  // FIXED: Looks for backend key shift_title primarily now
+  // FIXED: Explicitly look for shift_title key
   const title = s.shift_title || s.shiftTitle || s.title || s.name || "Shift";
   const start = s.start || s.shift_start || s.start_local;
   const end   = s.end   || s.shift_end   || s.end_local;
@@ -1341,8 +1362,12 @@ async function setShiftUI(prefix, eventId){
     sel.appendChild(new Option("No shift (not required)", ""));
   }
 
+  // FIXED: Ensure dropdown options rigidly attach to the ID value
   shifts.forEach(s=>{
-    sel.appendChild(new Option(shiftLabelById.get(s.shift_id) || shiftLabel(s), s.shift_id));
+    const opt = document.createElement("option");
+    opt.value = s.shift_id;
+    opt.textContent = shiftLabelById.get(s.shift_id) || shiftLabel(s);
+    sel.appendChild(opt);
   });
 
   if (hint){
@@ -1383,8 +1408,12 @@ async function setModalShiftUI(eventId){
     sel.appendChild(new Option("No shift (not required)", ""));
   }
 
+  // FIXED: Ensure dropdown options rigidly attach to the ID value
   shifts.forEach(s=>{
-    sel.appendChild(new Option(shiftLabelById.get(s.shift_id) || shiftLabel(s), s.shift_id));
+    const opt = document.createElement("option");
+    opt.value = s.shift_id;
+    opt.textContent = shiftLabelById.get(s.shift_id) || shiftLabel(s);
+    sel.appendChild(opt);
   });
 
   if (hint){
