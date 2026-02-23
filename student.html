@@ -450,7 +450,7 @@
     </div>
     <div class="modal-f">
       <button class="secondary" onclick="modalRequestAttendance()">Request attendance</button>
-      <button class="primary" onclick="modalSignup()">Sign up</button>
+      <button class="secondary" onclick="modalSignup()">Sign up</button>
       <button class="secondary" onclick="closeModal()">Close</button>
     </div>
   </div>
@@ -668,17 +668,34 @@ function statusIconForRow(row){
   if (s === "approved") return "✅";
   return "⚠️";
 }
-function rowDateKey(row){
-  const t = row.event_start || row.start || row.recorded_at || row.created_at || row.requested_at || row.timestamp || "";
-  const ms = Date.parse(t);
-  return isNaN(ms) ? 0 : ms;
-}
-function rowSemester(row){
-  return cleanSemesterLabel(row.semester_id || row.semester || row.semesterId || row.sem || "");
-}
+
 function rowEventId(row){
   return String(row.event_id || row.eventId || row.event || "").trim();
 }
+
+function rowDateKey(row){
+  let t = row.event_start || row.start || row.recorded_at || row.created_at || row.requested_at || row.timestamp || "";
+  if (!t) {
+    const ev = eventById(rowEventId(row));
+    if (ev && ev.start) t = ev.start;
+  }
+  const ms = Date.parse(t);
+  return isNaN(ms) ? 0 : ms;
+}
+
+function rowEventDateForDisplay(row){
+  let dt = row.event_start || row.start || row.recorded_at || row.created_at || row.requested_at || "";
+  if (!dt) {
+    const ev = eventById(rowEventId(row));
+    if (ev && ev.start) dt = ev.start;
+  }
+  return dt ? fmtShortDate(dt) : "—";
+}
+
+function rowSemester(row){
+  return cleanSemesterLabel(row.semester_id || row.semester || row.semesterId || row.sem || "");
+}
+
 function rowEventTitle(row){
   const direct = String(row.event_title || row.title || row.event_name || row.eventName || "").trim();
   let base = direct;
@@ -689,10 +706,7 @@ function rowEventTitle(row){
   }
   return base;
 }
-function rowEventDateForDisplay(row){
-  const dt = row.event_start || row.start || row.recorded_at || row.created_at || row.requested_at || "";
-  return dt ? fmtShortDate(dt) : "—";
-}
+
 function rowHoursForDisplay(row){
   if (row?._type === "attendance"){ return hoursNum(row.hours_awarded); }
   const rh = row.requested_hours ?? row.hours_requested ?? row.hours ?? row.req_hours;
