@@ -207,8 +207,8 @@
     background-color: #F4CA3D !important; 
     color: #000 !important;
     border: none !important;
-    border-radius: 8px !important;        
-    padding: 12px 24px !important;        
+    border-radius: 8px !important;       
+    padding: 12px 24px !important;       
     font-weight: 700 !important;
     font-size: 14px !important;
     text-transform: uppercase !important;
@@ -917,22 +917,6 @@
 const API = "https://script.google.com/macros/s/AKfycbxUUnLnZWfYGe0ZJ5NKtoLXa78qXCK-cEeCv2Ip_3Xm_XUDy-fFp-w0gShBxakcjJdCPg/exec";
 const SESSION_KEY = "portal_session_v1";
 const CURRENT_SEMESTER = "Spring2026";
-
-// ===== DEBUG OVERLAY (paste once) =====
-window._debugOverlay = function(title, obj) {
-  const el = document.createElement("pre");
-  el.style.cssText = `
-    position:fixed; z-index:999999; right:16px; bottom:16px;
-    max-width:42vw; max-height:45vh; overflow:auto;
-    background:#111; color:#f6f2e7; border:1px solid #333;
-    padding:12px; border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,.4);
-    font:12px/1.35 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-    white-space:pre-wrap;
-  `;
-  el.textContent = `${title}\n\n${JSON.stringify(obj, null, 2)}`;
-  el.addEventListener("click", () => el.remove());
-  document.body.appendChild(el);
-};
 
 /* ===== REQUIREMENTS ===== */
 const REQUIREMENT_LABELS = {
@@ -1973,26 +1957,22 @@ async function submitMySignup(e){
 
   const requestedHours = safeHours(document.getElementById("suHours").value);
 
-  const payload = {
-    student_id: currentAdminId,
-    event_id: evId,
-    shift_id: shiftId,
-    shift: shiftId,
-    shiftId: shiftId,
-    created_by: "admin",
-    requested_hours: requestedHours,
-    comment: (document.getElementById("suComment").value || "").trim(),
-    notify: true,
-    source: "portal_admin",
-    current_semester: CURRENT_SEMESTER
-  };
-
   const out = await POST_tryActions(
     ["signup","event_signup","sign_up","submitSignup","submit_signup","newsignup","new_signup"],
-    payload
+    {
+      student_id: currentAdminId,
+      event_id: evId,
+      shift_id: shiftId,
+      shift: shiftId,
+      shiftId: shiftId,
+      created_by: "admin",
+      requested_hours: requestedHours,
+      comment: (document.getElementById("suComment").value || "").trim(),
+      notify: true,
+      source: "portal_admin",
+      current_semester: CURRENT_SEMESTER
+    }
   );
-
-  window._debugOverlay("SIGNUP RESPONSE", { payload, data: out });
 
   if (out && out.ok){
     const statusTxt = out.status === "accepted" ? "confirmed ✅" : "submitted ✅";
@@ -2441,24 +2421,20 @@ async function modalSignupMe(eventId){
   const requestedHours = safeHours(document.getElementById("mMyHours").value);
   const comment = (document.getElementById("mMyComment").value || "").trim();
 
-  const payload = {
-    student_id: currentAdminId,
-    event_id: eventId,
-    shift_id: shiftId,
-    created_by: "admin",
-    requested_hours: requestedHours,
-    comment,
-    notify: true,
-    source: "portal_admin",
-    current_semester: CURRENT_SEMESTER
-  };
-
   const out = await POST_tryActions(
     ["signup","event_signup","sign_up","submitSignup","submit_signup","newsignup","new_signup"],
-    payload
+    {
+      student_id: currentAdminId,
+      event_id: eventId,
+      shift_id: shiftId,
+      created_by: "admin",
+      requested_hours: requestedHours,
+      comment,
+      notify: true,
+      source: "portal_admin",
+      current_semester: CURRENT_SEMESTER
+    }
   );
-
-  window._debugOverlay("SIGNUP RESPONSE", { payload, data: out });
 
   if (out && out.ok){
     openConfetti("Signed up", requestedHours == null ? "You have been added to the sign-up list." : `You have been added to the sign-up list.\nRequested hours: ${requestedHours}`);
