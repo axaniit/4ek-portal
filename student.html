@@ -1008,6 +1008,22 @@ let _requestsCache = [];
 let _fullHistoryCache = [];
 let _modalEventId = null;
 
+function extractSignupsAccepted(roster){
+  if (!roster) return [];
+  if (roster.signups && Array.isArray(roster.signups.accepted)) return roster.signups.accepted;
+  if (roster.signups && Array.isArray(roster.signups)) return roster.signups;
+  if (Array.isArray(roster.accepted)) return roster.accepted;
+  if (Array.isArray(roster.rows)) return roster.rows;
+  return [];
+}
+function extractSignupsWait(roster){
+  if (!roster) return [];
+  if (roster.signups && Array.isArray(roster.signups.waitlisted)) return roster.signups.waitlisted;
+  if (roster.signups && Array.isArray(roster.signups.waitlist)) return roster.signups.waitlist;
+  if (Array.isArray(roster.waitlisted)) return roster.waitlisted;
+  return [];
+}
+
 function initCalendarSafe(events){
   let attempts = 0;
   const maxAttempts = 100;
@@ -1067,13 +1083,33 @@ function buildCalendar(events){
     },
     eventClick: async (info) => {
       const ev = info.event.extendedProps || {};
-      const roster = await GET({ action:"eventroster", event_id: info.event.id });
-      await loadShiftsForEvent(info.event.id); 
-      openModal({
-        ev,
-        signupsAccepted: (roster && roster.signups && roster.signups.accepted) || [],
-        signupsWait: (roster && roster.signups && roster.signups.waitlisted) || []
-      });
+      
+      // 1. Open immediately with a loading state
+      openModal({ ev, loading: true });
+
+      try {
+        // 2. Fetch roster and shifts concurrently in the background
+        const [roster] = await Promise.all([
+          GET({ action:"eventroster", event_id: info.event.id }),
+          loadShiftsForEvent(info.event.id)
+        ]);
+        
+        // 3. Re-render modal with the actual data (only if they haven't closed or clicked away)
+        if (_modalEventId === String(info.event.id)) {
+          openModal({
+            ev,
+            signupsAccepted: extractSignupsAccepted(roster),
+            signupsWait: extractSignupsWait(roster),
+            loading: false
+          });
+        }
+      } catch (err) {
+        console.error("Error loading event click data:", err);
+        if (_modalEventId === String(info.event.id)) {
+           document.getElementById("mCap").textContent = "Error loading roster.";
+           document.getElementById("mSignups").innerHTML = "";
+        }
+      }
     }
   });
 
@@ -1084,6 +1120,7 @@ function openModal(data){
   const ev = data.ev || {};
   _modalEventId = String(ev.event_id || ev.id || "");
 
+  const isLoading = data.loading === true;
   const sAcc = data.signupsAccepted || [];
   const sWait = data.signupsWait || [];
 
@@ -1095,42 +1132,58 @@ function openModal(data){
 
   const capEl = document.getElementById("mCap");
   const limit = Number(ev.signup_capacity || 0);
-  capEl.textContent = limit > 0 ? `Sign-ups: ${sAcc.length} / ${limit}` : `Sign-ups: ${sAcc.length} (no cap)`;
 
-  setModalShiftUI(_modalEventId);
-
-  const sUL = document.getElementById("mSignups");
-  sUL.innerHTML = "";
-  sAcc.forEach(s => {
-    const li = document.createElement("li");
-    const sid = String(s.shift_id ?? s.shiftId ?? s.shift ?? "").trim();
-    let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
-    if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
-    const sTxt = sLab ? ` (Shift: ${sLab})` : "";
-    li.textContent = `${s.student_id}${sTxt}`;
-    sUL.appendChild(li);
-  });
-
-  const wHdr = document.getElementById("waitHdr");
-  const wUL = document.getElementById("mWait");
-  wUL.innerHTML = "";
-  if (sWait.length){
-    wHdr.style.display = "block";
-    sWait.forEach(s => {
-      const li = document.createElement("li");
-      const sid = String(s.shift_id ?? s.shiftId ?? s.shift ?? "").trim();
-      let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
-      if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
-      const sTxt = sLab ? ` (Shift: ${sLab})` : "";
-      li.textContent = `${s.student_id}${sTxt}`;
-      wUL.appendChild(li);
-    });
+  if (isLoading) {
+    // Show loading state
+    capEl.textContent = "Loading sign-ups...";
+    document.getElementById("mSignups").innerHTML = '<li class="muted small">Loading roster...</li>';
+    document.getElementById("waitHdr").style.display = "none";
+    document.getElementById("mWait").innerHTML = "";
+    document.getElementById("mShiftWrap").style.display = "none"; 
   } else {
-    wHdr.style.display = "none";
+    // Show loaded state
+    capEl.textContent = limit > 0 ? `Sign-ups: ${sAcc.length} / ${limit}` : `Sign-ups: ${sAcc.length} (no cap)`;
+
+    setModalShiftUI(_modalEventId); // Process shifts
+
+    const sUL = document.getElementById("mSignups");
+    sUL.innerHTML = "";
+    if (sAcc.length === 0) {
+      sUL.innerHTML = '<li class="muted small">No sign-ups yet.</li>';
+    } else {
+      sAcc.forEach(s => {
+        const li = document.createElement("li");
+        const sid = String(s.shift_id ?? s.shiftId ?? s.shift ?? "").trim();
+        let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
+        if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
+        const sTxt = sLab ? ` (Shift: ${sLab})` : "";
+        li.textContent = `${s.student_id}${sTxt}`;
+        sUL.appendChild(li);
+      });
+    }
+
+    const wHdr = document.getElementById("waitHdr");
+    const wUL = document.getElementById("mWait");
+    wUL.innerHTML = "";
+    if (sWait.length){
+      wHdr.style.display = "block";
+      sWait.forEach(s => {
+        const li = document.createElement("li");
+        const sid = String(s.shift_id ?? s.shiftId ?? s.shift ?? "").trim();
+        let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
+        if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
+        const sTxt = sLab ? ` (Shift: ${sLab})` : "";
+        li.textContent = `${s.student_id}${sTxt}`;
+        wUL.appendChild(li);
+      });
+    } else {
+      wHdr.style.display = "none";
+    }
   }
 
   document.getElementById("eventModal").style.display = "flex";
 }
+
 function closeModal(){ document.getElementById("eventModal").style.display = "none"; }
 
 
