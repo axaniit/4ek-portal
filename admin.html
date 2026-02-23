@@ -255,8 +255,8 @@
 
   .ev-scroll{
     overflow-x:auto;
-    overflow-y:hidden;
-    padding-bottom:6px;
+    overflow-y:visible; /* Ensure internal inputs aren't cut */
+    padding-bottom:12px;
   }
   .ev-scroll::-webkit-scrollbar{ height:10px }
   .ev-scroll::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.22); border-radius:999px }
@@ -269,6 +269,7 @@
     border-radius:12px;
     background:#fafafa;
     padding:12px;
+    min-width: 980px; /* Match form grid */
   }
   .shift-admin-top{
     display:flex;
@@ -279,9 +280,11 @@
   }
   .shift-scroll{
     overflow:auto;
+    max-height: 400px;
     border:1px solid #eee;
     border-radius:12px;
     background:#fff;
+    margin-top: 10px;
   }
   .shift-table{
     width:100%;
@@ -307,7 +310,8 @@
   }
   .shift-table input[type="datetime-local"],
   .shift-table input[type="number"],
-  .shift-table input[type="text"]{
+  .shift-table input[type="text"],
+  .shift-table input[type="time"]{
     width:100%;
     padding:8px;
     border:1px solid #ccc;
@@ -380,14 +384,28 @@
 
   /* Modal */
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9999}
-  #eventModal .modal-dialog{width:min(920px,100%);background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)}
-  #eventModal .modal-h{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #eee}
-  #eventModal .modal-b{padding:16px}
-  #eventModal .modal-f{padding:12px 16px;border-top:1px solid #eee;text-align:right;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+  #eventModal .modal-dialog{width:min(920px,100%); max-height: 90vh; background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2); display: flex; flex-direction: column;}
+  #eventModal .modal-h{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #eee; flex-shrink: 0;}
+  #eventModal .modal-b{padding:16px; overflow-y: auto; flex: 1;}
+  #eventModal .modal-f{padding:12px 16px;border-top:1px solid #eee;text-align:right;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap; flex-shrink: 0;}
   #eventModal .modal .x{background:transparent;border:0;font-size:22px;cursor:pointer}
+  
+  /* Roster Scroll Lists */
   .rosters{display:grid;gap:16px;margin-top:12px}
   @media (min-width: 900px){ .rosters{ grid-template-columns: 1fr 1fr; } }
-  .roster{margin:.25rem 0 0;padding-left:18px}
+  .roster{
+    margin:.25rem 0 0;
+    padding: 8px 18px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    list-style-type: decimal;
+  }
+  .roster::-webkit-scrollbar{ width: 8px; }
+  .roster::-webkit-scrollbar-thumb{ background: rgba(0,0,0,.15); border-radius: 999px; }
+  .roster::-webkit-scrollbar-track{ background: transparent; }
+
   .cap{margin:8px 0 0;font-weight:600}
 
   .self-actions{margin:12px 0 0;padding:12px;border:1px solid #eee;border-radius:12px;background:#fafafa;box-sizing:border-box;}
@@ -460,7 +478,7 @@
 
   .fc-timegrid-event{ border-radius:10px !important; overflow:hidden; }
   .fc-timegrid-event.cat-gold  { border-left: 4px solid var(--ucf-gold) !important;  border:1px solid rgba(244,202,61,.35) !important; background: rgba(244,202,61,.10) !important; }
-  .fc-timegrid-event.cat-black { border-left: 4px solid var(--ucf-black)!important; border:1px solid rgba(0,0,0,.25) !important;     background: rgba(0,0,0,.06) !important; }
+  .fc-timegrid-event.cat-black { border-left: 4px solid var(--ucf-black)!important; border:1px solid rgba(0,0,0,.25) !important;      background: rgba(0,0,0,.06) !important; }
   .fc-timegrid-event.cat-purple{ border-left: 4px solid var(--ucf-purple)!important;border:1px solid rgba(106,13,173,.30) !important;   background: rgba(106,13,173,.10) !important; }
   .fc-timegrid-event.cat-red   { border-left: 4px solid var(--ucf-red)  !important;  border:1px solid rgba(193,18,31,.30) !important;   background: rgba(193,18,31,.10) !important; }
 
@@ -756,7 +774,6 @@
 
               <div class="muted small" style="margin-bottom:10px;">
                 Shifts are <b>not shown on the calendar</b>. They only appear after you click an event (dropdown in the event modal).
-                You can leave this section empty if there aren’t shifts.
               </div>
 
               <div class="shift-scroll">
@@ -779,7 +796,7 @@
             </div>
           </div>
 
-          <button type="button" id="saveEventBtn">Save Event</button>
+          <button type="button" id="saveEventBtn" style="margin-top: 20px;">Save Event</button>
           <span class="msg" id="evMsg"></span>
         </form>
       </div>
@@ -899,7 +916,7 @@
           <div class="muted small">Sign-ups don’t affect hours.</div>
           <ul id="mSignups" class="roster"></ul>
 
-          <h6 class="muted" id="waitHdr" style="display:none;margin-top:8px;">Waitlist</h6>
+          <h6 class="muted" id="waitHdr" style="display:none;margin-top:16px; margin-bottom: 4px;">Waitlist</h6>
           <ul id="mWait" class="roster"></ul>
         </div>
       </div>
@@ -1241,8 +1258,10 @@ const shiftLabelById = new Map();
 function shiftLabel(s){
   if (!s) return "";
   const title = s.shift_title || s.shiftTitle || s.title || s.name || "Shift";
-  const start = s.start || s.shift_start || s.start_local;
-  const end   = s.end   || s.shift_end   || s.end_local;
+  const start = s.start || s.shift_start || s.shiftStart || s.start_time || s.startTime ||
+    s.start_local || s.startLocal || s.start_utc || s.startUTC || "";
+  const end   = s.end   || s.shift_end   || s.shiftEnd   || s.end_time   || s.endTime   ||
+    s.end_local   || s.endLocal   || s.end_utc   || s.endUTC   || "";
   
   if (!start) return title;
   
@@ -1469,30 +1488,17 @@ function _isoFromBaseDateAndTime(baseDate, hhmm){
 function normalizeShiftForEditor(s, fallbackEventId){
   if (!s) return null;
 
-  const title =
-    s.title ?? s.name ?? s.shift_title ?? s.shiftTitle ?? s.label ?? "";
-
-  const startRaw =
-    s.start ?? s.shift_start ?? s.shiftStart ?? s.start_time ?? s.startTime ??
+  const title = s.title ?? s.name ?? s.shift_title ?? s.shiftTitle ?? s.label ?? "";
+  const startRaw = s.start ?? s.shift_start ?? s.shiftStart ?? s.start_time ?? s.startTime ??
     s.start_local ?? s.startLocal ?? s.start_utc ?? s.startUTC ?? "";
-
-  const endRaw =
-    s.end ?? s.shift_end ?? s.shiftEnd ?? s.end_time ?? s.endTime ??
+  const endRaw = s.end ?? s.shift_end ?? s.shiftEnd ?? s.end_time ?? s.endTime ??
     s.end_local ?? s.endLocal ?? s.end_utc ?? s.endUTC ?? "";
-
-  const capRaw =
-    s.capacity ?? s.cap ?? s.max ?? s.max_capacity ?? s.maxCapacity ?? 0;
-
-  const activeRaw =
-    (s.active != null ? s.active :
-     (s.is_active != null ? s.is_active :
+  const capRaw = s.capacity ?? s.cap ?? s.max ?? s.max_capacity ?? s.maxCapacity ?? 0;
+  const activeRaw = (s.active != null ? s.active :
+    (s.is_active != null ? s.is_active :
       (s.isActive != null ? s.isActive : true)));
-
-  const shift_id =
-    String(s.shift_id ?? s.shiftId ?? s.id ?? s._id ?? "").trim();
-
-  const event_id =
-    String(s.event_id ?? s.eventId ?? fallbackEventId ?? "").trim();
+  const shift_id = String(s.shift_id ?? s.shiftId ?? s.id ?? s._id ?? "").trim();
+  const event_id = String(s.event_id ?? s.eventId ?? fallbackEventId ?? "").trim();
 
   return {
     shift_id,
@@ -2238,7 +2244,7 @@ function buildCalendar(events){
     events: fcEvents,
     views: {
       dayGridMonth: { eventDisplay: "list-item" },
-      listWeek:     { eventDisplay: "auto" },
+      listWeek:      { eventDisplay: "auto" },
       timeGridWeek: { eventDisplay: "block" },
       timeGridDay:  { eventDisplay: "block" }
     },
@@ -2325,35 +2331,39 @@ function openModal(data){
 
   const aUL = document.getElementById("mApproved");
   aUL.innerHTML = "";
-  approved.forEach(a => {
-    const li = document.createElement("li");
-    const hrs = (Number(a.hours_awarded) > 0) ? ` · Hours: ${a.hours_awarded}` : "";
-    const cmt = (a.comments || a.comment) ? ` — ${(a.comments || a.comment)}` : "";
-    const sid = String(a.shift_id ?? a.shiftId ?? a.shift ?? "").trim();
-    
-    let sLab = a.shift_title || a.shiftTitle || a.shift_name || "";
-    if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
-    
-    const sTxt = sLab ? ` · Shift: ${sLab}` : "";
-    li.textContent = `${a.student_id}${sTxt}${hrs}${cmt}`;
-    aUL.appendChild(li);
-  });
+  if (approved.length === 0) {
+    aUL.innerHTML = '<li class="muted small">No approved attendance yet.</li>';
+  } else {
+    approved.forEach(a => {
+      const li = document.createElement("li");
+      const hrs = (Number(a.hours_awarded) > 0) ? ` · Hours: ${a.hours_awarded}` : "";
+      const cmt = (a.comments || a.comment) ? ` — ${(a.comments || a.comment)}` : "";
+      const sid = String(a.shift_id ?? a.shiftId ?? a.shift ?? "").trim();
+      let sLab = a.shift_title || a.shiftTitle || a.shift_name || "";
+      if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
+      const sTxt = sLab ? ` · Shift: ${sLab}` : "";
+      li.textContent = `${a.student_id}${sTxt}${hrs}${cmt}`;
+      aUL.appendChild(li);
+    });
+  }
 
   const sUL = document.getElementById("mSignups");
   sUL.innerHTML = "";
-  sAcc.forEach(s => {
-    const li = document.createElement("li");
-    const hrs = (Number(s.requested_hours ?? s.hours_requested ?? 0) > 0) ? ` · Hours: ${s.requested_hours ?? s.hours_requested}` : "";
-    const cmt = (s.comment || s.comments) ? ` — ${(s.comment || s.comments)}` : "";
-    const sid = String(s.shift_id ?? s.shiftId ?? s.shift ?? "").trim();
-    
-    let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
-    if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
-    
-    const sTxt = sLab ? ` · Shift: ${sLab}` : "";
-    li.textContent = `${s.student_id}${sTxt}${hrs}${cmt}`;
-    sUL.appendChild(li);
-  });
+  if (sAcc.length === 0) {
+    sUL.innerHTML = '<li class="muted small">No sign-ups yet.</li>';
+  } else {
+    sAcc.forEach(s => {
+      const li = document.createElement("li");
+      const hrs = (Number(s.requested_hours ?? s.hours_requested ?? 0) > 0) ? ` · Hours: ${s.requested_hours ?? s.hours_requested}` : "";
+      const cmt = (s.comment || s.comments) ? ` — ${(s.comment || s.comments)}` : "";
+      const sid = String(s.shift_id ?? s.shiftId ?? s.shift ?? "").trim();
+      let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
+      if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
+      const sTxt = sLab ? ` · Shift: ${sLab}` : "";
+      li.textContent = `${s.student_id}${sTxt}${hrs}${cmt}`;
+      sUL.appendChild(li);
+    });
+  }
 
   const wHdr = document.getElementById("waitHdr");
   const wUL = document.getElementById("mWait");
@@ -2365,10 +2375,8 @@ function openModal(data){
       const hrs = (Number(s.requested_hours ?? s.hours_requested ?? 0) > 0) ? ` · Hours: ${s.requested_hours ?? s.hours_requested}` : "";
       const cmt = (s.comment || s.comments) ? ` — ${(s.comment || s.comments)}` : "";
       const sid = String(s.shift_id ?? s.shiftId ?? s.shift ?? "").trim();
-      
       let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
       if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
-      
       const sTxt = sLab ? ` · Shift: ${sLab}` : "";
       li.textContent = `${s.student_id}${sTxt}${hrs}${cmt}`;
       wUL.appendChild(li);
@@ -2399,7 +2407,7 @@ function openModal(data){
     }
 
     closeModal();
-    document.getElementById('eventForm')?.scrollIntoView({behavior:'smooth',block:'start'});
+    document.getElementById('evCard')?.scrollIntoView({behavior:'smooth',block:'start'});
   };
 }
 function closeModal(){ document.getElementById("eventModal").style.display = "none"; }
@@ -2496,7 +2504,6 @@ async function saveEvent(){
 
   const shiftPack = readShiftEditor(); 
 
-  // --- AUTO-CALCULATE HOURS LOGIC ---
   let startDt = document.getElementById('ev_start').value || '';
   let endDt = document.getElementById('ev_end').value || '';
   let hoursInput = Number(document.getElementById('ev_hours').value || 0);
@@ -2506,7 +2513,7 @@ async function saveEvent(){
     let d2 = new Date(endDt);
     if (!isNaN(d1) && !isNaN(d2) && d2 > d1) {
       hoursInput = (d2 - d1) / (1000 * 60 * 60);
-      hoursInput = Math.round(hoursInput * 4) / 4; // Round to nearest 0.25 increment
+      hoursInput = Math.round(hoursInput * 4) / 4; 
     }
   }
 
@@ -2962,9 +2969,9 @@ async function initReqAdmin(){
   const elLoad    = document.getElementById("rq_load");
   const elList    = document.getElementById("rq_list");
   const elStatus = document.getElementById("rq_status");
-  const elSel     = document.getElementById("rq_sel");
+  const elSel      = document.getElementById("rq_sel");
   const btnAll    = document.getElementById("rq_check_all");
-  const btnNone   = document.getElementById("rq_uncheck_all");
+  const btnNone    = document.getElementById("rq_uncheck_all");
 
   if (!elDL || !elSearch || !elLoad || !elList) return;
 
