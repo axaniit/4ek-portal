@@ -6,225 +6,504 @@
   <title>4EK Ambassador Portal</title>
   <meta name="robots" content="noindex, nofollow">
 
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Theme -->
   <link rel="stylesheet" href="assets/portal-theme.css?v=4">
 
- <style>
-  body{
-    margin:0;
-    font-family:"Nunito", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  }
+  <style>
+    body{
+      margin:0;
+      font-family:"Nunito", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
 
-  /* ========= HERO (FORCED) ========= */
+    section.portal-hero{
+      background:#F4CA3D !important;
+      background-image:none !important;
+      min-height:110px !important;
+      display:flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+      text-align:center !important;
+      padding:0 !important;
+    }
 
-  section.portal-hero{
-    background:#F4CA3D !important;        /* HARD color */
-    background-image:none !important;     /* kill gradients */
-    min-height:110px !important;          /* thicker hero */
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    text-align:center !important;
-    padding:0 !important;                 /* remove theme padding */
-  }
+    section.portal-hero h1{
+      font-family:"Montserrat", sans-serif !important;
+      font-size:44px !important;
+      font-weight:700 !important;
+      margin:0 !important;
+      color:#111 !important;
+    }
 
-  section.portal-hero h1{
-    font-family:"Montserrat", sans-serif !important;
-    font-size:44px !important;            /* slightly larger */
-    font-weight:700 !important;
-    margin:0 !important;
-    color:#111 !important;
-  }
+    .portal-accent-line{
+      height:6px !important;
+      background:#F4CA3D !important;
+    }
 
-  /* Accent line under hero */
-  .portal-accent-line{
-    height:6px !important;                /* thicker line */
-    background:#F4CA3D !important;
-  }
+    #box h2{
+      font-family:"Montserrat", sans-serif !important;
+      font-size:28px !important;
+      font-weight:700 !important;
+      margin:0 0 6px !important;
+      color:#111 !important;
+    }
 
-  /* Second title inside box */
-  #box h2{
-    font-family:"Montserrat", sans-serif !important;
-    font-size:28px !important;
-    font-weight:700 !important;
-    margin:0 0 6px !important;
-    color:#111 !important;
-  }
+    .login-wrap{
+      max-width:980px;
+      margin:0 auto;
+      padding:22px 16px 48px;
+    }
 
-  /* ========= LOGIN FORM ========= */
+    #box{
+      margin:24px auto 0 !important;
+      max-width:460px;
+      padding:18px;
+      border:1px solid #e2e2e2;
+      border-radius:12px;
+      background:#fff;
+      box-shadow:0 6px 20px rgba(0,0,0,.06);
+    }
 
-  .login-wrap{
-    max-width:980px;
-    margin:0 auto;
-    padding:22px 16px 48px;
-  }
+    .field{
+      display:block;
+      margin:10px 0 12px;
+      font-weight:600;
+    }
 
-  #box{
-    margin:24px auto 0 !important;
-  }
+    .input{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid #cfcfcf;
+      border-radius:8px;
+      margin-top:6px;
+      box-sizing:border-box;
+      font-family:"Nunito", sans-serif;
+    }
 
-  .field{
-    display:block;
-    margin:10px 0 12px;
-    font-weight:600;
-  }
+    .portal-btn{
+      width:100%;
+      padding:14px;
+      border:0;
+      border-radius:8px;
+      background:#F4CA3D !important;
+      background-image:none !important;
+      color:#111 !important;
+      cursor:pointer;
+      font-weight:600 !important;
+      letter-spacing:.3px;
+      text-transform:uppercase;
+      box-shadow:0 3px 0 rgba(0,0,0,.18);
+    }
 
-  .input{
-    width:100%;
-    padding:10px 12px;
-    border:1px solid #cfcfcf;
-    border-radius:8px;
-    margin-top:6px;
-    box-sizing:border-box;
-    font-family:"Nunito", sans-serif;
-  }
+    .portal-btn:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
 
-  /* Continue Button */
-  #btnLogin{
-    width:100%;
-    padding:14px;                         /* slightly taller */
-    border:0;
-    border-radius:8px;
-    background:#F4CA3D !important;         /* HARD yellow */
-    background-image:none !important;
-    color:#111 !important;
-    cursor:pointer;
-    font-weight:600 !important;            /* medium, not thin */
-    letter-spacing:.3px;
-    text-transform:uppercase;
-    box-shadow:0 3px 0 rgba(0,0,0,.18);
-  }
+    .hint{
+      font-size:12px;
+      color:#666;
+      margin-top:6px;
+      line-height:1.35;
+    }
 
-  #btnLogin:disabled{
-    opacity:.6;
-    cursor:not-allowed;
-  }
+    .hidden{ display:none; }
 
-  .hint{
-    font-size:12px;
-    color:#666;
-    margin-top:6px;
-    line-height:1.35;
-  }
-
-  .hidden{display:none;}
-</style>
-
+    a{
+      color:#111;
+      font-weight:700;
+    }
+  </style>
 </head>
 
 <body>
-
-  <!-- HERO -->
   <section class="portal-hero">
     <h1>4EK Ambassador Portal</h1>
   </section>
   <div class="portal-accent-line"></div>
 
   <main class="login-wrap">
-    <div id="box" style="max-width:460px;margin:24px auto;padding:18px;border:1px solid #e2e2e2;border-radius:12px;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.06)">
+    <div id="box">
       <h2>4EK Ambassador Portal</h2>
       <p style="color:#666;margin:0 0 14px;">Login with UCF Email</p>
 
       <div id="msg" class="hint hidden" style="margin-bottom:12px;"></div>
 
+      <!-- STEP 1 -->
       <form id="stepLogin">
         <label class="field">UCF Email
           <input id="email" type="email" class="input" placeholder="you@ucf.edu" required autocomplete="username">
         </label>
+
         <label class="field">Password
           <input id="password" type="password" class="input" autocomplete="current-password">
         </label>
-        <button id="btnLogin" type="submit">Continue</button>
+
+        <button id="btnLogin" class="portal-btn" type="submit">Continue</button>
+      </form>
+
+      <!-- STEP 2 -->
+      <form id="stepCode" class="hidden">
+        <div class="hint">Enter the 6-digit code sent to your email.</div>
+
+        <label class="field">Code
+          <input id="code" type="text" maxlength="6" class="input" autocomplete="one-time-code" inputmode="numeric">
+        </label>
+
+        <button id="btnCode" class="portal-btn" type="submit">Verify</button>
+        <div class="hint" style="margin-top:8px;">
+          <a href="#" id="resend">Resend code</a>
+        </div>
+      </form>
+
+      <!-- STEP 3 -->
+      <form id="stepConfirm" class="hidden">
+        <label class="field">Set password
+          <input id="newpw" type="password" class="input" autocomplete="new-password">
+        </label>
+
+        <button id="btnConfirm" class="portal-btn" type="submit">Save Password</button>
       </form>
     </div>
   </main>
 
   <script>
-  const API = "https://script.google.com/macros/s/AKfycbxUUnLnZWfYGe0ZJ5NKtoLXa78qXCK-cEeCv2Ip_3Xm_XUDy-fFp-w0gShBxakcjJdCPg/exec";
-  const SESSION_KEY = "portal_session_v1";
+    const API = "https://script.google.com/macros/s/AKfycbxUUnLnZWfYGe0ZJ5NKtoLXa78qXCK-cEeCv2Ip_3Xm_XUDy-fFp-w0gShBxakcjJdCPg/exec";
+    const SESSION_KEY = "portal_session_v1";
+    const LEGACY_KEYS = ["portal_session_v8"];
 
-  const $ = (id) => document.getElementById(id);
+    const $ = (id) => document.getElementById(id);
 
-  function setMsg(t, ok=false){
-    const el = $("msg");
-    el.classList.remove("hidden");
-    el.style.color = ok ? "#1a7f37" : "#b00020";
-    el.textContent = t;
-  }
+    function setMsg(t, ok = false){
+      const el = $("msg");
+      el.classList.remove("hidden");
+      el.style.color = ok ? "#1a7f37" : "#b00020";
+      el.textContent = t;
+    }
 
-  function saveSession(username, role){
-    localStorage.setItem(SESSION_KEY, JSON.stringify({ username, role, ts: Date.now() }));
-  }
+    function hideMsg(){
+      const el = $("msg");
+      el.classList.add("hidden");
+      el.textContent = "";
+    }
 
-  function getBase(){
-    const { origin, pathname } = window.location;
-    const dir = pathname.replace(/\/[^\/]*$/, "");
-    return origin + (dir === "" ? "" : dir);
-  }
+    function show(step){
+      ["stepLogin","stepCode","stepConfirm"].forEach(id => $(id).classList.add("hidden"));
+      $(step).classList.remove("hidden");
+    }
 
-  function redirectToPortal(role){
-    const base = getBase();
-    window.location.href = role === "admin"
-      ? base + "/admin.html"
-      : base + "/student.html";
-  }
+    function clearSessions(){
+      try { localStorage.removeItem(SESSION_KEY); } catch(_) {}
+      LEGACY_KEYS.forEach(k => {
+        try { localStorage.removeItem(k); } catch(_) {}
+      });
+    }
 
-  async function POST_LOGIN(email, password){
-    const qs = new URLSearchParams({
-      action: "login",
-      student_id: email,
-      email: email,
-      username: email
-    }).toString();
+    function saveSession(username, role){
+      const payload = { username, role, ts: Date.now() };
+      localStorage.setItem(SESSION_KEY, JSON.stringify(payload));
+      LEGACY_KEYS.forEach(k => {
+        try { localStorage.setItem(k, JSON.stringify(payload)); } catch(_) {}
+      });
+    }
 
-    const r = await fetch(API + "?" + qs, {
-      method: "POST",
-      mode: "cors",
-      cache: "no-cache",
-      body: JSON.stringify({ student_id: email, email, username: email, password })
-    });
+    function getEmail(){
+      return ($("email").value || "").trim().toLowerCase();
+    }
 
-    const t = await r.text();
-    try { return JSON.parse(t); }
-    catch { return { ok:false }; }
-  }
+    function getPassword(){
+      return $("password").value || "";
+    }
 
-  $("stepLogin").addEventListener("submit", async (e)=>{
-    e.preventDefault();
+    function disableBtn(id, text){
+      const btn = $(id);
+      if(!btn) return;
+      btn.disabled = true;
+      btn.dataset.prev = btn.textContent;
+      btn.textContent = text;
+    }
 
-    const email = ($("email").value || "").trim().toLowerCase();
-    const password = $("password").value || "";
+    function enableBtn(id){
+      const btn = $(id);
+      if(!btn) return;
+      btn.disabled = false;
+      if(btn.dataset.prev){
+        btn.textContent = btn.dataset.prev;
+        delete btn.dataset.prev;
+      }
+    }
 
-    if(!email){ setMsg("Enter your UCF email."); return; }
-    if(!password){ setMsg("Enter your password."); return; }
+    function enableBtns(){
+      ["btnLogin","btnCode","btnConfirm"].forEach(enableBtn);
+    }
 
-    $("btnLogin").disabled = true;
-    $("btnLogin").textContent = "Loading…";
+    function getBase(){
+      const { origin, pathname } = window.location;
+      const dir = pathname.replace(/\/[^\/]*$/, "");
+      return origin + (dir === "" ? "" : dir);
+    }
 
-    try{
-      localStorage.removeItem(SESSION_KEY);
-      const out = await POST_LOGIN(email, password);
+    function redirectToPortal(role){
+      const base = getBase();
+      window.location.href = role === "admin"
+        ? base + "/admin.html"
+        : base + "/student.html";
+    }
 
-      if(out?.ok && out.role){
-        saveSession(email, out.role);
-        redirectToPortal(out.role);
+    async function GETJSON(params){
+      const url = API + "?" + new URLSearchParams(params).toString();
+      const r = await fetch(url, { mode:"cors", cache:"no-cache" });
+      const t = await r.text();
+
+      try {
+        return JSON.parse(t);
+      } catch {
+        return { ok:false, error:"Non-JSON response", body:t, status:r.status };
+      }
+    }
+
+    async function POST_PARAM(action, queryParams, bodyObj){
+      const qs = new URLSearchParams({ action, ...(queryParams || {}) }).toString();
+      const url = API + "?" + qs;
+
+      const r = await fetch(url, {
+        method: "POST",
+        mode: "cors",
+        cache: "no-cache",
+        body: JSON.stringify(bodyObj || {})
+      });
+
+      const t = await r.text();
+
+      try {
+        return JSON.parse(t);
+      } catch {
+        return { ok:false, error:"Non-JSON response", body:t, status:r.status };
+      }
+    }
+
+    async function doLogin(){
+      hideMsg();
+
+      const email = getEmail();
+      const password = getPassword();
+
+      if(!email){
+        setMsg("Enter your UCF email.");
         return;
       }
 
-      setMsg("Login failed.");
-    }catch{
-      setMsg("Could not reach login service.");
+      if(!password){
+        setMsg("Enter your password.");
+        return;
+      }
+
+      disableBtn("btnLogin", "Loading…");
+
+      try{
+        clearSessions();
+
+        const out = await POST_PARAM(
+          "login",
+          { student_id: email, email, username: email },
+          { student_id: email, email, username: email, password }
+        );
+
+        enableBtns();
+
+        if(out?.ok && out.role){
+          const canonicalEmail = String(out.student_id || out.email || email).trim().toLowerCase();
+          clearSessions();
+          saveSession(canonicalEmail, out.role);
+          redirectToPortal(out.role);
+          return;
+        }
+
+        if(out?.status === "not_set"){
+          await sendCode();
+          return;
+        }
+
+        if(out?.status === "bad_password"){
+          setMsg("Incorrect password.");
+          return;
+        }
+
+        setMsg(out?.error || "Login failed.");
+      } catch(err){
+        enableBtns();
+        console.error("Login failed:", err);
+        setMsg("Could not reach login service.");
+      }
     }
 
-    $("btnLogin").disabled = false;
-    $("btnLogin").textContent = "Continue";
-  });
-  </script>
+    async function sendCode(){
+      const email = getEmail();
 
+      if(!email){
+        setMsg("Enter email first.");
+        return;
+      }
+
+      disableBtn("btnLogin", "Sending…");
+
+      try{
+        const out = await GETJSON({ action: "sendlogincode", email });
+        enableBtns();
+
+        if(out?.ok){
+          show("stepCode");
+          setMsg("Code sent. Check your email.", true);
+          return;
+        }
+
+        if(out?.error === "not_on_roster"){
+          setMsg("That email is not on the ambassador roster.");
+          return;
+        }
+
+        if(out?.error === "missing_destination_email"){
+          setMsg("No valid email is saved for this ambassador. Contact an admin.");
+          return;
+        }
+
+        if(out?.error === "mail_failed"){
+          setMsg("The code email could not be sent. Please try again.");
+          return;
+        }
+
+        setMsg(out?.error || "Could not send code.");
+      } catch(err){
+        enableBtns();
+        console.error("sendCode failed:", err);
+        setMsg("Could not send code. Please try again.");
+      }
+    }
+
+    async function verifyCode(){
+      const email = getEmail();
+      const code = ($("code").value || "").trim();
+
+      if(!email){
+        setMsg("Enter email first.");
+        show("stepLogin");
+        return;
+      }
+
+      if(!code || code.length !== 6){
+        setMsg("Enter the 6-digit code.");
+        return;
+      }
+
+      disableBtn("btnCode", "Verifying…");
+
+      try{
+        const out = await GETJSON({ action: "verifylogincode", email, code });
+        enableBtns();
+
+        if(out?.ok){
+          show("stepConfirm");
+          hideMsg();
+          return;
+        }
+
+        if(out?.error === "invalid_code"){
+          setMsg("That code is invalid.");
+          return;
+        }
+
+        if(out?.error === "code_expired"){
+          setMsg("That code expired. Please resend it.");
+          return;
+        }
+
+        if(out?.error === "code_used"){
+          setMsg("That code has already been used. Please resend it.");
+          return;
+        }
+
+        setMsg(out?.error || "Could not verify code.");
+      } catch(err){
+        enableBtns();
+        console.error("verifyCode failed:", err);
+        setMsg("Could not verify code. Please try again.");
+      }
+    }
+
+    async function confirmPassword(){
+      const email = getEmail();
+      const pw = $("newpw").value || "";
+
+      if(!email){
+        setMsg("Enter email first.");
+        show("stepLogin");
+        return;
+      }
+
+      if(!pw){
+        setMsg("Enter a password.");
+        return;
+      }
+
+      disableBtn("btnConfirm", "Saving…");
+
+      try{
+        const out = await POST_PARAM(
+          "setpassword",
+          { student_id: email, email, username: email },
+          { student_id: email, email, username: email, password: pw }
+        );
+
+        enableBtns();
+
+        if(out?.ok){
+          $("password").value = pw;
+          show("stepLogin");
+          await doLogin();
+          return;
+        }
+
+        if(out?.status === "weak_password"){
+          setMsg("Password could not be confirmed. Please try a different one.");
+          return;
+        }
+
+        if(out?.error === "already_set"){
+          setMsg("A password has already been set for this account. Try logging in instead.");
+          show("stepLogin");
+          return;
+        }
+
+        setMsg(out?.error || "Could not confirm password.");
+      } catch(err){
+        enableBtns();
+        console.error("confirmPassword failed:", err);
+        setMsg("Could not confirm password. Please try again.");
+      }
+    }
+
+    $("stepLogin").addEventListener("submit", (e) => {
+      e.preventDefault();
+      doLogin();
+    });
+
+    $("stepCode").addEventListener("submit", (e) => {
+      e.preventDefault();
+      verifyCode();
+    });
+
+    $("stepConfirm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      confirmPassword();
+    });
+
+    $("resend").addEventListener("click", (e) => {
+      e.preventDefault();
+      sendCode();
+    });
+
+    clearSessions();
+  </script>
 </body>
 </html>
