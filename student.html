@@ -1401,11 +1401,6 @@ async function fetchRequestsWithFallback(studentId){
   return [];
 }
 
-<script>
-
-  return [];
-}
-
 function buildHistoryDedupKey(row){
   const type = String(row?._type || "").trim().toLowerCase();
   const semester = rowSemester(row);
@@ -1417,6 +1412,96 @@ function buildHistoryDedupKey(row){
       : normalizeStatus(row.status || row.request_status || row.decision || row.state);
 
   return [type, semester, eventId, title, status].join(" | ");
+}
+
+async function loadHistory() {
+  if (!currentStudentId) return;
+  const tbody = document.getElementById("histRows");
+  if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="muted small">Loading…</td></tr>';
+  toastHist(true, "Refreshing history...");
+
+  try {
+    const attResp = await GET({ action: "attendance", student_id: currentStudentId });
+    const rawAtt = normalizeAttendanceList(attResp);
+    const filteredAtt = rawAtt.filter(r => belongsToCurrentStudent(r, currentStudentId));
+    
+    const rawReq = await fetchRequestsWithFallback(currentStudentId);
+
+    _attendanceCache = filteredAtt.map(r => ({ ...r, _type: "attendance" }));
+    _requestsCache = rawReq.map(r => ({ ...r, _type: "request" }));
+    _fullHistoryCache = [..._attendanceCache, ..._requestsCache];
+
+    const seen = new Set();
+    const deduped = [];
+    for (const row of _fullHistoryCache) {
+      const k = buildHistoryDedupKey(row);
+      if (!seen.has(k)) {
+        seen.add(k);
+        deduped.push(row);
+      }
+    }
+
+    const finalRows = deduped.filter(row => {
+      if (row._type === "attendance") return true; 
+      const s = normalizeStatus(row.status || row.request_status || row.decision || row.state);
+      return s === "pending" || s === "denied"; 
+    }).sort((a, b) => rowDateKey(b) - rowDateKey(a));
+
+    renderHistoryRows(finalRows);
+    toastHist(true, "History updated.");
+  } catch (err) {
+    console.error("History Error:", err);
+    toastHist(false, "Failed to load history.");
+    if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="muted small">Error loading history.</td></tr>';
+  }
+}
+
+function renderHistoryRows(rows) {
+  const tbody = document.getElementById("histRows");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="muted small">No history found.</td></tr>';
+    document.getElementById("histSemTotal").textContent = "0";
+    document.getElementById("histAllTotal").textContent = "0";
+    return;
+  }
+
+  let semTotal = 0;
+  let allTotal = 0;
+
+  const semSel = document.getElementById("histSem");
+  const activeSem = semSel ? (semSel.value || CURRENT_SEMESTER) : CURRENT_SEMESTER;
+
+  rows.forEach(row => {
+    const tr = document.createElement("tr");
+    const sem = rowSemester(row);
+    const hrs = rowHoursForDisplay(row);
+    const status = row._type === "attendance" ? "approved" : normalizeStatus(row.status || row.request_status || row.decision || row.state);
+
+    if (status === "approved" || row._type === "attendance") {
+      allTotal += hrs;
+      if (sem === activeSem) semTotal += hrs;
+    }
+
+    const tdSem = document.createElement("td"); tdSem.textContent = sem || "—";
+    const tdEv = document.createElement("td"); tdEv.textContent = rowEventTitle(row);
+    const tdDate = document.createElement("td"); tdDate.textContent = rowEventDateForDisplay(row);
+    const tdHrs = document.createElement("td"); tdHrs.textContent = hrs;
+
+    const tdStatus = document.createElement("td");
+    tdStatus.innerHTML = `<span class="emoji-bg">${statusIconForRow(row)}</span> <span class="tag">${status}</span>`;
+
+    const tdComm = document.createElement("td"); tdComm.textContent = rowComment(row);
+
+    tr.append(tdSem, tdEv, tdDate, tdHrs, tdStatus, tdComm);
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("histSemTotal").textContent = semTotal;
+  document.getElementById("histAllTotal").textContent = allTotal;
+  document.getElementById("hoursTotal").textContent = semTotal;
 }
 
 /* ===== MODAL QUICK ACTIONS ===== */
