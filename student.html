@@ -1394,7 +1394,11 @@ async function fetchRequestsWithFallback(studentId){
     try{
       const resp = await GET({ action, student_id: studentId });
       const rows = normalizeRequestsList(resp);
-      const cleaned = (rows || []).filter(r => r && r.hours_awarded == null).filter(r => belongsToCurrentStudent(r, studentId));
+      const cleaned = (rows || []).filter(r => {
+        if (!r || !belongsToCurrentStudent(r, studentId)) return false;
+        const s = normalizeStatus(r.status || r.request_status || r.decision || r.state);
+        return s === "pending" || s === "denied";
+      });
       if (cleaned && cleaned.length){ return cleaned; }
     }catch(_){}
   }
