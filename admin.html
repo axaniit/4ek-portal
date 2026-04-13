@@ -3,12 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin Portal</title>
+<title>Student Portal</title>
 <meta name="robots" content="noindex, nofollow">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 
 <style>
   :root { 
@@ -16,6 +20,7 @@
     --ucf-black:#000; 
     --ucf-purple:#6A0DAD; 
     --ucf-red:#C1121F; 
+    --portal-green: #2e7d32; 
   }
 
   body {
@@ -56,33 +61,36 @@
   }
 
   /* Main Container */
-  #admin-app { 
+  #student-app { 
     max-width:1100px; 
     margin: 0 auto; 
     padding: 0 16px 40px 16px;
   }
 
-  /* Calendar */
-  #calendar{ min-height: 640px; }
-  #calendar, #calendar * { font-family: inherit; }
+  /* Calendar Container */
+  #calendar { 
+    min-height: 640px; 
+    position: relative; 
+  }
+  #calendar * { font-family: inherit; }
 
-  /* Top Header Stats */
+  /* Header Stats */
   .amb-top{display:flex;justify-content:space-between;align-items:flex-end;margin:8px 0 16px}
   .muted{color:#666}.small{font-size:12px}.h-name{font-weight:600;font-size:18px}
   .h-big{font-size:40px;font-weight:700;margin-top:4px}
   .hours{text-align:right}
 
   /* Grid Layout */
-  .top-grid{
+  .amb-grid{
     display:grid;
     gap:16px;
     margin:0 0 16px;
-    align-items:start;
+    align-items: stretch;
   }
   @media (min-width: 980px){ 
-    .top-grid{ grid-template-columns: 1fr 1fr; } 
+    .amb-grid{ grid-template-columns: 1fr 1fr; } 
   }
-  
+
   .card{
     border:1px solid #e5e5e5;
     border-radius:12px;
@@ -92,20 +100,43 @@
     margin:12px 0;
     display: flex;
     flex-direction: column;
+    height: 100%; 
   }
   .card-h{padding:12px 16px;border-bottom:1px solid #eee;font-weight:600}
-  .card-b{
-    padding:16px;
-    flex: 1;
+  .card-b{ 
+    padding:16px; 
+    flex: 1; 
   }
 
-  /* Forms & Inputs */
+  /* Requirements List - GREEN CHECKMARKS */
+  .req-list{list-style:none;margin:0;padding:0}
+  .req-list li{display:flex;gap:8px;margin:8px 0;align-items:center}
+ 
+  .req-list .box{
+    width:18px;height:18px;
+    border:2px solid #ccc;
+    border-radius:4px;
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:14px;line-height:1;
+    color: transparent;
+    background:transparent;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+ 
+  .req-list .box.done {
+    border-color: var(--portal-green);
+    color: var(--portal-green);
+    background: rgba(46, 125, 50, 0.1);
+  }
+
+  /* Forms */
   .form h4 { margin:.25rem 0 .5rem; font-size: 20px; font-weight: 700; }
   .form label{display:block;margin:8px 0}
   .form select, .form input, .form textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px; font-family: inherit; box-sizing: border-box;}
-  
+
   /* MAIN BUTTONS */
-  .form button, #btnReq, #btnSignup {
+  .form button, #btnReq, #btnSignup, .primary {
     margin-top:6px;
     padding:12px 16px;
     border:0;
@@ -119,20 +150,8 @@
     text-transform: uppercase; 
     letter-spacing: 0.5px;
   }
-  .form button:hover {opacity:.9}
+  .form button:hover, .primary:hover {opacity:.9}
   .form button:disabled {opacity:.6;cursor:not-allowed}
-
-  /* PENDING REFRESH */
-  #pcRefresh {
-    padding:10px 14px;
-    border:0;
-    border-radius:8px;
-    cursor:pointer;
-    font-weight: 700;
-    background: var(--ucf-gold);
-    color: #000;
-  }
-  #pcRefresh:hover { opacity: .9; }
 
   /* HISTORY REFRESH */
   #btnMeRefresh {
@@ -149,89 +168,29 @@
   }
   #btnMeRefresh:hover { background: #fafafa !important; }
 
-  /* Secondary Buttons */
-  .secondary{padding:8px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer}
+  /* Secondary Button */
+  .secondary{padding:10px 14px;border:1px solid #ddd;background:#fff;border-radius:8px;cursor:pointer}
   .secondary:hover{background:#fafafa}
 
   .msg{margin-top:8px;font-size:13px}.ok{color:#1a7f37}.err{color:#b00020}
 
-  /* Requirements List */
-  .rq-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid #f4f4f4}
-  .rq-row:last-child{border-bottom:none}
-  .rq-lbl{display:flex;align-items:flex-start;gap:10px}
-  .rq-meta{color:#666;font-size:12px;margin-top:2px}
-  .rq-pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #e6e6e6;font-size:12px}
+  /* History Table */
+  .hist-top{display:grid;gap:10px}
+  @media (min-width: 900px){ .hist-top{ grid-template-columns: 1fr 1fr 1fr; } }
+  .hist-card{border:1px solid #eee;border-radius:12px;padding:12px;background:#fafafa}
+  .hist-big{font-size:28px;font-weight:700;margin-top:4px}
+ 
+  .hist-table{width:100%;border-collapse:collapse}
+  .hist-table th,.hist-table td{border-bottom:1px solid #eee;padding:10px 8px;text-align:left;vertical-align:middle}
+  .hist-table th{font-size:12px;color:#666;text-transform:uppercase;letter-spacing:.02em}
+ 
+  /* Zebra Striping */
+  .hist-table tbody tr:nth-child(odd) { background: #fff; }
+  .hist-table tbody tr:nth-child(even) { background: #f9f9f9; }
 
-  /* Tables */
-  .ptable{width:100%;border-collapse:collapse}
-  .ptable th,.ptable td{padding:10px 8px;border-bottom:1px solid #eee;text-align:left;vertical-align:middle}
-  .ptable tbody tr:nth-child(odd) { background: #fff; }
-  .ptable tbody tr:nth-child(even) { background: #f9f9f9; }
+  .tag{display:inline-block;padding:2px 8px;border:1px solid #ddd;border-radius:999px;font-size:12px;color:#444;background:#fff}
 
-  /* PENDING CENTER ACTIONS */
-  .pc-actions-cell {
-    text-align: center !important;
-    vertical-align: middle !important;
-    display: flex;
-    justify-content: center;
-    gap: 12px; 
-  }
-
-  .pc-actions-cell .actBtn {
-    background-color: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    margin: 0;
-    cursor: pointer;
-    font-size: 20px; 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.1s;
-  }
-  .pc-actions-cell .actBtn:hover {
-    transform: scale(1.2);
-  }
-
-  .emoji-badge {
-    background: transparent !important;
-    box-shadow: none !important;
-    border: none !important;
-    font-size: 24px; 
-  }
-
-  #pcApproveSel, #pcDenySel {
-    background-color: #F4CA3D !important; 
-    color: #000 !important;
-    border: none !important;
-    border-radius: 8px !important;       
-    padding: 12px 24px !important;       
-    font-weight: 700 !important;
-    font-size: 14px !important;
-    text-transform: uppercase !important;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    display: inline-block;
-    width: auto;
-  }
-  
-  #pcApproveSel:hover, #pcDenySel:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-  }
-
-  .admin-reply-input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 13px;
-    box-sizing: border-box;
-  }
-
+  /* Emoji Badge */
   .emoji-bg { 
     background: #fff; 
     border-radius: 50%; 
@@ -242,199 +201,29 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.15); 
   }
 
-  /* Scroll areas */
-  #pcCardBody{display:flex;flex-direction:column;min-height:0}
-  #pcTableWrap{
-    flex:1;
-    min-height:0;
-    max-height:1000px;
-    overflow:auto;
-    border:1px solid #eee;
-    border-radius:10px;
-  }
-
-  .ev-scroll{
-    overflow-x:auto;
-    overflow-y:visible; /* Ensure internal inputs aren't cut */
-    padding-bottom:12px;
-  }
-  .ev-scroll::-webkit-scrollbar{ height:10px }
-  .ev-scroll::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.22); border-radius:999px }
-  .ev-scroll::-webkit-scrollbar-track{ background:rgba(0,0,0,.05); border-radius:999px }
-
-  /* Shift Editor */
-  .shift-admin{
-    margin-top:12px;
-    border:1px solid #eee;
-    border-radius:12px;
-    background:#fafafa;
-    padding:12px;
-    min-width: 980px; /* Match form grid */
-  }
-  .shift-admin-top{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    flex-wrap:wrap;
-  }
-  .shift-scroll{
-    overflow:auto;
-    max-height: 400px;
-    border:1px solid #eee;
-    border-radius:12px;
-    background:#fff;
-    margin-top: 10px;
-  }
-  .shift-table{
-    width:100%;
-    border-collapse:collapse;
-    min-width:880px;
-  }
-  .shift-table th,.shift-table td{
-    padding:10px 8px;
-    border-bottom:1px solid #eee;
-    text-align:left;
-    vertical-align:top;
-    font-size:13px;
-  }
-  .shift-table th{
-    font-size:12px;
-    color:#666;
-    text-transform:uppercase;
-    letter-spacing:.02em;
-    background:#fafafa;
-    position:sticky;
-    top:0;
-    z-index:1;
-  }
-  .shift-table input[type="datetime-local"],
-  .shift-table input[type="number"],
-  .shift-table input[type="text"],
-  .shift-table input[type="time"]{
-    width:100%;
-    padding:8px;
-    border:1px solid #ccc;
-    border-radius:8px;
-    background:#fff;
-  }
-  .shift-table input[type="checkbox"]{ width:auto; }
-
-  /* History */
-  .hist-top{display:grid;gap:10px}
-  @media (min-width: 900px){
-    .hist-top{ grid-template-columns: 1fr 1fr 1fr; }
-  }
-  .hist-card{
-    border:1px solid #eee;
-    border-radius:12px;
-    padding:12px;
-    background:#fafafa
-  }
-  .hist-big{
-    font-size:28px;
-    font-weight:700;
-    margin-top:4px
-  }
-  .hist-table{
-    width:100%;
-    border-collapse:collapse
-  }
-  .hist-table th,
-  .hist-table td{
-    border-bottom:1px solid #eee;
-    padding:10px 8px;
-    text-align:left;
-    vertical-align:top
-  }
-  .hist-table tbody tr:nth-child(odd) { background: #fff; }
-  .hist-table tbody tr:nth-child(even) { background: #f9f9f9; }
-
-  .hist-table th{
-    font-size:12px;
-    color:#666;
-    text-transform:uppercase;
-    letter-spacing:.02em
-  }
-  .tag{
-    display:inline-block;
-    padding:2px 8px;
-    border:1px solid #ddd;
-    border-radius:999px;
-    font-size:12px;
-    color:#444;
-    background:#fff
-  }
   .hist-scroll{
-    max-height:320px;
-    overflow-y:scroll;
-    overflow-x:auto;
-    border:1px solid #eee;
-    border-radius:12px
+    max-height: 320px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid #eee;
+    border-radius: 12px;
   }
-  .hist-scroll::-webkit-scrollbar{ width:10px; height:10px }
-  .hist-scroll::-webkit-scrollbar-thumb{
-    background:rgba(0,0,0,.22);
-    border-radius:999px
-  }
-  .hist-scroll::-webkit-scrollbar-track{
-    background:rgba(0,0,0,.05);
-    border-radius:999px
-  }
+  .hist-scroll::-webkit-scrollbar{ width: 10px; height: 10px; }
+  .hist-scroll::-webkit-scrollbar-thumb{ background: rgba(0,0,0,.22); border-radius: 999px; }
+  .hist-scroll::-webkit-scrollbar-track{ background: rgba(0,0,0,.05); border-radius: 999px; }
 
   /* Modal */
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9999}
-  #eventModal .modal-dialog{width:min(920px,100%); max-height: 90vh; background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2); display: flex; flex-direction: column;}
-  #eventModal .modal-h{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #eee; flex-shrink: 0;}
-  #eventModal .modal-b{padding:16px; overflow-y: auto; flex: 1;}
-  #eventModal .modal-f{padding:12px 16px;border-top:1px solid #eee;text-align:right;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap; flex-shrink: 0;}
-  #eventModal .modal .x{background:transparent;border:0;font-size:22px;cursor:pointer}
-  
-  /* Roster Scroll Lists */
+  .modal-dialog{width:min(820px,100%);background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+  .modal-h{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #eee}
+  .modal-b{padding:16px;min-height:140px}
+  .modal-f{padding:12px 16px;border-top:1px solid #eee;text-align:right;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+  .modal .x{background:transparent;border:0;font-size:22px;cursor:pointer}
   .rosters{display:grid;gap:16px;margin-top:12px}
-  @media (min-width: 900px){ .rosters{ grid-template-columns: 1fr 1fr; } }
-  .roster{
-    margin:.25rem 0 0;
-    padding: 8px 18px;
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid #f0f0f0;
-    border-radius: 8px;
-    list-style-type: decimal;
-  }
-  .roster::-webkit-scrollbar{ width: 8px; }
-  .roster::-webkit-scrollbar-thumb{ background: rgba(0,0,0,.15); border-radius: 999px; }
-  .roster::-webkit-scrollbar-track{ background: transparent; }
-
+  .roster{margin:.25rem 0 0;padding-left:18px}
   .cap{margin:8px 0 0;font-weight:600}
 
-  .self-actions{margin:12px 0 0;padding:12px;border:1px solid #eee;border-radius:12px;background:#fafafa;box-sizing:border-box;}
-  
-  .self-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    align-items: flex-end;
-    margin-bottom: 12px;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  .self-row > label {
-    flex: 1;
-    min-width: 140px;
-    margin: 0;
-  }
-  .self-row input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    margin-top: 6px;
-    box-sizing: border-box;
-  }
-  .self-btns{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
-
-  /* FullCalendar Overrides */
+  /* FullCalendar overrides */
   .fc, .fc * { pointer-events:auto; }
   .fc-event, .fc-event * { pointer-events:auto !important; }
   .fc .fc-toolbar{
@@ -444,7 +233,7 @@
     padding:10px 12px;
     margin-bottom:12px;
   }
-  .fc .fc-toolbar-title{ font-weight:700; color:#111; }
+  .fc .fc-toolbar-title{ font-weight:700; color: #111; }
   .fc .fc-button{
     background:#fff !important;
     border:1px solid #ddd !important;
@@ -453,7 +242,6 @@
     text-transform:none !important;
     opacity:1 !important;
   }
-  .fc .fc-button .fc-icon{ color:#111 !important; }
   .fc .fc-button:hover{ background:#f7f7f7 !important; }
   .fc .fc-button:disabled{ opacity:.55 !important; }
   .fc .fc-button-primary:not(:disabled).fc-button-active,
@@ -462,84 +250,23 @@
     border-color: rgba(244,202,61,.45) !important;
     color:#111 !important;
   }
-  .fc .fc-event,
-  .fc .fc-event-main,
-  .fc .fc-daygrid-event,
-  .fc .fc-timegrid-event{
-    background: transparent !important;
-    border-color: transparent !important;
-  }
-  .fc .fc-list-event:hover td{ background: rgba(0,0,0,.03) !important; }
 
-  .cat-gold  .fc-daygrid-event-dot, .cat-gold  .fc-list-event-dot { border-color:var(--ucf-gold) !important; background:var(--ucf-gold) !important; }
-  .cat-black .fc-daygrid-event-dot, .cat-black .fc-list-event-dot { border-color:var(--ucf-black)!important; background:var(--ucf-black)!important; }
-  .cat-purple .fc-daygrid-event-dot, .cat-purple .fc-list-event-dot { border-color:var(--ucf-purple)!important; background:var(--ucf-purple)!important; }
-  .cat-red   .fc-daygrid-event-dot, .cat-red   .fc-list-event-dot { border-color:var(--ucf-red)  !important; background:var(--ucf-red)  !important; }
+  .fc-event{ background: transparent !important; border-color: transparent !important; }
+  .fc-list-event:hover td{ background: rgba(0,0,0,.03) !important; }
 
-  .fc-timegrid-event{ border-radius:10px !important; overflow:hidden; }
-  .fc-timegrid-event.cat-gold  { border-left: 4px solid var(--ucf-gold) !important;  border:1px solid rgba(244,202,61,.35) !important; background: rgba(244,202,61,.10) !important; }
-  .fc-timegrid-event.cat-black { border-left: 4px solid var(--ucf-black)!important; border:1px solid rgba(0,0,0,.25) !important;      background: rgba(0,0,0,.06) !important; }
-  .fc-timegrid-event.cat-purple{ border-left: 4px solid var(--ucf-purple)!important;border:1px solid rgba(106,13,173,.30) !important;   background: rgba(106,13,173,.10) !important; }
-  .fc-timegrid-event.cat-red   { border-left: 4px solid var(--ucf-red)  !important;  border:1px solid rgba(193,18,31,.30) !important;   background: rgba(193,18,31,.10) !important; }
+  /* Categories */
+  .cat-gold .fc-daygrid-event-dot, .cat-gold .fc-list-event-dot { border-color:var(--ucf-gold); background:var(--ucf-gold); }
+  .cat-black .fc-daygrid-event-dot, .cat-black .fc-list-event-dot { border-color:var(--ucf-black); background:var(--ucf-black); }
+  .cat-purple .fc-daygrid-event-dot, .cat-purple .fc-list-event-dot { border-color:var(--ucf-purple); background:var(--ucf-purple); }
+  .cat-red .fc-daygrid-event-dot, .cat-red .fc-list-event-dot { border-color:var(--ucf-red); background:var(--ucf-red); }
 
-  .pp-wrap{
-    position:fixed; inset:0;
-    background:rgba(0,0,0,.45);
-    display:flex; align-items:center; justify-content:center;
-    padding:16px;
-    z-index:100000;
-  }
-  .pp-card{
-    width:min(420px,100%);
-    background:#fff;
-    border-radius:14px;
-    box-shadow:0 20px 60px rgba(0,0,0,.25);
-    padding:18px 18px 14px;
-    text-align:center;
-  }
-  .pp-icon{
-    width:46px;height:46px;border-radius:999px;
-    background:#111;color:#fff;
-    display:flex;align-items:center;justify-content:center;
-    margin:0 auto 10px;
-    font-weight:800;
-  }
-  .pp-icon.bad{ background:#b00020; }
-  .pp-title{ font-weight:700;font-size:18px;margin:4px 0 6px; }
-  .pp-msg{
-    color:#333;font-size:14px;line-height:1.35;
-    margin:0 0 12px;
-    white-space:pre-wrap;
-  }
-  .pp-actions{ display:flex;justify-content:center; }
-  .pp-btn{
-    padding:10px 18px;border:0;border-radius:10px;
-    background:#111;color:#fff;cursor:pointer;
-  }
-  .pp-btn:hover{ opacity:.92; }
+  .fc-timegrid-event.cat-gold  { border-left: 4px solid var(--ucf-gold); }
+  .fc-timegrid-event.cat-black { border-left: 4px solid var(--ucf-black); }
+  .fc-timegrid-event.cat-purple{ border-left: 4px solid var(--ucf-purple); }
+  .fc-timegrid-event.cat-red   { border-left: 4px solid var(--ucf-red); }
 
+  /* Confetti */
   #confettiModal{ z-index:10002; }
-  #confettiModal.modal{
-    position:fixed;inset:0;background:rgba(0,0,0,.4);
-    display:flex;align-items:center;justify-content:center;padding:16px;
-  }
-  #confettiModal .modal-dialog{
-    width:min(820px,100%);
-    background:#fff;border-radius:12px;overflow:hidden;
-    box-shadow:0 20px 60px rgba(0,0,0,.2)
-  }
-  #confettiModal .modal-h{
-    display:flex;justify-content:space-between;align-items:center;
-    padding:12px 16px;border-bottom:1px solid #eee
-  }
-  #confettiModal .modal-b{ padding:16px;min-height:140px }
-  #confettiModal .modal-f{
-    padding:12px 16px;border-top:1px solid #eee;text-align:right;
-    display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap
-  }
-  #confettiModal .x{background:transparent;border:0;font-size:22px;cursor:pointer}
-  #confettiModal .secondary{padding:10px 14px;border:1px solid #ddd;background:#fff;border-radius:8px;cursor:pointer}
-  #confettiModal .secondary:hover{background:#f7f7f7}
 </style>
 </head>
 <body>
@@ -549,22 +276,30 @@
   </section>
   <div class="portal-accent-line"></div>
 
-<div id="admin-app">
+<div id="student-app">
   <header class="amb-top">
     <div>
-      <div class="muted" id="adminGreet">Welcome</div>
-      <div class="h-name" id="adminName">—</div>
+      <div class="muted" id="ambGreet">Welcome</div>
+      <div class="h-name" id="ambName">—</div>
     </div>
     <div class="hours">
-      <div class="muted">My Semester Total Hours</div>
-      <div class="h-big" id="meHoursTotal">0</div>
-      <div class="muted small" id="meHoursSub" style="margin-top:2px;">Spring2026</div>
+      <div class="muted" id="hoursLabel">My Semester Total Hours</div>
+      <div class="h-big" id="hoursTotal">0</div>
+      <div class="muted small" id="hoursSub" style="margin-top:2px;">Spring2026</div>
     </div>
   </header>
 
-  <section class="top-grid">
+  <section class="amb-grid">
     <div class="card">
-      <div class="card-h">Quick Actions (My Requests)</div>
+      <div class="card-h">Your Requirements</div>
+      <div class="card-b">
+        <ul id="reqList" class="req-list"></ul>
+        <div class="muted small" style="margin-top: 12px;">Admins control these checkboxes.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">Quick Actions</div>
       <div class="card-b">
         <form id="formRequest" class="form" autocomplete="off">
           <h4>Attendance Request</h4>
@@ -579,17 +314,17 @@
 
           <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <label>Requested hours (optional)
-              <input id="reqHours" type="number" step="0.25" min="0" placeholder="e.g., 3">
+              <input id="reqHours" type="number" step="0.25" min="0" placeholder="e.g. 2.5">
             </label>
             <div class="muted small" style="display:flex;align-items:center;">
-              If you didn’t attend the full time, enter how many hours you did attend.
+              If blank, it will use the shift/event’s hours.
             </div>
           </div>
-          <label>Comment (notes, times you’re available, etc.)
+          <label>Comment (times you’re available / notes etc.)
             <textarea id="reqComment" rows="2" placeholder="I can work 2–4pm because …"
               style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;"></textarea>
           </label>
-          <button id="btnReq" type="submit">Submit request</button>
+          <button id="btnReq" type="submit">Submit Request</button>
           <div class="msg" id="msgReq"></div>
         </form>
 
@@ -608,232 +343,115 @@
 
           <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <label>Requested hours (optional)
-              <input id="suHours" type="number" step="0.25" min="0" placeholder="e.g., 3">
+              <input id="suHours" type="number" step="0.25" min="0" placeholder="e.g. 2.5">
             </label>
             <div class="muted small" style="display:flex;align-items:center;">
-              If you plan to attend part of the time, enter the hours here.
+              If blank, it will use the shift/event’s hours.
             </div>
           </div>
-          <label>Comment (notes, times you’re available, etc.)
+          <label>Comment (times you’re available / notes etc.)
             <textarea id="suComment" rows="2" placeholder="I’m available after class at 3:30…"
               style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;"></textarea>
           </label>
-          <button id="btnSignup" type="submit">Sign up</button>
+          <button id="btnSignup" type="submit">Sign Up</button>
           <div class="msg" id="msgSignup"></div>
         </form>
-
-        <hr style="margin:16px 0;border:none;border-top:1px solid #eee;">
-
-        <div>
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-            <h4 style="margin:.25rem 0;">My History</h4>
-            <button id="btnMeRefresh" type="button">Refresh</button>
-          </div>
-
-          <div class="muted small" style="margin-bottom:10px;">
-            This shows your <b>requests</b> and your <b>approved attendance</b>. Totals only include approved attendance hours.
-          </div>
-
-          <div class="hist-top">
-            <div class="hist-card">
-              <div class="muted small">Semester</div>
-              <select id="histSem" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;"></select>
-            </div>
-            <div class="hist-card">
-              <div class="muted small">Semester Total (approved)</div>
-              <div class="hist-big" id="histSemTotal">0</div>
-            </div>
-            <div class="hist-card">
-              <div class="muted small">All-Time Total (approved)</div>
-              <div class="hist-big" id="histAllTotal">0</div>
-            </div>
-          </div>
-
-          <div class="hist-scroll" style="margin-top:10px;">
-            <table class="hist-table">
-              <thead>
-                <tr>
-                  <th style="min-width:140px;">Semester</th>
-                  <th style="min-width:220px;">Event</th>
-                  <th style="min-width:160px;">Date</th>
-                  <th style="min-width:90px;">Hours</th>
-                  <th style="min-width:90px;">Status</th>
-                  <th style="min-width:260px;">Comments</th>
-                </tr>
-              </thead>
-              <tbody id="histRows">
-                <tr><td colspan="6" class="muted small">Loading…</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="msg" id="msgHist" style="margin-top:10px;"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" id="pcCard">
-      <div class="card-h">Pending Center (All Events)</div>
-      <div class="card-b" id="pcCardBody">
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
-          <button id="pcRefresh" class="btnPrimary" type="button">Refresh</button>
-          <input id="pcSearch" placeholder="Search student / event / comment…" style="flex:1;min-width:220px;padding:8px;border:1px solid #ccc;border-radius:8px">
-          <select id="pcEvent" style="min-width:220px;padding:8px;border:1px solid #ccc;border-radius:8px">
-            <option value="">All events</option>
-          </select>
-          <select id="pcCat" style="min-width:160px;padding:8px;border:1px solid #ccc;border-radius:8px">
-            <option value="">All categories</option>
-            <option>Socials</option>
-            <option>Events</option>
-            <option>Meetings</option>
-            <option>Deadlines</option>
-          </select>
-        </div>
-
-        <div id="pcStatus" class="muted small" style="margin-bottom:8px;">Loading…</div>
-
-        <div id="pcTableWrap">
-          <table class="ptable">
-            <thead>
-              <tr>
-                <th style="width:28px"><input type="checkbox" id="pcAll"></th>
-                <th>Event</th>
-                <th>Student</th>
-                <th>Requested</th>
-                <th>Comment</th>
-                <th style="min-width:140px;">Admin Comment</th>
-                <th style="min-width:120px;text-align:center;">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="pcBody"></tbody>
-          </table>
-        </div>
-
-        <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap;">
-          <button id="pcApproveSel" type="button" class="actBtn approve">Approve Selected</button>
-          <button id="pcDenySel" type="button" class="actBtn deny">Deny Selected</button>
-        </div>
       </div>
     </div>
   </section>
 
   <div class="card">
-    <div class="card-h">Calendar (click an event)</div>
-    <div class="card-b"><div id="calendar"></div></div>
-  </div>
-
-  <div class="card" id="evCard">
-    <div class="card-h">Create / Update Event</div>
+    <div class="card-h" style="display:flex;justify-content:space-between;align-items:center;">
+      <span>History</span>
+      <button id="btnMeRefresh" type="button" onclick="loadHistory()">Refresh</button>
+    </div>
     <div class="card-b">
-      <div class="ev-scroll">
-        <form id="eventForm" class="form" autocomplete="off" onsubmit="return false;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:980px;">
-            <label>Event ID <input id="ev_id" placeholder="EVT001" required></label>
-            <label>Title <input id="ev_title" required></label>
-
-            <label>Category
-              <select id="ev_cat">
-                <option>Socials</option>
-                <option>Events</option>
-                <option>Meetings</option>
-                <option>Deadlines</option>
-              </select>
-            </label>
-
-            <label>Signup Capacity (0=unlimited) <input id="ev_cap" type="number" value="0"></label>
-
-            <label>Start <input id="ev_start" type="datetime-local" required></label>
-            <label>End <input id="ev_end" type="datetime-local"></label>
-
-            <label>Location <input id="ev_loc"></label>
-            <label>Hours Value <input id="ev_hours" type="number" step="0.25" value="0"></label>
-          </div>
-
-          <label style="margin-top:10px;">Notes
-            <input id="ev_notes">
-          </label>
-
-          <div class="shift-admin">
-            <div class="shift-admin-top">
-              <label style="display:flex;align-items:center;gap:10px;margin:0;">
-                <input id="ev_hasShifts" type="checkbox" style="width:auto;">
-                <span style="font-weight:700;">This event uses shifts</span>
-              </label>
-
-              <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
-                <button id="ev_addShift" type="button" class="secondary" style="display:none;">Add shift</button>
-                <button id="ev_removeAllShifts" type="button" class="secondary" style="display:none;">Remove all shifts</button>
-              </div>
-            </div>
-
-            <div id="ev_shiftsBox" style="display:none;margin-top:10px;">
-              <label style="display:flex;align-items:center;gap:10px;margin:0 0 10px;">
-                <input id="ev_shiftsRequired" type="checkbox" style="width:auto;">
-                <span>Shift selection required (for sign-ups / requests)</span>
-              </label>
-
-              <div class="muted small" style="margin-bottom:10px;">
-                Shifts are <b>not shown on the calendar</b>. They only appear after you click an event (dropdown in the event modal).
-              </div>
-
-              <div class="shift-scroll">
-                <table class="shift-table">
-                  <thead>
-                    <tr>
-                      <th style="min-width:160px;">Shift title</th>
-                      <th style="min-width:190px;">Start</th>
-                      <th style="min-width:190px;">End</th>
-                      <th style="min-width:140px;">Capacity</th>
-                      <th style="min-width:110px;">Active</th>
-                      <th style="min-width:120px;">Remove</th>
-                    </tr>
-                  </thead>
-                  <tbody id="ev_shiftsBody"></tbody>
-                </table>
-              </div>
-
-              <div class="muted small" id="ev_shiftStatus" style="margin-top:8px;"></div>
-            </div>
-          </div>
-
-          <button type="button" id="saveEventBtn" style="margin-top: 20px;">Save Event</button>
-          <span class="msg" id="evMsg"></span>
-        </form>
+      <div class="muted small" style="margin-bottom:10px;">
+        This shows your <b>requests</b> and your <b>approved attendance</b>. Totals only include approved attendance hours.
       </div>
+
+      <div class="hist-top">
+        <div class="hist-card">
+          <div class="muted small">Semester</div>
+          <select id="histSem" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;"></select>
+        </div>
+        <div class="hist-card">
+          <div class="muted small">Semester Total (approved)</div>
+          <div class="hist-big" id="histSemTotal">0</div>
+        </div>
+        <div class="hist-card">
+          <div class="muted small">All-Time Total (approved)</div>
+          <div class="hist-big" id="histAllTotal">0</div>
+        </div>
+      </div>
+
+      <div class="hist-scroll" style="margin-top:12px;">
+        <table class="hist-table">
+          <thead>
+            <tr>
+              <th style="min-width:140px;">Semester</th>
+              <th style="min-width:220px;">Event</th>
+              <th style="min-width:160px;">Date</th>
+              <th style="min-width:90px;">Hours</th>
+              <th style="min-width:90px;">Status</th>
+              <th style="min-width:260px;">Comments</th>
+            </tr>
+          </thead>
+          <tbody id="histRows">
+            <tr><td colspan="6" class="muted small">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="msg" id="msgHist" style="margin-top:10px;"></div>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-h">Requirements (Admin)</div>
+    <div class="card-h">Calendar</div>
     <div class="card-b">
-      <div class="muted small" style="margin-bottom:10px;">
-        Load a student, then check/uncheck requirements. Changes save immediately.
+      <div id="calendar">
+        <div style="padding:20px; color:#666; text-align:center;">Loading Calendar...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="eventModal" class="modal" style="display:none;">
+  <div class="modal-dialog">
+    <div class="modal-h">
+      <div id="mTitle">Event</div>
+      <button class="x" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-b">
+      <div id="mWhen"></div>
+      <div id="mWhere" class="muted"></div>
+      <div id="mDesc" class="muted"></div>
+      <div id="mCap" class="cap"></div>
+
+      <div id="mShiftWrap" style="display:none; margin-top:12px; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #ddd;">
+        <div class="muted small" style="margin-bottom:6px;">This event uses shifts:</div>
+        <label style="margin:0;">Shift
+          <select id="mShift" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;margin-top:4px;"></select>
+        </label>
+        <div class="muted small" id="mShiftHint" style="margin-top:6px;"></div>
       </div>
 
-      <label style="display:block;font-weight:600;">Find Student</label>
-      <input id="rq_search" placeholder="Type email or name…" list="rq_students"
-             style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;">
-      <datalist id="rq_students"></datalist>
+      <div class="rosters">
+        <div>
+          <h5>Sign-ups</h5>
+          <div class="muted small">Sign-ups don’t affect hours.</div>
+          <ul id="mSignups" class="roster"></ul>
 
-      <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;">
-        <button id="rq_load" type="button" class="secondary"
-                style="padding:8px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">
-          Load
-        </button>
-        <button id="rq_check_all" type="button" class="secondary"
-                style="padding:8px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">
-          Check all
-        </button>
-        <button id="rq_uncheck_all" type="button" class="secondary"
-                style="padding:8px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;">
-          Uncheck all
-        </button>
+          <h6 class="muted" id="waitHdr" style="display:none;margin-top:8px;">Waitlist</h6>
+          <ul id="mWait" class="roster"></ul>
+        </div>
       </div>
-
-      <div id="rq_sel" style="margin-top:10px;font-size:14px;"></div>
-      <div id="rq_status" class="muted small" style="margin-top:6px;">Ready</div>
-
-      <div id="rq_list" style="margin-top:12px;border:1px solid #eee;border-radius:10px;min-height:120px;"></div>
+    </div>
+    <div class="modal-f">
+      <button class="secondary" onclick="modalRequestAttendance()">Request attendance</button>
+      <button class="secondary" onclick="modalSignup()">Sign up</button>
+      <button class="secondary" onclick="closeModal()">Close</button>
     </div>
   </div>
 </div>
@@ -849,7 +467,9 @@
       <button class="x" onclick="closeConfetti()">×</button>
     </div>
     <div class="modal-b" style="position:relative;">
-      <div id="cBody" style="position:relative;">Done.</div>
+      <div id="cBody" style="position:relative;">
+        Your request was submitted.
+      </div>
     </div>
     <div class="modal-f">
       <button class="secondary" onclick="closeConfetti()">Close</button>
@@ -857,85 +477,12 @@
   </div>
 </div>
 
-<div id="portalPopup" class="pp-wrap" style="display:none;">
-  <div class="pp-card" role="dialog" aria-modal="true" aria-labelledby="ppTitle">
-    <div class="pp-icon" id="ppIcon" aria-hidden="true">✓</div>
-    <div class="pp-title" id="ppTitle">Done</div>
-    <div class="pp-msg" id="ppMsg">—</div>
-    <div class="pp-actions">
-      <button id="ppOk" class="pp-btn" type="button">OK</button>
-    </div>
-  </div>
-</div>
-
-<div id="eventModal" class="modal" style="display:none;">
-  <div class="modal-dialog">
-    <div class="modal-h">
-      <div id="mTitle">Event</div>
-      <button class="x" id="mClose" type="button">×</button>
-    </div>
-    <div class="modal-b">
-      <div id="mWhen"></div>
-      <div id="mWhere" class="muted"></div>
-      <div id="mDesc" class="muted"></div>
-      <div id="mCap" class="cap"></div>
-
-      <div class="self-actions">
-        <div id="mShiftWrap" style="display:none; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #ddd;">
-          <div class="muted small" style="margin-bottom:6px;">This event uses shifts:</div>
-          <label style="margin:0;">Shift
-            <select id="mShift" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;margin-top:4px;"></select>
-          </label>
-          <div class="muted small" id="mShiftHint" style="margin-top:6px;"></div>
-        </div>
-
-        <div class="muted small" style="margin-bottom:6px;">Quick action for you (admin) on this event:</div>
-        <div class="self-row">
-          <label>Hours (optional)
-            <input id="mMyHours" type="number" step="0.25" min="0" placeholder="e.g., 2.5">
-          </label>
-          <label>Comment (optional)
-            <input id="mMyComment" type="text" placeholder="Notes…">
-          </label>
-        </div>
-        <div class="self-btns">
-          <button id="mBtnSignupMe" class="btnPrimary" type="button">Sign up (me)</button>
-          <button id="mBtnRequestMe" class="btnPrimary" type="button">Request Attendance (me)</button>
-          <span class="muted small" id="mMyStatus" style="margin-left:8px;"></span>
-        </div>
-      </div>
-
-      <div class="rosters">
-        <div>
-          <h5>Approved Attendance</h5>
-          <div class="muted small">These entries already count toward hours.</div>
-          <ul id="mApproved" class="roster"></ul>
-        </div>
-        <div>
-          <h5>Sign-ups</h5>
-          <div class="muted small">Sign-ups don’t affect hours.</div>
-          <ul id="mSignups" class="roster"></ul>
-
-          <h6 class="muted" id="waitHdr" style="display:none;margin-top:16px; margin-bottom: 4px;">Waitlist</h6>
-          <ul id="mWait" class="roster"></ul>
-        </div>
-      </div>
-    </div>
-    <div class="modal-f">
-      <button class="secondary" id="loadToFormBtn" type="button">Load into event editor</button>
-      <button class="secondary" id="closeBtn" type="button">Close</button>
-    </div>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 <script>
 /* ===== CONFIG ===== */
 const API = "https://script.google.com/macros/s/AKfycbxUUnLnZWfYGe0ZJ5NKtoLXa78qXCK-cEeCv2Ip_3Xm_XUDy-fFp-w0gShBxakcjJdCPg/exec";
 const SESSION_KEY = "portal_session_v1";
 const CURRENT_SEMESTER = "Spring2026";
 
-/* ===== REQUIREMENTS ===== */
 const REQUIREMENT_LABELS = {
   "2 Tailgates": "2 Tailgates",
   "2 Regalia Shifts": "2 Regalia Shifts (spring)",
@@ -950,83 +497,57 @@ const REQUIREMENT_LABELS = {
 
 /* ===== UTIL ===== */
 function _norm(v){ return String(v == null ? "" : v).trim().toLowerCase(); }
-function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
-function isTrue(v){
-  if (typeof v === "boolean") return v === true;
-  const s = String(v ?? "").trim().toLowerCase();
-  return s === "true" || s === "yes" || s === "1";
-}
-function nl2br(s){ return String(s ?? "").replace(/\n/g, "<br>"); }
 
-function getSession(){ try { return JSON.parse(localStorage.getItem(SESSION_KEY) || "{}"); } catch(e){ return {}; } }
-function toast(el, ok, msg){ el.className = "msg " + (ok ? "ok" : "err"); el.textContent = msg || ""; }
+function getSession(){
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || "{}"); }
+  catch(e){ return {}; }
+}
+function toast(el, ok, msg){
+  el.className = "msg " + (ok ? "ok" : "err");
+  el.textContent = msg;
+}
 
 async function GET(q){
-  const r = await fetch(API + "?" + new URLSearchParams(q), { mode:"cors", cache:"no-cache" });
+  const r = await fetch(API + "?" + new URLSearchParams(q), { mode:"cors", cache:"no-cache", redirect:"follow" });
   const t = await r.text();
-  try { return JSON.parse(t); } catch(e) { return { ok:false, error:"Non-JSON response", body:t }; }
+  try { return JSON.parse(t); } catch { return { ok:false, error:"Non-JSON response", body:t }; }
 }
 async function POST(action, payload){
+  const body = Object.assign({ action }, payload || {});
   const r = await fetch(API + "?action=" + encodeURIComponent(action), {
     method:"POST",
     mode:"cors",
-    cache:"no-cache",
+    redirect:"follow",
     headers:{ "Content-Type":"text/plain;charset=utf-8" },
-    body: JSON.stringify(payload || {})
+    body: JSON.stringify(body)
   });
   const t = await r.text();
-  try { return JSON.parse(t); } catch(e) { return { ok:false, error:"Non-JSON response", body:t }; }
-}
-
-async function GET_tryActions(actions, params){
-  let last = null;
-  for (const act of actions){
-    const out = await GET({ ...(params||{}), action: act });
-    last = out;
-    if (!out) continue;
-    if (out.ok === true) return out;
-    if (Array.isArray(out)) return out;
-    if (out.rows || out.data || out.shifts || out.pending || out.requests) return out;
-  }
-  return last || { ok:false, error:"No matching GET action worked" };
-}
-
-async function POST_tryActions(actions, payload){
-  let last = null;
-  for (const act of actions){
-    const out = await POST(act, payload);
-    last = out;
-    if (out && out.ok) return out;
-  }
-  return last || { ok:false, error:"No matching POST action worked" };
+  try { return JSON.parse(t); } catch { return { ok:false, error:"Non-JSON response", body:t }; }
 }
 
 function fmtDate(dt){
   try{
     const d = new Date(dt);
-    if(isNaN(d)) return String(dt);
     return d.toLocaleString([], { weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" });
   }catch(_){ return String(dt); }
 }
 function fmtShortDate(dt){
   try{
     const d = new Date(dt);
-    if(isNaN(d)) return String(dt);
     return d.toLocaleDateString([], { year:"numeric", month:"short", day:"numeric" });
   }catch(_){ return String(dt); }
 }
-function toLocalInput(dt){
-  const d = new Date(dt);
-  if (isNaN(d)) return '';
-  const p = n => String(n).padStart(2,'0');
-  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
-}
 function safeHours(val){
-  const raw = String(val ?? "").trim();
-  if (raw === "") return null;
-  const n = Number(raw);
+  const s = String(val ?? "").trim();
+  if (!s) return null;
+  const n = Number(s);
   if (!isFinite(n) || n < 0) return null;
   return n;
+}
+function titleCaseNameFromEmail(email){
+  const base = String(email || "").split("@")[0].replace(/[._-]+/g, " ").trim();
+  if (!base) return "Student";
+  return base.split(" ").map(w => w ? (w[0].toUpperCase() + w.slice(1)) : "").join(" ");
 }
 function greetingForNow(){
   const h = new Date().getHours();
@@ -1035,194 +556,24 @@ function greetingForNow(){
   if (h >= 17 && h < 22) return "Good Evening";
   return "Don’t Stay Up Too Late";
 }
-function hoursNum(v){
-  const n = Number(v);
-  return isFinite(n) ? n : 0;
-}
-function normalizeAttendanceList(resp){
-  if (Array.isArray(resp)) return resp;
-  if (resp && Array.isArray(resp.rows)) return resp.rows;
-  if (resp && Array.isArray(resp.attendance)) return resp.attendance;
-  return [];
-}
-function isMobileCal(){
-  return window.matchMedia && window.matchMedia("(max-width: 720px)").matches;
-}
 
-/* ===== POPUP HELPERS ===== */
-const pp = {
-  wrap: () => document.getElementById("portalPopup"),
-  icon: () => document.getElementById("ppIcon"),
-  title:() => document.getElementById("ppTitle"),
-  msg:  () => document.getElementById("ppMsg"),
-  ok:   () => document.getElementById("ppOk")
-};
-function showPopup(ok, title, message){
-  const w = pp.wrap(), ic = pp.icon(), t = pp.title(), m = pp.msg();
-  if (!w || !ic || !t || !m) return;
-  ic.textContent = ok ? "✓" : "!";
-  ic.classList.toggle("bad", !ok);
-  t.textContent = title || (ok ? "Done" : "Something went wrong");
-  m.textContent = message || "";
-  w.style.display = "flex";
-}
-function hidePopup(){
-  const w = pp.wrap();
-  if (w) w.style.display = "none";
-}
-(function wirePopupClose(){
-  const okBtn = document.getElementById("ppOk");
-  const wrap  = document.getElementById("portalPopup");
-  if (okBtn) okBtn.addEventListener("click", hidePopup);
-  if (wrap)  wrap.addEventListener("click", (e)=>{ if (e.target && e.target.id === "portalPopup") hidePopup(); });
-})();
-
-/* ===== CONFETTI (FULLSCREEN) + MODAL ===== */
-let _confettiRAF = null;
-let _confettiPieces = [];
-let _confettiCtx = null;
-let _confettiCanvas = null;
-let _confettiOverlay = null;
-
-function openConfetti(title, body){
-  const t = document.getElementById("cTitle");
-  const b = document.getElementById("cBody");
-  if (t) t.textContent = title || "Success 🎉";
-  if (b) b.innerHTML = nl2br(body || "Done.");
-  const modal = document.getElementById("confettiModal");
-  if (modal) modal.style.display = "flex";
-  startConfetti();
-}
-function closeConfetti(){
-  const modal = document.getElementById("confettiModal");
-  if (modal) modal.style.display = "none";
-  stopConfetti();
-}
-function stopConfetti(){
-  if (_confettiRAF) cancelAnimationFrame(_confettiRAF);
-  _confettiRAF = null;
-  _confettiPieces = [];
-  if (_confettiCtx && _confettiCanvas){
-    try { _confettiCtx.clearRect(0,0,_confettiCanvas.width,_confettiCanvas.height); } catch(_){}
-  }
-  if (_confettiOverlay) _confettiOverlay.style.display = "none";
-}
-function startConfetti(){
-  _confettiOverlay = document.getElementById("confettiOverlay");
-  _confettiCanvas = document.getElementById("confettiCanvas");
-  if (!_confettiOverlay || !_confettiCanvas) return;
-
-  _confettiOverlay.style.display = "block";
-  _confettiCtx = _confettiCanvas.getContext("2d");
-
-  const colors = ["#ff4d6d","#ffb703","#8ecae6","#219ebc","#8338ec","#3a86ff","#06d6a0","#ffd166","#ef476f","#f72585","#4cc9f0","#b5179e"];
-
-  const resize = () => {
-    const dpr = Math.max(1, window.devicePixelRatio || 1);
-    const w = Math.floor(window.innerWidth * dpr);
-    const h = Math.floor(window.innerHeight * dpr);
-    if (_confettiCanvas.width !== w || _confettiCanvas.height !== h){
-      _confettiCanvas.width = w;
-      _confettiCanvas.height = h;
-    }
-    _confettiCtx.setTransform(dpr,0,0,dpr,0,0);
-  };
-  resize();
-
-  const W = () => window.innerWidth;
-  const H = () => window.innerHeight;
-
-  _confettiPieces = [];
-  const count = 260;
-
-  for (let i=0;i<count;i++){
-    const size = 3 + Math.random() * 7;
-    _confettiPieces.push({
-      x: Math.random() * W(),
-      y: -60 - Math.random() * H() * 0.9,
-      w: size * (0.8 + Math.random()*0.8),
-      h: size * (0.8 + Math.random()*1.4),
-      vy: 2.2 + Math.random() * 5.8,
-      vx: -1.8 + Math.random() * 3.6,
-      rot: Math.random() * Math.PI,
-      vr: -0.18 + Math.random() * 0.36,
-      wob: Math.random() * Math.PI * 2,
-      wobSpd: 0.02 + Math.random() * 0.06,
-      color: colors[Math.floor(Math.random()*colors.length)],
-      alpha: 0.95
-    });
-  }
-
-  const startAt = performance.now();
-  const maxFallTime = 5500;
-
-  const loop = (now) => {
-    resize();
-    const w = W();
-    const h = H();
-
-    _confettiCtx.clearRect(0,0,w,h);
-
-    let stillVisible = false;
-
-    for (const p of _confettiPieces){
-      p.wob += p.wobSpd;
-      p.x += p.vx + Math.sin(p.wob) * 0.9;
-      p.y += p.vy;
-      p.rot += p.vr;
-      p.vx *= 0.995;
-
-      if (p.y < h + 80) stillVisible = true;
-
-      _confettiCtx.save();
-      _confettiCtx.translate(p.x, p.y);
-      _confettiCtx.rotate(p.rot);
-      _confettiCtx.globalAlpha = p.alpha;
-      _confettiCtx.fillStyle = p.color;
-      _confettiCtx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
-      _confettiCtx.restore();
-    }
-
-    const elapsed = now - startAt;
-
-    if (elapsed > maxFallTime * 0.75){
-      const t = (elapsed - maxFallTime * 0.75) / (maxFallTime * 0.25);
-      const fade = Math.max(0, 1 - t);
-      for (const p of _confettiPieces) p.alpha = 0.95 * fade;
-    }
-
-    if (!stillVisible || elapsed >= maxFallTime || _confettiOverlay.style.display !== "block"){
-      stopConfetti();
-      return;
-    }
-
-    _confettiRAF = requestAnimationFrame(loop);
-  };
-
-  if (_confettiRAF) cancelAnimationFrame(_confettiRAF);
-  _confettiRAF = requestAnimationFrame(loop);
-
-  window.addEventListener("resize", resize, { passive:true });
-}
-
-/* ===== NAME RESOLUTION ===== */
 let _studentsCache = null;
 async function getStudentsCached(){
   if (_studentsCache) return _studentsCache;
   const resp = await GET({ action:"students" });
-  const list = Array.isArray(resp) ? resp : (resp && Array.isArray(resp.students) ? resp.students : []);
+  const list = Array.isArray(resp) ? resp : (resp && Array.isArray(resp.rows) ? resp.rows : (resp && Array.isArray(resp.students) ? resp.students : []));
   _studentsCache = list;
   return list;
 }
 function pickBestName(stu, fallbackEmail){
-  if (!stu) return String(fallbackEmail||"admin");
+  if (!stu) return titleCaseNameFromEmail(fallbackEmail);
   const cand =
     stu.name ||
     stu.full_name || stu.fullName ||
     stu.display_name || stu.displayName ||
     (stu.first_name || stu.firstName || stu.firstname ? `${stu.first_name||stu.firstName||stu.firstname} ${stu.last_name||stu.lastName||stu.lastname||""}`.trim() : "") ||
     "";
-  return String(cand || "").trim() || String(fallbackEmail||"admin");
+  return String(cand || "").trim() || titleCaseNameFromEmail(fallbackEmail);
 }
 async function resolveStudentName(studentIdOrEmail){
   const id = _norm(studentIdOrEmail);
@@ -1231,7 +582,6 @@ async function resolveStudentName(studentIdOrEmail){
   return pickBestName(match, studentIdOrEmail);
 }
 
-/* ===== CATEGORY → CSS CLASS ===== */
 function catClass(cat){
   const c = String(cat || "").toLowerCase();
   if (c.startsWith("social"))   return "cat-gold";
@@ -1240,8 +590,6 @@ function catClass(cat){
   if (c.startsWith("deadline")) return "cat-red";
   return "cat-gold";
 }
-
-/* ===== ACTIVE CHECK ===== */
 function isActiveEvent(ev){
   const a = ev?.active;
   const s = ev?.status;
@@ -1250,21 +598,185 @@ function isActiveEvent(ev){
   return String(v || "").toLowerCase() === "true";
 }
 
-/* ===== SHIFTS (cache + UI) ===== */
+function eventById(eventId){
+  const id = String(eventId || "").trim();
+  if (!id) return null;
+  return (eventsCache || []).find(e => String(e.event_id) === id) || null;
+}
+function extractEventHours(ev){
+  if (!ev) return 0;
+  const candidates = [ev.hours, ev.event_hours, ev.default_hours, ev.hours_default, ev.duration_hours, ev.durationHours, ev.shift_hours];
+  for (const c of candidates){
+    const n = Number(c);
+    if (isFinite(n) && n > 0) return n;
+  }
+  const start = Date.parse(ev.start);
+  const end   = Date.parse(ev.end);
+  if (!isNaN(start) && !isNaN(end) && end > start){
+    const hrs = (end - start) / 3600000;
+    if (isFinite(hrs) && hrs > 0) return Math.round(hrs * 100) / 100;
+  }
+  return 0;
+}
+
+function extractShiftHours(shift){
+  if (!shift) return 0;
+  const candidates = [shift.hours, shift.shift_hours, shift.duration_hours, shift.durationHours];
+  for (const c of candidates){
+    const n = Number(c);
+    if (isFinite(n) && n > 0) return n;
+  }
+  const start = Date.parse(shift.start || shift.shift_start || shift.start_local);
+  const end   = Date.parse(shift.end || shift.shift_end || shift.end_local);
+  if (!isNaN(start) && !isNaN(end) && end > start){
+    const hrs = (end - start) / 3600000;
+    if (isFinite(hrs) && hrs > 0) return Math.round(hrs * 100) / 100;
+  }
+  return 0;
+}
+
+function requestedHoursOrDefault(rawInput, eventId, shiftId){
+  const n = safeHours(rawInput);
+  if (n != null) return n;
+
+  if (shiftId) {
+    const shift = shiftMapById.get(shiftId);
+    const shiftHours = extractShiftHours(shift);
+    if (shiftHours > 0) return shiftHours;
+  }
+
+  const ev = eventById(eventId);
+  const def = extractEventHours(ev);
+  return def > 0 ? def : 0;
+}
+
+function eventLabelFromSelect(sel){
+  return sel?.options?.[sel.selectedIndex]?.textContent || "";
+}
+
+function cleanSemesterLabel(x){ return String(x || "").trim() || "Unknown"; }
+function hoursNum(v){ const n = Number(v); return isFinite(n) ? n : 0; }
+function toastHist(ok, msg){
+  const el = document.getElementById("msgHist");
+  if (!el) return;
+  el.className = "msg " + (ok ? "ok" : "err");
+  el.textContent = msg || "";
+}
+
+function normalizeAttendanceList(resp){
+  if (Array.isArray(resp)) return resp;
+  if (resp && Array.isArray(resp.rows)) return resp.rows;
+  if (resp && Array.isArray(resp.attendance)) return resp.attendance;
+  return [];
+}
+function normalizeRequestsList(resp){
+  if (Array.isArray(resp)) return resp;
+  if (resp && Array.isArray(resp.rows)) return resp.rows;
+  if (resp && Array.isArray(resp.requests)) return resp.requests;
+  if (resp && Array.isArray(resp.history)) return resp.history;
+  return [];
+}
+
+function normalizeStatus(raw){
+  const s = String(raw ?? "").trim().toLowerCase();
+  if (!s) return "";
+  if (s.includes("pend")) return "pending";
+  if (s.includes("deny") || s.includes("reject") || s.includes("declin")) return "denied";
+  if (s.includes("approv") || s.includes("accept") || s.includes("ok") || s.includes("enter")) return "approved";
+  return s;
+}
+function statusIconForRow(row){
+  if (row?._type === "attendance") return "✅";
+  const s = normalizeStatus(row.status || row.request_status || row.decision || row.state);
+  if (s === "pending") return "⚠️";
+  if (s === "denied") return "❌";
+  if (s === "approved") return "✅";
+  return "⚠️";
+}
+
+function rowEventId(row){
+  return String(row.event_id || row.eventId || row.event || "").trim();
+}
+
+function rowDateKey(row){
+  let t = row.event_start || row.start || row.recorded_at || row.created_at || row.requested_at || row.timestamp || "";
+  if (!t) {
+    const ev = eventById(rowEventId(row));
+    if (ev && ev.start) t = ev.start;
+  }
+  const ms = Date.parse(t);
+  return isNaN(ms) ? 0 : ms;
+}
+
+function rowEventDateForDisplay(row){
+  let dt = row.event_start || row.start || row.recorded_at || row.created_at || row.requested_at || "";
+  if (!dt) {
+    const ev = eventById(rowEventId(row));
+    if (ev && ev.start) dt = ev.start;
+  }
+  return dt ? fmtShortDate(dt) : "—";
+}
+
+function rowSemester(row){
+  return cleanSemesterLabel(row.semester_id || row.semester || row.semesterId || row.sem || "");
+}
+
+function rowEventTitle(row){
+  const direct = String(row.event_title || row.title || row.event_name || row.eventName || "").trim();
+  let base = direct;
+  if (!base) {
+    const id = rowEventId(row);
+    const ev = eventById(id);
+    base = String(ev?.title || id || "—");
+  }
+  return base;
+}
+
+function rowHoursForDisplay(row){
+  if (row?._type === "attendance"){ return hoursNum(row.hours_awarded); }
+  const rh = row.requested_hours ?? row.hours_requested ?? row.hours ?? row.req_hours;
+  return hoursNum(rh);
+}
+function rowComment(row){
+  return String(row.comments || row.comment || row.notes || "").trim();
+}
+
+function getRowStudentToken(row){
+  const candidates = [
+    row?.student_id, row?.studentId, row?.student, row?.username,
+    row?.email, row?.student_email, row?.studentEmail, row?.student_email_address,
+    row?.ambassador_email, row?.ambassador, row?.user, row?.user_id, row?.userId
+  ];
+  for (const c of candidates){ const n = _norm(c); if (n) return n; }
+  return ""; 
+}
+function belongsToCurrentStudent(row, studentId){
+  const me = _norm(studentId);
+  if (!me) return false;
+  const token = getRowStudentToken(row);
+  if (token) return token === me;
+  return true;
+}
+
+/* ===== SHIFTS INTEGRATION ===== */
 const shiftsCacheByEvent = new Map();
 const shiftMapById = new Map();
 const shiftLabelById = new Map();
 
+function isTrue(v) {
+  if (typeof v === "boolean") return v === true;
+  const s = String(v ?? "").trim().toLowerCase();
+  return s === "true" || s === "yes" || s === "1";
+}
+
 function shiftLabel(s){
   if (!s) return "";
   const title = s.shift_title || s.shiftTitle || s.title || s.name || "Shift";
-  const start = s.start || s.shift_start || s.shiftStart || s.start_time || s.startTime ||
-    s.start_local || s.startLocal || s.start_utc || s.startUTC || "";
-  const end   = s.end   || s.shift_end   || s.shiftEnd   || s.end_time   || s.endTime   ||
-    s.end_local   || s.endLocal   || s.end_utc   || s.endUTC   || "";
-  
+  const start = s.start || s.shift_start || s.start_local;
+  const end   = s.end   || s.shift_end   || s.end_local;
+ 
   if (!start) return title;
-  
+ 
   try{
     const d1 = new Date(start);
     const d2 = end ? new Date(end) : null;
@@ -1286,10 +798,7 @@ function normalizeShiftsResp(resp){
 }
 
 function shiftsFromEventObject(eventId){
-  const evId = String(eventId || "").trim();
-  if (!evId) return [];
-
-  const ev = (eventsCache || []).find(e => String(e.event_id || e.id || "").trim() === evId) || null;
+  const ev = eventById(eventId);
   if (!ev) return [];
 
   let raw = ev.shifts ?? ev.shift_list ?? ev.shiftList ?? ev.shifts_data ?? ev.shiftsData ?? null;
@@ -1306,8 +815,8 @@ function shiftsFromEventObject(eventId){
 
   return raw.map((s, i)=>({
     ...s,
-    shift_id: String(s.shift_id ?? s.shiftId ?? s.id ?? `${evId}_shift_${i+1}`).trim(),
-    event_id: String(s.event_id ?? s.eventId ?? evId).trim()
+    shift_id: String(s.shift_id ?? s.shiftId ?? s.id ?? `${eventId}_shift_${i+1}`).trim(),
+    event_id: String(s.event_id ?? s.eventId ?? eventId).trim()
   })).filter(s=>s.shift_id);
 }
 
@@ -1317,11 +826,7 @@ async function loadShiftsForEvent(eventId){
 
   if (shiftsCacheByEvent.has(evId)) return shiftsCacheByEvent.get(evId) || [];
 
-  const resp = await GET_tryActions(
-    [ "shifts", "eventshifts", "event_shifts", "getshifts", "get_shifts", "shifts_by_event", "shiftsByEvent" ],
-    { event_id: evId }
-  );
-
+  const resp = await GET({ action:"shifts", event_id: evId });
   let list = normalizeShiftsResp(resp);
 
   if (!list || !list.length){
@@ -1344,7 +849,7 @@ async function loadShiftsForEvent(eventId){
 }
 
 function mustPickShiftForEvent(eventId){
-  const ev = (eventsCache || []).find(e => String(e.event_id||"").trim() === String(eventId||"").trim()) || null;
+  const ev = eventById(eventId);
   return isTrue(ev?.shifts_required) === true;
 }
 
@@ -1454,761 +959,134 @@ function modalSelectedShift(){
   return v || null;
 }
 
-/* ===== SHIFT EDITOR (Create/Edit) ===== */
-let _shiftEditorWired = false;
-let _shiftEditorRemoveAllFlag = false;
 
-function _eventIsSingleDay(){
-  const s = document.getElementById("ev_start")?.value || "";
-  const e = document.getElementById("ev_end")?.value || "";
-  if (!s) return false;
-  const sd = s.slice(0,10);
-  const ed = (e ? e.slice(0,10) : sd);
-  return sd && ed && sd === ed;
-}
-function _eventBaseDate(){
-  const s = document.getElementById("ev_start")?.value || "";
-  return s ? s.slice(0,10) : "";
-}
-function _timeFromISO(dt){
-  if (!dt) return "";
-  const d = new Date(dt);
-  if (isNaN(d)) return "";
-  const p = n => String(n).padStart(2,"0");
-  return `${p(d.getHours())}:${p(d.getMinutes())}`;
-}
-function _isoFromBaseDateAndTime(baseDate, hhmm){
-  if (!baseDate || !hhmm) return "";
-  const local = `${baseDate}T${hhmm}`;
-  const d = new Date(local);
-  if (isNaN(d)) return "";
-  return d.toISOString();
-}
+/* ===== CONFETTI ===== */
+let _confettiRAF = null;
+let _confettiPieces = [];
+let _confettiCtx = null;
+let _confettiCanvas = null;
+let _confettiOverlay = null;
 
-function normalizeShiftForEditor(s, fallbackEventId){
-  if (!s) return null;
-
-  const title = s.title ?? s.name ?? s.shift_title ?? s.shiftTitle ?? s.label ?? "";
-  const startRaw = s.start ?? s.shift_start ?? s.shiftStart ?? s.start_time ?? s.startTime ??
-    s.start_local ?? s.startLocal ?? s.start_utc ?? s.startUTC ?? "";
-  const endRaw = s.end ?? s.shift_end ?? s.shiftEnd ?? s.end_time ?? s.endTime ??
-    s.end_local ?? s.endLocal ?? s.end_utc ?? s.endUTC ?? "";
-  const capRaw = s.capacity ?? s.cap ?? s.max ?? s.max_capacity ?? s.maxCapacity ?? 0;
-  const activeRaw = (s.active != null ? s.active :
-    (s.is_active != null ? s.is_active :
-      (s.isActive != null ? s.isActive : true)));
-  const shift_id = String(s.shift_id ?? s.shiftId ?? s.id ?? s._id ?? "").trim();
-  const event_id = String(s.event_id ?? s.eventId ?? fallbackEventId ?? "").trim();
-
-  return {
-    shift_id,
-    event_id,
-    title: String(title || "").trim(),
-    start: startRaw,
-    end: endRaw,
-    capacity: (capRaw === "" || capRaw == null) ? 0 : Number(capRaw),
-    active: isTrue(activeRaw)
+function openConfetti(title, body){
+  document.getElementById("cTitle").textContent = title || "Success 🎉";
+  document.getElementById("cBody").innerHTML = body || "Done.";
+  document.getElementById("confettiModal").style.display = "flex";
+  startConfetti();
+}
+function closeConfetti(){ document.getElementById("confettiModal").style.display = "none"; }
+function stopConfetti(){
+  if (_confettiRAF) cancelAnimationFrame(_confettiRAF);
+  _confettiRAF = null;
+  _confettiPieces = [];
+  if (_confettiCtx && _confettiCanvas){ try { _confettiCtx.clearRect(0,0,_confettiCanvas.width,_confettiCanvas.height); } catch(_){} }
+  if (_confettiOverlay) _confettiOverlay.style.display = "none";
+}
+function startConfetti(){
+  _confettiOverlay = document.getElementById("confettiOverlay");
+  _confettiCanvas = document.getElementById("confettiCanvas");
+  if (!_confettiOverlay || !_confettiCanvas) return;
+  _confettiOverlay.style.display = "block";
+  _confettiCtx = _confettiCanvas.getContext("2d");
+  const colors = ["#ff4d6d","#ffb703","#8ecae6","#219ebc","#8338ec","#3a86ff","#06d6a0","#ffd166","#ef476f","#f72585","#4cc9f0","#b5179e"];
+  const resize = () => {
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const w = Math.floor(window.innerWidth * dpr);
+    const h = Math.floor(window.innerHeight * dpr);
+    if (_confettiCanvas.width !== w || _confettiCanvas.height !== h){ _confettiCanvas.width = w; _confettiCanvas.height = h; }
+    _confettiCtx.setTransform(dpr,0,0,dpr,0,0);
   };
-}
-
-function toLocalInputSafe(dt){
-  if (!dt) return "";
-  if (typeof dt === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(dt)) return dt.slice(0,16);
-  const d = new Date(dt);
-  if (isNaN(d)) return "";
-  const p = n => String(n).padStart(2,'0');
-  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
-}
-
-function wireShiftEditor(){
-  if (_shiftEditorWired) return;
-  _shiftEditorWired = true;
-
-  const has = document.getElementById("ev_hasShifts");
-  const box = document.getElementById("ev_shiftsBox");
-  const add = document.getElementById("ev_addShift");
-  const remAll = document.getElementById("ev_removeAllShifts");
-
-  if (!has || !box || !add || !remAll) return;
-
-  const setVisible = (on)=>{
-    box.style.display = on ? "block" : "none";
-    add.style.display = on ? "inline-flex" : "none";
-    remAll.style.display = on ? "inline-flex" : "none";
-    if (!on){
-      _shiftEditorRemoveAllFlag = false;
-    }
-  };
-
-  has.addEventListener("change", ()=> setVisible(has.checked));
-  add.addEventListener("click", ()=> addShiftRow());
-
-  remAll.addEventListener("click", ()=>{
-    const tbody = document.getElementById("ev_shiftsBody");
-    if (tbody) tbody.innerHTML = "";
-    _shiftEditorRemoveAllFlag = true;
-    const st = document.getElementById("ev_shiftStatus");
-    if (st) st.textContent = "All shift rows removed. Save Event to apply this change.";
-  });
-
-  setVisible(false);
-}
-
-function makeAutoShiftId(idx){ return `TEMP_SHF_${Date.now()}_${idx}`; }
-
-function addShiftRow(data){
-  const tbody = document.getElementById("ev_shiftsBody");
-  if (!tbody) return;
-
-  const evId = String(document.getElementById("ev_id")?.value || "").trim();
-  const norm = data ? normalizeShiftForEditor(data, evId) : null;
-
-  const sid = String(norm?.shift_id || "").trim();
-  const title = norm?.title || "";
-  const cap = isFinite(norm?.capacity) ? Number(norm.capacity) : 0;
-  const active = (norm?.active == null) ? true : !!norm.active;
-
-  const singleDay = _eventIsSingleDay();
-  const baseDate = _eventBaseDate();
-
-  const startDT = norm?.start ? toLocalInputSafe(norm.start) : "";
-  const endDT   = norm?.end   ? toLocalInputSafe(norm.end)   : "";
-
-  const startTime = norm?.start ? _timeFromISO(norm.start) : "";
-  const endTime   = norm?.end   ? _timeFromISO(norm.end)   : "";
-
-  const tr = document.createElement("tr");
-  tr.dataset.shiftId = sid;
-  if (singleDay && baseDate) tr.dataset.baseDate = baseDate;
-
-  const startCell = singleDay
-    ? `<input type="time" data-k="start_time" value="${esc(startTime)}">`
-    : `<input type="datetime-local" data-k="start_dt" value="${esc(startDT)}">`;
-
-  const endCell = singleDay
-    ? `<input type="time" data-k="end_time" value="${esc(endTime)}">`
-    : `<input type="datetime-local" data-k="end_dt" value="${esc(endDT)}">`;
-
-  tr.innerHTML = `
-    <td><input type="text" data-k="title" placeholder="e.g., Setup / Check-in" value="${esc(title)}"></td>
-    <td>${startCell}</td>
-    <td>${endCell}</td>
-    <td><input type="number" data-k="capacity" value="${esc(String(isFinite(cap)?cap:0))}" min="0"></td>
-    <td style="text-align:left;">
-      <label style="display:flex;align-items:center;gap:8px;margin:0;">
-        <input type="checkbox" data-k="active" ${active ? "checked" : ""} style="width:auto;">
-        <span class="muted small">active</span>
-      </label>
-    </td>
-    <td><button type="button" class="secondary" data-act="rm">Remove</button></td>
-  `;
-
-  tr.querySelector('[data-act="rm"]')?.addEventListener("click", ()=> tr.remove());
-  tbody.appendChild(tr);
-
-  _shiftEditorRemoveAllFlag = false;
-  const st = document.getElementById("ev_shiftStatus");
-  if (st) st.textContent = "Editing shifts…";
-}
-
-function setShiftEditorFromEvent(eventId, shifts, shiftsRequired){
-  const has = document.getElementById("ev_hasShifts");
-  const req = document.getElementById("ev_shiftsRequired");
-  const box = document.getElementById("ev_shiftsBox");
-  const add = document.getElementById("ev_addShift");
-  const remAll = document.getElementById("ev_removeAllShifts");
-  const tbody = document.getElementById("ev_shiftsBody");
-  const st = document.getElementById("ev_shiftStatus");
-
-  if (!has || !req || !box || !tbody || !add || !remAll) return;
-
-  const shouldEnable = !!(shiftsRequired || (Array.isArray(shifts) && shifts.length));
-  has.checked = shouldEnable;
-  box.style.display = shouldEnable ? "block" : "none";
-  add.style.display = shouldEnable ? "inline-flex" : "none";
-  remAll.style.display = shouldEnable ? "inline-flex" : "none";
-  req.checked = !!shiftsRequired;
-
-  tbody.innerHTML = "";
-  _shiftEditorRemoveAllFlag = false;
-
-  if (Array.isArray(shifts) && shifts.length){
-    shifts.forEach(s=> addShiftRow(s));
-    if (st) st.textContent = `Loaded ${shifts.length} shift(s).`;
-  } else {
-    if (st) st.textContent = shouldEnable ? "No shifts loaded yet. Add shifts if needed." : "";
+  resize();
+  _confettiPieces = [];
+  for (let i=0;i<260;i++){
+    const size = 3 + Math.random() * 7;
+    _confettiPieces.push({
+      x: Math.random() * window.innerWidth, y: -60 - Math.random() * window.innerHeight * 0.9,
+      w: size * (0.8 + Math.random()*0.8), h: size * (0.8 + Math.random()*1.4),
+      vy: 2.2 + Math.random() * 5.8, vx: -1.8 + Math.random() * 3.6,
+      rot: Math.random() * Math.PI, vr: -0.18 + Math.random() * 0.36,
+      wob: Math.random() * Math.PI * 2, wobSpd: 0.02 + Math.random() * 0.06,
+      color: colors[Math.floor(Math.random()*colors.length)], alpha: 0.95
+    });
   }
-}
-
-function readShiftEditor(){
-  const has = document.getElementById("ev_hasShifts");
-  const req = document.getElementById("ev_shiftsRequired");
-  const tbody = document.getElementById("ev_shiftsBody");
-  const evId = String(document.getElementById("ev_id")?.value || "").trim();
-
-  const enabled = !!(has && has.checked);
-  const required = !!(req && req.checked);
-  if (!enabled) return { enabled:false, required:false, shifts:[], removeAll:false };
-
-  const singleDay = _eventIsSingleDay();
-  const baseDate = _eventBaseDate();
-
-  const rows = tbody ? [...tbody.querySelectorAll("tr")] : [];
-  let autoIdx = 0;
-
-  const shifts = rows.map(tr=>{
-    const title = tr.querySelector('[data-k="title"]')?.value || "";
-    const capacity = Number(tr.querySelector('[data-k="capacity"]')?.value || 0);
-    const active = !!tr.querySelector('[data-k="active"]')?.checked;
-
-    let startISO = "";
-    let endISO = "";
-
-    if (singleDay){
-      const bd = tr.dataset.baseDate || baseDate;
-      const st = tr.querySelector('[data-k="start_time"]')?.value || "";
-      const en = tr.querySelector('[data-k="end_time"]')?.value || "";
-      startISO = _isoFromBaseDateAndTime(bd, st);
-      endISO   = _isoFromBaseDateAndTime(bd, en);
-    } else {
-      const stLocal = tr.querySelector('[data-k="start_dt"]')?.value || "";
-      const enLocal = tr.querySelector('[data-k="end_dt"]')?.value || "";
-      startISO = stLocal ? new Date(stLocal).toISOString() : "";
-      endISO   = enLocal ? new Date(enLocal).toISOString() : "";
+  const startAt = performance.now();
+  const loop = (now) => {
+    resize();
+    const w = window.innerWidth; const h = window.innerHeight;
+    _confettiCtx.clearRect(0,0,w,h);
+    let stillVisible = false;
+    for (const p of _confettiPieces){
+      p.wob += p.wobSpd; p.x += p.vx + Math.sin(p.wob) * 0.9; p.y += p.vy; p.rot += p.vr; p.vx *= 0.995;
+      if (p.y < h + 80) stillVisible = true;
+      _confettiCtx.save();
+      _confettiCtx.translate(p.x, p.y);
+      _confettiCtx.rotate(p.rot);
+      _confettiCtx.globalAlpha = p.alpha;
+      _confettiCtx.fillStyle = p.color;
+      _confettiCtx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      _confettiCtx.restore();
     }
-
-    const any = (String(title).trim() || startISO || endISO || (Number(capacity)||0) > 0);
-    if (!any) return null;
-
-    let sid = String(tr.dataset.shiftId || "").trim();
-    if (!sid){
-      sid = makeAutoShiftId(autoIdx);
-      autoIdx++;
+    const elapsed = now - startAt;
+    if (elapsed > 5500 * 0.75){
+      const t = (elapsed - 5500 * 0.75) / (5500 * 0.25);
+      for (const p of _confettiPieces) p.alpha = 0.95 * Math.max(0, 1 - t);
     }
-
-    return {
-      shift_id: sid,
-      title: String(title).trim(),
-      start: startISO,
-      end: endISO,
-      capacity: isFinite(capacity) ? capacity : 0,
-      active
-    };
-  }).filter(Boolean);
-
-  return { enabled:true, required, shifts, removeAll: !!_shiftEditorRemoveAllFlag };
+    if (!stillVisible || elapsed >= 5500 || _confettiOverlay.style.display !== "block"){ stopConfetti(); return; }
+    _confettiRAF = requestAnimationFrame(loop);
+  };
+  if (_confettiRAF) cancelAnimationFrame(_confettiRAF);
+  _confettiRAF = requestAnimationFrame(loop);
+  window.addEventListener("resize", resize, { passive:true });
 }
 
-function clearShiftEditorUI(){
-  const has = document.getElementById("ev_hasShifts");
-  const req = document.getElementById("ev_shiftsRequired");
-  const box = document.getElementById("ev_shiftsBox");
-  const add = document.getElementById("ev_addShift");
-  const remAll = document.getElementById("ev_removeAllShifts");
-  const tbody = document.getElementById("ev_shiftsBody");
-  const st = document.getElementById("ev_shiftStatus");
-
-  if (has) has.checked = false;
-  if (req) req.checked = false;
-  if (box) box.style.display = "none";
-  if (add) add.style.display = "none";
-  if (remAll) remAll.style.display = "none";
-  if (tbody) tbody.innerHTML = "";
-  if (st) st.textContent = "";
-  _shiftEditorRemoveAllFlag = false;
-}
-
-/* ===== STATE ===== */
-let currentAdminId = null;
+/* ===== STATE & BOOT ===== */
+let currentStudentId = null;
 let eventsCache = [];
-let activeEventsCache = [];
 let calendarInstance = null;
+let _attendanceCache = [];
+let _requestsCache = [];
+let _fullHistoryCache = [];
+let _modalEventId = null;
 
-function nextEventIdFromCache(){
-  const ids = (eventsCache || [])
-    .map(ev => String(ev?.event_id ?? ev?.id ?? ev?.eventId ?? "").trim())
-    .filter(Boolean);
+function extractSignupsAccepted(roster){
+  if (!roster) return [];
+  if (roster.signups && Array.isArray(roster.signups.accepted)) return roster.signups.accepted;
+  if (roster.signups && Array.isArray(roster.signups)) return roster.signups;
+  if (Array.isArray(roster.accepted)) return roster.accepted;
+  if (Array.isArray(roster.rows)) return roster.rows;
+  return [];
+}
+function extractSignupsWait(roster){
+  if (!roster) return [];
+  if (roster.signups && Array.isArray(roster.signups.waitlisted)) return roster.signups.waitlisted;
+  if (roster.signups && Array.isArray(roster.signups.waitlist)) return roster.signups.waitlist;
+  if (Array.isArray(roster.waitlisted)) return roster.waitlisted;
+  return [];
+}
 
-  if (!ids.length) return "EVT001";
-
-  let bestPrefix = "EVT";
-  let maxNum = 0;
-  let found = false;
-
-  for (const id of ids){
-    const m = id.match(/^([A-Za-z]+)(\d+)$/);
-    if (!m) continue;
-    const prefix = m[1];
-    const num = parseInt(m[2], 10);
-    if (!isFinite(num)) continue;
-    if (!found){
-      bestPrefix = prefix || bestPrefix;
-      maxNum = num;
-      found = true;
-    } else if (num > maxNum){
-      maxNum = num;
-      bestPrefix = prefix || bestPrefix;
+function initCalendarSafe(events){
+  let attempts = 0;
+  const maxAttempts = 100;
+ 
+  const poller = setInterval(() => {
+    if (window.FullCalendar && window.FullCalendar.Calendar) {
+      clearInterval(poller);
+      buildCalendar(events);
+    } else {
+      attempts++;
+      if (attempts > maxAttempts) {
+        clearInterval(poller);
+        const el = document.getElementById("calendar");
+        if(el) el.innerHTML = `<div style="padding:20px;color:#b00020;text-align:center;">Calendar library failed to load.<br>Please refresh the page.</div>`;
+      }
     }
-  }
-
-  if (!found) return "EVT001";
-
-  const next = maxNum + 1;
-  const padded = String(next).padStart(3, "0");
-  return `${bestPrefix}${padded}`;
-}
-function autofillEventIdIfEmpty(){
-  const el = document.getElementById("ev_id");
-  if (!el) return;
-  if (String(el.value || "").trim() !== "") return;
-  el.value = nextEventIdFromCache();
+  }, 100);
 }
 
-/* ===== BOOT ===== */
-(async function(){
-  try{
-    const meHoursSub = document.getElementById("meHoursSub");
-    if (meHoursSub) meHoursSub.textContent = CURRENT_SEMESTER;
-
-    const sess = getSession();
-    
-    currentAdminId = String(sess.username || sess.student_id || sess.studentId || sess.email || "test_admin@example.com").trim();
-
-    if (!currentAdminId){
-      const g = document.getElementById("adminGreet");
-      const n = document.getElementById("adminName");
-      if (g) g.textContent = "Session expired";
-      if (n) n.textContent = "Please go back and log in again.";
-      return;
-    }
-
-    const g = document.getElementById("adminGreet");
-    const n = document.getElementById("adminName");
-    if (g) g.textContent = greetingForNow();
-    if (n) n.textContent = await resolveStudentName(currentAdminId);
-
-    wireShiftEditor();
-
-    const evResp = await GET_tryActions(["events","getevents","get_events","listevents","list_events"], {});
-    eventsCache = Array.isArray(evResp) ? evResp
-      : (evResp && Array.isArray(evResp.events) ? evResp.events
-        : (evResp?.data?.events || []));
-
-    activeEventsCache = (eventsCache || []).filter(isActiveEvent);
-
-    fillEventSelects(activeEventsCache);
-    buildCalendar(activeEventsCache);
-
-    const reqSel = document.getElementById("reqEvent");
-    const suSel  = document.getElementById("signupEvent");
-    const reqFirst = reqSel ? (reqSel.value || "") : "";
-    const suFirst  = suSel ? (suSel.value || "") : "";
-
-    if (reqSel) reqSel.addEventListener("change", async (e)=> setShiftUI("req", e.target.value));
-    if (suSel)  suSel.addEventListener("change", async (e)=> setShiftUI("su", e.target.value));
-
-    if (reqFirst) await loadShiftsForEvent(reqFirst);
-    if (suFirst)  await loadShiftsForEvent(suFirst);
-
-    await setShiftUI("req", reqFirst);
-    await setShiftUI("su", suFirst);
-
-    autofillEventIdIfEmpty();
-
-    initReqAdmin();
-    initPendingCenter(activeEventsCache);
-
-    const saveBtn = document.getElementById("saveEventBtn");
-    if (saveBtn) saveBtn.addEventListener("click", saveEvent);
-
-    const meRefresh = document.getElementById("btnMeRefresh");
-    if (meRefresh) meRefresh.addEventListener("click", refreshMe);
-
-    const formReq = document.getElementById("formRequest");
-    if (formReq) formReq.addEventListener("submit", submitMyRequest);
-
-    const formSu = document.getElementById("formSignup");
-    if (formSu) formSu.addEventListener("submit", submitMySignup);
-
-    await refreshMe();
-  }catch(err){
-    console.error("BOOT failed:", err);
-    showPopup(false, "Startup error", String(err?.message || err));
-  }
-})();
-
-/* ===== Quick actions ===== */
-function fillEventSelects(activeEvents){
-  const reqSel = document.getElementById("reqEvent");
-  const btnReq = document.getElementById("btnReq");
-
-  const reqList = [...(activeEvents||[])].sort((a,b)=>{
-    const ta = Date.parse(a.start); const tb = Date.parse(b.start);
-    if (isNaN(ta) && isNaN(tb)) return 0;
-    if (isNaN(ta)) return 1;
-    if (isNaN(tb)) return -1;
-    return tb - ta;
-  });
-
-  reqSel.innerHTML = "";
-  if (!reqList.length){
-    reqSel.appendChild(new Option("No active events available",""));
-    reqSel.disabled = true; btnReq.disabled = true;
-  } else {
-    reqSel.disabled = false; btnReq.disabled = false;
-    reqList.forEach(ev => reqSel.appendChild(new Option(`${ev.title} — ${fmtDate(ev.start)}`, ev.event_id)));
-  }
-
-  const suSel  = document.getElementById("signupEvent");
-  const btnSu  = document.getElementById("btnSignup");
-  const now = Date.now();
-  const upcoming = (activeEvents||[]).filter(ev => {
-    const t = Date.parse(ev.start);
-    return !isNaN(t) && t >= now - 86400000;
-  }).sort((a,b)=>Date.parse(a.start)-Date.parse(b.start));
-
-  suSel.innerHTML = "";
-  if (!upcoming.length){
-    suSel.appendChild(new Option("No upcoming events",""));
-    suSel.disabled = true; btnSu.disabled = true;
-  } else {
-    suSel.disabled = false; btnSu.disabled = false;
-    upcoming.forEach(ev => {
-      const capTxt = ev.signup_capacity ? ` (${ev.signup_capacity} cap)` : "";
-      suSel.appendChild(new Option(`${ev.title} — ${fmtDate(ev.start)}${capTxt}`, ev.event_id));
-    });
-  }
-}
-
-async function submitMyRequest(e){
-  e.preventDefault();
-  const msgEl = document.getElementById("msgReq");
-  msgEl.textContent = "";
-
-  const evId = document.getElementById("reqEvent").value;
-  if (!evId){
-    toast(msgEl, false, "Please choose an event.");
-    return;
-  }
-
-  const shiftIdRaw = getSelectedShift("req");
-  const shiftId = (shiftIdRaw && String(shiftIdRaw).trim()) ? String(shiftIdRaw).trim() : null;
-
-  if (mustPickShiftForEvent(evId) && !shiftId){
-    toast(msgEl, false, "Please select a shift.");
-    showPopup(false, "Missing shift", "This event requires a shift selection.");
-    return;
-  }
-
-  const btn = document.getElementById("btnReq");
-  btn.disabled = true;
-  toast(msgEl, true, "Submitting…");
-
-  const requestedHours = safeHours(document.getElementById("reqHours").value);
-
-  const out = await POST_tryActions(
-    ["request","attendance_request","submitrequest","submit_request","newrequest","new_request"],
-    {
-      student_id: currentAdminId,
-      event_id: evId,
-      shift_id: shiftId,
-      shift: shiftId,
-      shiftId: shiftId,
-      requested_hours: requestedHours,
-      comment: (document.getElementById("reqComment").value || "").trim(),
-      notify: true,
-      source: "portal_admin",
-      current_semester: CURRENT_SEMESTER
-    }
-  );
-
-  if (out && out.ok){
-    toast(msgEl, true, "Request submitted!");
-    openConfetti("Request submitted", requestedHours == null ? "Your attendance request was submitted." : `Your attendance request was submitted.\nRequested hours: ${requestedHours}`);
-    document.getElementById("reqHours").value = "";
-    document.getElementById("reqComment").value = "";
-    await refreshMe();
-    try{ document.getElementById("pcRefresh")?.click(); }catch(_){}
-  } else {
-    const err = (out && (out.error || out.message)) || "Request failed";
-    toast(msgEl, false, err);
-    showPopup(false, "Request failed", err);
-  }
-  btn.disabled = false;
-}
-
-async function submitMySignup(e){
-  e.preventDefault();
-  const msgEl = document.getElementById("msgSignup");
-  msgEl.textContent = "";
-
-  const evId = document.getElementById("signupEvent").value;
-  if (!evId){
-    toast(msgEl, false, "Please choose an event.");
-    return;
-  }
-
-  const shiftIdRaw = getSelectedShift("su");
-  const shiftId = (shiftIdRaw && String(shiftIdRaw).trim()) ? String(shiftIdRaw).trim() : null;
-
-  if (mustPickShiftForEvent(evId) && !shiftId){
-    toast(msgEl, false, "Please select a shift.");
-    showPopup(false, "Missing shift", "This event requires a shift selection.");
-    return;
-  }
-
-  const btn = document.getElementById("btnSignup");
-  btn.disabled = true;
-  toast(msgEl, true, "Submitting…");
-
-  const requestedHours = safeHours(document.getElementById("suHours").value);
-
-  const out = await POST_tryActions(
-    ["signup","event_signup","sign_up","submitSignup","submit_signup","newsignup","new_signup"],
-    {
-      student_id: currentAdminId,
-      event_id: evId,
-      shift_id: shiftId,
-      shift: shiftId,
-      shiftId: shiftId,
-      created_by: "admin",
-      requested_hours: requestedHours,
-      comment: (document.getElementById("suComment").value || "").trim(),
-      notify: true,
-      source: "portal_admin",
-      current_semester: CURRENT_SEMESTER
-    }
-  );
-
-  if (out && out.ok){
-    const statusTxt = out.status === "accepted" ? "confirmed ✅" : "submitted ✅";
-    toast(msgEl, true, `Sign-up ${statusTxt}`);
-    openConfetti("Signed up", requestedHours == null ? `You are ${statusTxt}.` : `You are ${statusTxt}.\nRequested hours: ${requestedHours}`);
-    document.getElementById("suHours").value = "";
-    document.getElementById("suComment").value = "";
-    await refreshMe();
-  } else {
-    const err = (out && (out.error || out.message)) || "Sign-up failed";
-    toast(msgEl, false, err);
-    showPopup(false, "Sign-up failed", err);
-  }
-  btn.disabled = false;
-}
-
-/* =========================
-   MY HISTORY
-   ========================= */
-let _meHistAttendance = [];
-let _meHistRequests = [];
-let _meHistFull = [];
-let _meHistWired = false;
-
-function meHist_cleanSemesterLabel(x){
-  const s = String(x || "").trim();
-  return s || "Unknown";
-}
-function meHist_normalizeStatus(raw){
-  const s = String(raw ?? "").trim().toLowerCase();
-  if (s.includes("pend")) return "pending";
-  if (s.includes("deny") || s.includes("reject")) return "denied";
-  if (s.includes("approv") || s.includes("accept")) return "approved";
-  return s;
-}
-function meHist_statusIconForRow(row){
-  if (row?._type === "attendance") return "✅";
-  const s = meHist_normalizeStatus(row.status || row.request_status || row.state);
-  if (s === "pending") return "⚠️";
-  if (s === "denied") return "❌";
-  if (s === "approved") return "✅";
-  return "⚠️";
-}
-function meHist_rowSemester(row){
-  return meHist_cleanSemesterLabel(row.semester_id || row.semester || row.current_semester || "");
-}
-function meHist_rowEventTitle(row){
-  const base = row.event_title || row.title || "—";
-  const sid = String(row.shift_id ?? row.shiftId ?? "").trim();
-  const sl = sid ? (shiftLabelById.get(sid) || sid) : "";
-  return sl ? `${base} (shift: ${sl})` : base;
-}
-function meHist_rowEventStart(row){
-  return row.event_start || row.start || row.event_date || row.created_at || row.timestamp || "";
-}
-function meHist_rowEventDateForDisplay(row){
-  const dt = meHist_rowEventStart(row);
-  return dt ? fmtDate(dt) : "—";
-}
-function meHist_rowHoursForDisplay(row){
-  return row._type === "attendance"
-    ? hoursNum(row.hours_awarded ?? row.hours ?? row.awarded_hours ?? 0)
-    : hoursNum(row.requested_hours ?? row.hours_requested ?? row.hours ?? 0);
-}
-function meHist_rowComment(row){
-  return row.comments || row.comment || row.notes || "";
-}
-function meHist_renderHistory(semester){
-  const tbody = document.getElementById("histRows");
-  if (!tbody) return;
-
-  tbody.innerHTML = "";
-
-  const rows = (_meHistFull || []).filter(r => meHist_rowSemester(r) === semester);
-
-  if (!rows.length){
-    tbody.innerHTML = `<tr><td colspan="6" class="muted small">No history in this semester.</td></tr>`;
-    return;
-  }
-
-  rows.sort((a,b)=> {
-    const da = Date.parse(meHist_rowEventStart(a) || "");
-    const db = Date.parse(meHist_rowEventStart(b) || "");
-    return (isNaN(db)?0:db) - (isNaN(da)?0:da);
-  });
-
-  rows.forEach(r=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td><span class="tag">${esc(meHist_rowSemester(r))}</span></td>
-      <td>${esc(meHist_rowEventTitle(r))}</td>
-      <td>${esc(meHist_rowEventDateForDisplay(r))}</td>
-      <td>${esc(String(meHist_rowHoursForDisplay(r)))}</td>
-      <td><span class="emoji-bg">${esc(meHist_statusIconForRow(r))}</span></td>
-      <td>${esc(meHist_rowComment(r))}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-async function meHist_getMyRequests(){
-  const resp = await GET_tryActions(
-    ["myrequests","requests_by_student","requests","requesthistory","history_requests","attendance_requests"],
-    { student_id: currentAdminId }
-  );
-
-  if (resp && resp.ok === false && (resp.error || resp.message)){
-    return { ok:false, error: resp.error || resp.message || "Failed to load requests", rows: [] };
-  }
-  const rows = normalizePending(resp);
-  return { ok:true, rows: rows || [] };
-}
-
-async function refreshMe(){
-  const msgHist = document.getElementById("msgHist");
-  if (msgHist) msgHist.textContent = "";
-
-  const hist = await GET({ action:"attendance", student_id: currentAdminId });
-  const attRows = normalizeAttendanceList(hist);
-
-  _meHistAttendance = (attRows || []).map(r=>{
-    const ev = (eventsCache || []).find(e => String(e.event_id||"").trim() === String(r.event_id||r.eventId||"").trim()) || null;
-    const sem = String(r.semester_id || r.semester || r.current_semester || "").trim() || String(CURRENT_SEMESTER);
-    return {
-      ...r,
-      _type: "attendance",
-      status: "approved",
-      semester_id: sem,
-      event_title: r.event_title || ev?.title || r.title || r.event_id || "—",
-      event_start: r.event_start || ev?.start || r.start || r.recorded_at || ""
-    }
-  });
-
-  const reqResp = await meHist_getMyRequests();
-  _meHistRequests = (reqResp.ok ? reqResp.rows : []).map(r=>{
-    const evId = String(r.event_id ?? r.eventId ?? r.event ?? "").trim();
-    const ev = (eventsCache || []).find(e => String(e.event_id||"").trim() === evId) || null;
-    const sem = String(r.semester_id || r.semester || r.current_semester || "").trim() || (ev?.semester_id || CURRENT_SEMESTER);
-    return {
-      ...r,
-      _type: "request",
-      semester_id: sem,
-      event_title: r.event_title || ev?.title || r.title || evId || "—",
-      event_start: r.event_start || ev?.start || r.start || r.created_at || ""
-    }
-  });
-
-  const attKeys = new Set(_meHistAttendance.map(a => {
-    const eId = String(a.event_id || a.eventId || "").trim();
-    const sId = String(a.shift_id || a.shiftId || "").trim();
-    return eId + "::" + sId;
-  }));
-
-  _meHistRequests = _meHistRequests.filter(r => {
-    const eId = String(r.event_id || r.eventId || r.event || "").trim();
-    const sId = String(r.shift_id || r.shiftId || "").trim();
-    return !attKeys.has(eId + "::" + sId);
-  });
-
-  _meHistFull = [..._meHistAttendance, ..._meHistRequests];
-
-  const semAtt = _meHistAttendance.filter(r => meHist_rowSemester(r) === CURRENT_SEMESTER);
-  const semTotal = semAtt.reduce((acc,r)=> acc + hoursNum(r.hours_awarded ?? r.hours ?? r.awarded_hours ?? 0), 0);
-  document.getElementById("meHoursTotal").textContent = (Math.round(semTotal*100)/100).toString();
-  document.getElementById("meHoursSub").textContent = CURRENT_SEMESTER;
-
-  const allTotal = _meHistAttendance.reduce((acc,r)=> acc + hoursNum(r.hours_awarded ?? r.hours ?? r.awarded_hours ?? 0), 0);
-
-  const semSet = new Set((_meHistFull || []).map(meHist_rowSemester));
-  semSet.add(CURRENT_SEMESTER);
-  const semesters = [...semSet].filter(Boolean);
-
-  function semMaxDate(sem){
-    const rows = (_meHistFull || []).filter(r => meHist_rowSemester(r) === sem);
-    let best = 0;
-    rows.forEach(r=>{
-      const t = Date.parse(meHist_rowEventStart(r) || "");
-      if (!isNaN(t) && t > best) best = t;
-    });
-    return best || 0;
-  }
-  semesters.sort((a,b)=>{
-    if (a === CURRENT_SEMESTER && b !== CURRENT_SEMESTER) return -1;
-    if (b === CURRENT_SEMESTER && a !== CURRENT_SEMESTER) return 1;
-    return semMaxDate(b) - semMaxDate(a);
-  });
-
-  const sel = document.getElementById("histSem");
-  if (sel){
-    const current = sel.value || CURRENT_SEMESTER;
-    sel.innerHTML = semesters.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join("");
-    sel.value = semesters.includes(current) ? current : CURRENT_SEMESTER;
-
-    if (!_meHistWired){
-      sel.addEventListener("change", ()=>{
-        const chosen = sel.value;
-        const semApproved = _meHistAttendance.filter(r => meHist_rowSemester(r) === chosen);
-        const semTot = semApproved.reduce((acc,r)=> acc + hoursNum(r.hours_awarded ?? r.hours ?? r.awarded_hours ?? 0), 0);
-        document.getElementById("histSemTotal").textContent = (Math.round(semTot*100)/100).toString();
-        document.getElementById("histAllTotal").textContent = (Math.round(allTotal*100)/100).toString();
-        meHist_renderHistory(chosen);
-      });
-      _meHistWired = true;
-    }
-
-    const chosen = sel.value || CURRENT_SEMESTER;
-    const chosenApproved = _meHistAttendance.filter(r => meHist_rowSemester(r) === chosen);
-    const chosenTot = chosenApproved.reduce((acc,r)=> acc + hoursNum(r.hours_awarded ?? r.hours ?? r.awarded_hours ?? 0), 0);
-
-    document.getElementById("histSemTotal").textContent = (Math.round(chosenTot*100)/100).toString();
-    document.getElementById("histAllTotal").textContent = (Math.round(allTotal*100)/100).toString();
-    meHist_renderHistory(chosen);
-  }
-
-  if (!reqResp.ok && msgHist){
-    msgHist.className = "msg err";
-    msgHist.textContent = `Requests not loading: ${reqResp.error || "unknown error"}`;
-  } else if (msgHist){
-    msgHist.className = "msg";
-    msgHist.textContent = "";
-  }
-}
-
-/* ===== Calendar ===== */
 function buildCalendar(events){
   const el = document.getElementById("calendar");
   if (!el) return;
-  if (!window.FullCalendar || !window.FullCalendar.Calendar){
-    return setTimeout(() => buildCalendar(events), 150);
-  }
+
+  el.innerHTML = ""; 
 
   const fcEvents = (events || []).map(ev => {
     const category = ev.category || ev.type || "";
@@ -2222,91 +1100,66 @@ function buildCalendar(events){
     };
   });
 
-  const desiredView = isMobileCal() ? "listWeek" : "dayGridMonth";
-  const desiredRight = isMobileCal()
-    ? "listWeek,dayGridMonth"
-    : "dayGridMonth,timeGridWeek,timeGridDay,listWeek";
-
   if (calendarInstance){
     calendarInstance.removeAllEvents();
     fcEvents.forEach(evt => calendarInstance.addEvent(evt));
-    const currentView = calendarInstance.view && calendarInstance.view.type;
-    if (currentView !== desiredView) calendarInstance.changeView(desiredView);
-    calendarInstance.setOption("headerToolbar", { left:"prev,next today", center:"title", right:desiredRight });
     calendarInstance.render();
     return;
   }
 
   calendarInstance = new FullCalendar.Calendar(el, {
-    initialView: desiredView,
+    initialView: "dayGridMonth",
     height: "auto",
-    headerToolbar: { left:"prev,next today", center:"title", right: desiredRight },
-    events: fcEvents,
-    views: {
-      dayGridMonth: { eventDisplay: "list-item" },
-      listWeek:      { eventDisplay: "auto" },
-      timeGridWeek: { eventDisplay: "block" },
-      timeGridDay:  { eventDisplay: "block" }
+    headerToolbar: {
+      left: "prev,next today",
+      center: "title",
+      right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek"
     },
-    nowIndicator: true,
-    navLinks: true,
-    dayMaxEvents: true,
+    events: fcEvents,
     eventClassNames: (arg) => [catClass(arg?.event?.extendedProps?.category)],
-    eventDidMount: (arg) => { try { arg.el.classList.add(catClass(arg.event.extendedProps?.category)); } catch(_) {} },
-    windowResize: () => {
-      try{
-        const v = isMobileCal() ? "listWeek" : "dayGridMonth";
-        const r = isMobileCal() ? "listWeek,dayGridMonth" : "dayGridMonth,timeGridWeek,timeGridDay,listWeek";
-        if (calendarInstance.view.type !== v) calendarInstance.changeView(v);
-        calendarInstance.setOption("headerToolbar", { left:"prev,next today", center:"title", right:r });
-      }catch(_){}
+    eventDidMount: (arg) => {
+      try { arg.el.classList.add(catClass(arg.event.extendedProps?.category)); } catch(_) {}
     },
     eventClick: async (info) => {
       const ev = info.event.extendedProps || {};
-      const eventId = info.event.id;
-      const roster = await GET_tryActions(["eventroster","roster","event_roster","getroster","get_roster"], { event_id: eventId });
-      await loadShiftsForEvent(eventId);
-      openModal({
-        ev,
-        roster,
-        approved: extractApproved(roster),
-        signupsAccepted: extractSignupsAccepted(roster),
-        signupsWait: extractSignupsWait(roster)
-      });
+     
+      // 1. Open immediately with a loading state
+      openModal({ ev, loading: true });
+
+      try {
+        // 2. Fetch roster and shifts concurrently in the background
+        const [roster] = await Promise.all([
+          GET({ action:"eventroster", event_id: info.event.id }),
+          loadShiftsForEvent(info.event.id)
+        ]);
+       
+        // 3. Re-render modal with the actual data (only if they haven't closed or clicked away)
+        if (_modalEventId === String(info.event.id)) {
+          openModal({
+            ev,
+            signupsAccepted: extractSignupsAccepted(roster),
+            signupsWait: extractSignupsWait(roster),
+            loading: false
+          });
+        }
+      } catch (err) {
+        console.error("Error loading event click data:", err);
+        if (_modalEventId === String(info.event.id)) {
+           document.getElementById("mCap").textContent = "Error loading roster.";
+           document.getElementById("mSignups").innerHTML = "";
+        }
+      }
     }
   });
+
   calendarInstance.render();
 }
 
-function extractApproved(roster){
-  if (!roster) return [];
-  if (Array.isArray(roster.approved)) return roster.approved;
-  if (roster.attendance && Array.isArray(roster.attendance.approved)) return roster.attendance.approved;
-  if (roster.attendance && Array.isArray(roster.attendance)) return roster.attendance;
-  if (Array.isArray(roster.rows)) return roster.rows;
-  return [];
-}
-function extractSignupsAccepted(roster){
-  if (!roster) return [];
-  if (roster.signups && Array.isArray(roster.signups.accepted)) return roster.signups.accepted;
-  if (roster.signups && Array.isArray(roster.signups)) return roster.signups;
-  return [];
-}
-function extractSignupsWait(roster){
-  if (!roster) return [];
-  if (roster.signups && Array.isArray(roster.signups.waitlisted)) return roster.signups.waitlisted;
-  if (roster.signups && Array.isArray(roster.signups.waitlist)) return roster.signups.waitlist;
-  if (roster.signups && Array.isArray(roster.signups.waitlisted_rows)) return roster.signups.waitlisted_rows;
-  return [];
-}
-
-/* ===== Modal ===== */
-let _modalEventId = null;
 function openModal(data){
   const ev = data.ev || {};
   _modalEventId = String(ev.event_id || ev.id || "");
 
-  const approved = data.approved || [];
+  const isLoading = data.loading === true;
   const sAcc = data.signupsAccepted || [];
   const sWait = data.signupsWait || [];
 
@@ -2318,800 +1171,401 @@ function openModal(data){
 
   const capEl = document.getElementById("mCap");
   const limit = Number(ev.signup_capacity || 0);
-  capEl.textContent = limit > 0 ? `Sign-ups: ${sAcc.length} / ${limit}` : `Sign-ups: ${sAcc.length} (no cap)`;
 
-  setModalShiftUI(_modalEventId);
-
-  document.getElementById("mMyHours").value = "";
-  document.getElementById("mMyComment").value = "";
-  document.getElementById("mMyStatus").textContent = "";
-
-  document.getElementById("mBtnSignupMe").onclick = () => modalSignupMe(_modalEventId);
-  document.getElementById("mBtnRequestMe").onclick = () => modalRequestMe(_modalEventId);
-
-  const aUL = document.getElementById("mApproved");
-  aUL.innerHTML = "";
-  if (approved.length === 0) {
-    aUL.innerHTML = '<li class="muted small">No approved attendance yet.</li>';
+  if (isLoading) {
+    // Show loading state
+    capEl.textContent = "Loading sign-ups...";
+    document.getElementById("mSignups").innerHTML = '<li class="muted small">Loading roster...</li>';
+    document.getElementById("waitHdr").style.display = "none";
+    document.getElementById("mWait").innerHTML = "";
+    document.getElementById("mShiftWrap").style.display = "none"; 
   } else {
-    approved.forEach(a => {
-      const li = document.createElement("li");
-      const hrs = (Number(a.hours_awarded) > 0) ? ` · Hours: ${a.hours_awarded}` : "";
-      const cmt = (a.comments || a.comment) ? ` — ${(a.comments || a.comment)}` : "";
-      const sid = String(a.shift_id ?? a.shiftId ?? a.shift ?? "").trim();
-      let sLab = a.shift_title || a.shiftTitle || a.shift_name || "";
-      if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
-      const sTxt = sLab ? ` · Shift: ${sLab}` : "";
-      li.textContent = `${a.student_id}${sTxt}${hrs}${cmt}`;
-      aUL.appendChild(li);
-    });
-  }
+    // Show loaded state
+    capEl.textContent = limit > 0 ? `Sign-ups: ${sAcc.length} / ${limit}` : `Sign-ups: ${sAcc.length} (no cap)`;
 
-  const sUL = document.getElementById("mSignups");
-  sUL.innerHTML = "";
-  if (sAcc.length === 0) {
-    sUL.innerHTML = '<li class="muted small">No sign-ups yet.</li>';
-  } else {
-    sAcc.forEach(s => {
-      const li = document.createElement("li");
-      const hrs = (Number(s.requested_hours ?? s.hours_requested ?? 0) > 0) ? ` · Hours: ${s.requested_hours ?? s.hours_requested}` : "";
-      const cmt = (s.comment || s.comments) ? ` — ${(s.comment || s.comments)}` : "";
-      const sid = String(s.shift_id ?? s.shiftId ?? s.shift ?? "").trim();
-      let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
-      if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
-      const sTxt = sLab ? ` · Shift: ${sLab}` : "";
-      li.textContent = `${s.student_id}${sTxt}${hrs}${cmt}`;
-      sUL.appendChild(li);
-    });
-  }
+    setModalShiftUI(_modalEventId); // Process shifts
 
-  const wHdr = document.getElementById("waitHdr");
-  const wUL = document.getElementById("mWait");
-  wUL.innerHTML = "";
-  if (sWait.length){
-    wHdr.style.display = "block";
-    sWait.forEach(s => {
-      const li = document.createElement("li");
-      const hrs = (Number(s.requested_hours ?? s.hours_requested ?? 0) > 0) ? ` · Hours: ${s.requested_hours ?? s.hours_requested}` : "";
-      const cmt = (s.comment || s.comments) ? ` — ${(s.comment || s.comments)}` : "";
-      const sid = String(s.shift_id ?? s.shiftId ?? s.shift ?? "").trim();
-      let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
-      if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
-      const sTxt = sLab ? ` · Shift: ${sLab}` : "";
-      li.textContent = `${s.student_id}${sTxt}${hrs}${cmt}`;
-      wUL.appendChild(li);
-    });
-  } else {
-    wHdr.style.display = "none";
+    const sUL = document.getElementById("mSignups");
+    sUL.innerHTML = "";
+    if (sAcc.length === 0) {
+      sUL.innerHTML = '<li class="muted small">No sign-ups yet.</li>';
+    } else {
+      sAcc.forEach(s => {
+        const li = document.createElement("li");
+        const sid = String(s.shift_id ?? s.shiftId ?? s.shift ?? "").trim();
+        let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
+        if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
+        const sTxt = sLab ? ` (Shift: ${sLab})` : "";
+        li.textContent = `${s.student_id}${sTxt}`;
+        sUL.appendChild(li);
+      });
+    }
+
+    const wHdr = document.getElementById("waitHdr");
+    const wUL = document.getElementById("mWait");
+    wUL.innerHTML = "";
+    if (sWait.length){
+      wHdr.style.display = "block";
+      sWait.forEach(s => {
+        const li = document.createElement("li");
+        const sid = String(s.shift_id ?? s.shiftId ?? s.shift ?? "").trim();
+        let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
+        if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
+        const sTxt = sLab ? ` (Shift: ${sLab})` : "";
+        li.textContent = `${s.student_id}${sTxt}`;
+        wUL.appendChild(li);
+      });
+    } else {
+      wHdr.style.display = "none";
+    }
   }
 
   document.getElementById("eventModal").style.display = "flex";
-
-  document.getElementById("loadToFormBtn").onclick = async () => {
-    document.getElementById('ev_id').value    = ev.event_id || '';
-    document.getElementById('ev_title').value = ev.title || '';
-    document.getElementById('ev_cat').value   = ev.category || ev.type || 'Events';
-    document.getElementById('ev_start').value = ev.start ? toLocalInput(ev.start) : '';
-    document.getElementById('ev_end').value   = ev.end ? toLocalInput(ev.end) : '';
-    document.getElementById('ev_loc').value   = ev.location || '';
-    document.getElementById('ev_hours').value = ev.hours_value != null ? ev.hours_value : 0;
-    document.getElementById('ev_cap').value   = ev.signup_capacity != null ? ev.signup_capacity : 0;
-    document.getElementById('ev_notes').value = ev.notes || ev.description || '';
-
-    try{
-      const shifts = await loadShiftsForEvent(ev.event_id || ev.id || "");
-      const required = isTrue(ev?.shifts_required);
-      setShiftEditorFromEvent(ev.event_id || ev.id || "", shifts, required);
-    }catch(_){
-      setShiftEditorFromEvent(ev.event_id || ev.id || "", [], isTrue(ev?.shifts_required));
-    }
-
-    closeModal();
-    document.getElementById('evCard')?.scrollIntoView({behavior:'smooth',block:'start'});
-  };
 }
+
 function closeModal(){ document.getElementById("eventModal").style.display = "none"; }
-document.getElementById("mClose").addEventListener("click", closeModal);
-document.getElementById("closeBtn").addEventListener("click", closeModal);
 
-async function modalSignupMe(eventId){
-  const st = document.getElementById("mMyStatus");
-  if (!eventId){ st.textContent = "No event id."; return; }
 
-  const shiftId = modalSelectedShift();
-  if (mustPickShiftForEvent(eventId) && !shiftId){
-    st.textContent = "Pick a shift.";
-    showPopup(false, "Missing shift", "This event requires a shift selection.");
+(async function(){
+  document.getElementById("hoursLabel").textContent = "My Semester Total Hours";
+  document.getElementById("hoursSub").textContent = CURRENT_SEMESTER;
+  const sess = getSession();
+  currentStudentId = (sess.username || "").trim();
+  if (!currentStudentId){
+    document.getElementById("ambGreet").textContent = "Session expired";
+    document.getElementById("ambName").textContent = "Please go back and log in again.";
     return;
   }
+  document.getElementById("ambGreet").textContent = greetingForNow();
+  document.getElementById("ambName").textContent = await resolveStudentName(currentStudentId);
 
-  st.textContent = "Submitting…";
-  const requestedHours = safeHours(document.getElementById("mMyHours").value);
-  const comment = (document.getElementById("mMyComment").value || "").trim();
-
-  const out = await POST_tryActions(
-    ["signup","event_signup","sign_up","submitSignup","submit_signup","newsignup","new_signup"],
-    {
-      student_id: currentAdminId,
-      event_id: eventId,
-      shift_id: shiftId,
-      created_by: "admin",
-      requested_hours: requestedHours,
-      comment,
-      notify: true,
-      source: "portal_admin",
-      current_semester: CURRENT_SEMESTER
-    }
-  );
-
-  if (out && out.ok){
-    openConfetti("Signed up", requestedHours == null ? "You have been added to the sign-up list." : `You have been added to the sign-up list.\nRequested hours: ${requestedHours}`);
-    st.textContent = "Done.";
-    try{ document.getElementById("pcRefresh")?.click(); }catch(_){}
-    await refreshMe();
-  } else {
-    const err = (out && (out.error || out.message)) || "Sign-up failed";
-    showPopup(false, "Sign-up failed", err);
-    st.textContent = "Failed.";
-  }
-}
-
-async function modalRequestMe(eventId){
-  const st = document.getElementById("mMyStatus");
-  if (!eventId){ st.textContent = "No event id."; return; }
-
-  const shiftId = modalSelectedShift();
-  if (mustPickShiftForEvent(eventId) && !shiftId){
-    st.textContent = "Pick a shift.";
-    showPopup(false, "Missing shift", "This event requires a shift selection.");
-    return;
-  }
-
-  st.textContent = "Submitting…";
-  const requestedHours = safeHours(document.getElementById("mMyHours").value);
-  const comment = (document.getElementById("mMyComment").value || "").trim();
-
-  const out = await POST_tryActions(
-    ["request","attendance_request","submitrequest","submit_request","newrequest","new_request"],
-    {
-      student_id: currentAdminId,
-      event_id: eventId,
-      shift_id: shiftId,
-      requested_hours: requestedHours,
-      comment,
-      notify: true,
-      source: "portal_admin",
-      current_semester: CURRENT_SEMESTER
-    }
-  );
-
-  if (out && out.ok){
-    openConfetti("Request submitted", requestedHours == null ? "Your attendance request was submitted." : `Your attendance request was submitted.\nRequested hours: ${requestedHours}`);
-    st.textContent = "Done.";
-    try{ document.getElementById("pcRefresh")?.click(); }catch(_){}
-    await refreshMe();
-  } else {
-    const err = (out && (out.error || out.message)) || "Request failed";
-    showPopup(false, "Request failed", err);
-    st.textContent = "Failed.";
-  }
-}
-
-/* ===== Save Event ===== */
-async function saveEvent(){
-  const msgEl = document.getElementById('evMsg');
-  function setMsg(ok, text){ msgEl.className = "msg " + (ok ? "ok" : "err"); msgEl.textContent = text || ""; }
-
-  const shiftPack = readShiftEditor(); 
-
-  let startDt = document.getElementById('ev_start').value || '';
-  let endDt = document.getElementById('ev_end').value || '';
-  let hoursInput = Number(document.getElementById('ev_hours').value || 0);
-
-  if (hoursInput === 0 && startDt && endDt) {
-    let d1 = new Date(startDt);
-    let d2 = new Date(endDt);
-    if (!isNaN(d1) && !isNaN(d2) && d2 > d1) {
-      hoursInput = (d2 - d1) / (1000 * 60 * 60);
-      hoursInput = Math.round(hoursInput * 4) / 4; 
-    }
-  }
-
-  const payload = {
-    event_id: (document.getElementById('ev_id').value || '').trim(),
-    title: (document.getElementById('ev_title').value || '').trim(),
-    category: document.getElementById('ev_cat').value || 'Events',
-    start: startDt,
-    end: endDt,
-    location: (document.getElementById('ev_loc').value || '').trim(),
-    hours_value: hoursInput,
-    signup_capacity: Number(document.getElementById('ev_cap').value || 0),
-    notes: (document.getElementById('ev_notes').value || '').trim(),
-    active: true,
-    shifts_enabled: !!shiftPack.enabled,
-    shifts_required: shiftPack.enabled ? !!shiftPack.required : false,
-    shifts_remove_all: !!shiftPack.removeAll,
-    shifts: Array.isArray(shiftPack.shifts) ? shiftPack.shifts : [],
-    notify: true,
-    source: "portal_admin",
-    current_semester: CURRENT_SEMESTER
-  };
-
-  if (!payload.event_id || !payload.title || !payload.start){
-    setMsg(false, "Please fill Event ID, Title, and Start.");
-    showPopup(false, "Save failed", "Please fill Event ID, Title, and Start.");
-    return;
-  }
-  if (payload.end && new Date(payload.end) < new Date(payload.start)){
-    setMsg(false, "End time cannot be before Start.");
-    showPopup(false, "Save failed", "End time cannot be before Start.");
-    return;
-  }
-
-  setMsg(true, "Saving…");
-
-  const out = await POST_tryActions(
-    ["upsertevent","upsert_event","saveevent","save_event","addevent","add_event","editevent","edit_event"],
-    payload
-  );
-
-  if (!out.ok){
-    const err = (out.error || out.message || "Save failed") + (out.body ? " (see console)" : "");
-    setMsg(false, err);
-    showPopup(false, "Save failed", err);
-    return;
-  }
-
-  try{
-    if (shiftPack.enabled){
-      if (shiftPack.removeAll){
-        await POST_tryActions(["clearshifts","clear_shifts","delete_shifts","remove_shifts","shifts_clear"], {
-          event_id: payload.event_id,
-          source: "portal_admin"
-        });
-      } else if (shiftPack.shifts.length){
-        await POST_tryActions(["upsertshifts","upsert_shifts","setshifts","set_shifts","save_shifts","shifts_upsert"], {
-          event_id: payload.event_id,
-          shifts_required: !!shiftPack.required,
-          shifts: shiftPack.shifts,
-          source: "portal_admin"
-        });
-      }
-    } else if (shiftPack.removeAll){
-      await POST_tryActions(["clearshifts","clear_shifts","delete_shifts","remove_shifts","shifts_clear"], {
-        event_id: payload.event_id,
-        source: "portal_admin"
-      });
-    }
-  }catch(_){}
-
-  setMsg(true, "Saved!");
-  openConfetti("Event saved", "Your event was saved successfully.");
-
-  const evResp = await GET({ action:"events" });
-  eventsCache = Array.isArray(evResp) ? evResp : (evResp && Array.isArray(evResp.events) ? evResp.events : []);
-  activeEventsCache = (eventsCache || []).filter(isActiveEvent);
-
-  shiftsCacheByEvent.clear();
-  shiftLabelById.clear();
-
-  fillEventSelects(activeEventsCache);
-  buildCalendar(activeEventsCache);
-
-  setShiftUI("req", document.getElementById("reqEvent")?.value || "");
-  setShiftUI("su", document.getElementById("signupEvent")?.value || "");
-
-  try{ document.getElementById("pcRefresh")?.click(); }catch(_){}
-  document.getElementById('eventForm').reset();
-  clearShiftEditorUI();
-  autofillEventIdIfEmpty();
-}
-
-/* ---- Helpers for Pending Center ---- */
-function asArray(x){
-  if (!x) return [];
-  if (Array.isArray(x)) return x;
-  if (Array.isArray(x.rows)) return x.rows;
-  if (Array.isArray(x.data)) return x.data;
-  return [];
-}
-function normalizePending(resp){
-  if (!resp) return [];
-  if (Array.isArray(resp.pending)) return resp.pending;
-  if (Array.isArray(resp.pending_requests)) return resp.pending_requests;
-  if (resp.requests){
-    if (Array.isArray(resp.requests.pending)) return resp.requests.pending;
-    if (Array.isArray(resp.requests)) return resp.requests;
-  }
-  if (resp.attendance){
-    if (Array.isArray(resp.attendance.pending)) return resp.attendance.pending;
-    if (Array.isArray(resp.attendance)) return resp.attendance;
-  }
-  return asArray(resp);
-}
-function isPendingRow(r){
-  const s = String(r?.status ?? r?.request_status ?? r?.state ?? r?.decision ?? r?.approval_status ?? "").trim().toLowerCase();
-  const approvedFlag = r?.approved ?? r?.is_approved ?? r?.isApproved ?? null;
-  const deniedFlag   = r?.denied ?? r?.is_denied ?? r?.isDenied ?? null;
-
-  if (approvedFlag === true || deniedFlag === true) return false;
-  if (!s) return true;
-  if (s.includes("pending")) return true;
-  if (s.includes("submitted")) return true;
-  if (s.includes("await")) return true;
-  if (s.includes("review")) return true;
-  if (s.includes("approv")) return false;
-  if (s.includes("deny")) return false;
-  if (s.includes("reject")) return false;
-  if (s.includes("cancel")) return false;
-  return false;
-}
-
-function normCat(v){
-  const s = String(v || "").trim();
-  if (!s) return "";
-  const t = s.toLowerCase();
-  if (t.startsWith("social")) return "Socials";
-  if (t.startsWith("event")) return "Events";
-  if (t.startsWith("meeting")) return "Meetings";
-  if (t.startsWith("deadline")) return "Deadlines";
-  return s;
-}
-function getReqHours(row){
-  const v = row?.requested_hours ?? row?.hours_requested ?? row?.hours ?? row?.requestedHours ?? "";
-  return (v === null || v === undefined) ? "" : String(v);
-}
-function getReqComment(row){
-  const v = row?.comment ?? row?.comments ?? row?.notes ?? "";
-  return String(v || "");
-}
-function getReqStudent(row){
-  return String(row?.student_id ?? row?.student ?? row?.email ?? row?.studentEmail ?? "");
-}
-function getReqEventId(row){
-  return String(row?.event_id ?? row?.eventId ?? row?.event ?? "");
-}
-function findEventById(eventId){
-  const id = String(eventId||"").trim();
-  return (eventsCache || []).find(e => String(e.event_id||"").trim() === id) || null;
-}
-
-/* =========================
-   PENDING CENTER (All Events)
-   ========================= */
-function initPendingCenter(activeEvents){
-  const $ = (id)=>document.getElementById(id);
-  const btnRefresh = $("pcRefresh");
-  const statusEl   = $("pcStatus");
-  const bodyEl     = $("pcBody");
-  const searchEl   = $("pcSearch");
-  const eventSel   = $("pcEvent");
-  const catSel     = $("pcCat");
-  const allBox     = $("pcAll");
-  const btnApSel   = $("pcApproveSel");
-  const btnDnSel   = $("pcDenySel");
-
-  if (!btnRefresh || !statusEl || !bodyEl) return;
-
-  (function fillEventFilter(){
-    const prev = eventSel?.value || "";
-    if (!eventSel) return;
-    const list = [...(activeEvents||[])].sort((a,b)=>{
-      const ta = Date.parse(a.start), tb = Date.parse(b.start);
-      if (isNaN(ta) && isNaN(tb)) return 0;
-      if (isNaN(ta)) return 1;
-      if (isNaN(tb)) return -1;
-      return tb - ta;
-    });
-    eventSel.innerHTML = `<option value="">All events</option>`;
-    list.forEach(ev=>{
-      const opt = document.createElement("option");
-      opt.value = ev.event_id;
-      opt.textContent = `${ev.title} — ${fmtDate(ev.start)}`;
-      eventSel.appendChild(opt);
-    });
-    if (prev) eventSel.value = prev;
-  })();
-
-  let pendingRaw = [];
-  let rendered = [];
-
-  function setStatus(txt){ statusEl.textContent = txt || ""; }
-  function currentFilters(){
-    return {
-      q: (searchEl?.value || "").trim().toLowerCase(),
-      event_id: (eventSel?.value || "").trim(),
-      cat: (catSel?.value || "").trim()
-    };
-  }
-
-  async function renderTable(){
-    const f = currentFilters();
-    rendered = (pendingRaw || []).filter(r=>{
-      const evId = getReqEventId(r);
-      const ev = findEventById(evId);
-      const cat = normCat(r.category || r.cat || r.event_category || ev?.category || ev?.type || "");
-      const title = (r.event_title || ev?.title || "").toLowerCase();
-      const student = getReqStudent(r).toLowerCase();
-      const comment = getReqComment(r).toLowerCase();
-      if (f.event_id && String(f.event_id) !== String(evId)) return false;
-      if (f.cat && String(f.cat) !== String(cat)) return false;
-      if (f.q){
-        const hay = `${title} ${student} ${comment} ${evId}`.toLowerCase();
-        if (!hay.includes(f.q)) return false;
-      }
-      return true;
-    });
-
-    setStatus(rendered.length ? `${rendered.length} pending request(s)` : `No pending requests`);
-
-    bodyEl.innerHTML = rendered.map((r, idx)=>{
-      const evId = getReqEventId(r);
-      const ev = findEventById(evId);
-      const title = r.event_title || ev?.title || evId || "—";
-      const student = getReqStudent(r) || "—";
-      const hours = getReqHours(r);
-      const comment = getReqComment(r);
-      const cat = normCat(r.category || r.cat || r.event_category || ev?.category || ev?.type || "");
-      const sid = String(r.shift_id ?? r.shiftId ?? "").trim();
-      const sLab = sid ? (shiftLabelById.get(sid) || sid) : "";
-      const sTxt = sLab ? ` · shift: ${esc(sLab)}` : "";
-
-      return `
-        <tr data-idx="${idx}">
-          <td><input class="pcChk" type="checkbox"></td>
-          <td>
-            <div style="font-weight:600;">${esc(title)}</div>
-            <div class="muted small">${esc(cat)} · ${ev?.start ? esc(fmtShortDate(ev.start)) : ""}${sTxt}</div>
-            <div class="muted small">${esc(evId)}</div>
-          </td>
-          <td>${esc(student)}</td>
-          <td>${esc(hours || "")}</td>
-          <td style="white-space:pre-wrap;">${esc(comment)}</td>
-          <td><input class="admin-reply-input" placeholder="Optional response to student..." type="text"></td>
-          <td class="pc-actions-cell">
-            <button class="actBtn approve pcApproveOne" type="button" title="Approve">
-              <span class="emoji-badge">✅</span>
-            </button>
-            <button class="actBtn deny pcDenyOne" type="button" title="Deny">
-              <span class="emoji-badge">❌</span>
-            </button>
-          </td>
-        </tr>
-      `;
-    }).join("");
-
-    bodyEl.querySelectorAll(".pcApproveOne").forEach((b, i)=> b.addEventListener("click", ()=> approveOne(i)));
-    bodyEl.querySelectorAll(".pcDenyOne").forEach((b, i)=> b.addEventListener("click", ()=> denyOne(i)));
-    if (allBox) allBox.checked = false;
-  }
-
-  async function loadPending(){
-    setStatus("Loading…");
-    bodyEl.innerHTML = "";
-    const resp = await GET_tryActions(
-      ["pending", "pendingRequests", "pending_requests", "requests_pending", "requests", "attendance_pending"],
-      {}
-    );
-    if (resp && resp.ok === false && (resp.error || resp.message)){
-      const err = resp.error || resp.message || "Failed to load pending requests";
-      setStatus(err);
-      return;
-    }
-    pendingRaw = normalizePending(resp) || [];
-    pendingRaw = pendingRaw.filter(isPendingRow);
-
-    const evIdsToPreload = new Set();
-    pendingRaw.forEach(r=>{
-      const evId = String(r.event_id ?? r.eventId ?? "").trim();
-      if (evId) evIdsToPreload.add(evId);
-    });
-    for (const evId of evIdsToPreload){
-      try{ await loadShiftsForEvent(evId); }catch(_){}
-    }
-    await renderTable();
-  }
-
-  function selectedIndexes(){
-    const rows = [...bodyEl.querySelectorAll("tr")];
-    const idxs = [];
-    rows.forEach((tr, i)=>{
-      const chk = tr.querySelector(".pcChk");
-      if (chk && chk.checked) idxs.push(i);
-    });
-    return idxs;
-  }
-
-  function getAdminReply(renderIdx){
-    const row = bodyEl.querySelector(`tr[data-idx="${renderIdx}"]`);
-    if (!row) return "";
-    return (row.querySelector(".admin-reply-input")?.value || "").trim();
-  }
-
-  function getReqId(row){
-    return row?.request_id ?? row?.requestId ?? row?.id ?? row?.row_id ?? row?._id ?? null;
-  }
-
-  async function doDecide(row, decision, reply){
-    const request_id = getReqId(row);
-
-    const payload = {
-      decision: decision,
-      request_id: request_id,
-      student_id: getReqStudent(row),
-      event_id: getReqEventId(row),
-      shift_id: row.shift_id ?? row.shiftId ?? null,
-      admin_comment: (reply || "").trim(),
-      decided_by: currentAdminId || "admin",
-      notify: true,
-      source: "portal_admin",
-      current_semester: CURRENT_SEMESTER
-    };
-
-    return POST_tryActions(
-      ["decide", "request_decide", "attendance_decide", "decision", "set_decision"],
-      payload
-    );
-  }
-
-  async function doApprove(row, reply){
-    return doDecide(row, "approve", reply);
-  }
-
-  async function doDeny(row, reply){
-    return doDecide(row, "deny", reply);
-  }
-
-  async function approveOne(renderIdx){
-    const row = rendered[renderIdx];
-    if (!row) return;
-    setStatus("Approving…");
-    const reply = getAdminReply(renderIdx);
-    const out = await doApprove(row, reply);
-    if (out && out.ok){
-      openConfetti("Approved", "Request approved.");
-      await loadPending();
-      await refreshMe();
-    } else {
-      const err = (out && (out.error || out.message)) || "Approve failed";
-      showPopup(false, "Approve failed", err);
-      setStatus(err);
-    }
-  }
-
-  async function denyOne(renderIdx){
-    const row = rendered[renderIdx];
-    if (!row) return;
-    setStatus("Denying…");
-    const reply = getAdminReply(renderIdx);
-    const out = await doDeny(row, reply);
-    if (out && out.ok){
-      openConfetti("Denied", "Request denied.");
-      await loadPending();
-      await refreshMe();
-    } else {
-      const err = (out && (out.error || out.message)) || "Deny failed";
-      showPopup(false, "Deny failed", err);
-      setStatus(err);
-    }
-  }
-
-  async function approveSelected(){
-    const idxs = selectedIndexes();
-    if (!idxs.length){
-      showPopup(false, "Nothing selected", "Select at least one request.");
-      return;
-    }
-    setStatus(`Approving ${idxs.length}…`);
-    for (const i of idxs){
-      const row = rendered[i];
-      if (!row) continue;
-      const reply = getAdminReply(i);
-      const out = await doApprove(row, reply);
-      if (!(out && out.ok)){
-        const err = (out && (out.error || out.message)) || "Approve failed mid-batch";
-        showPopup(false, "Batch approve stopped", err);
-        setStatus(err);
-        return;
-      }
-    }
-    openConfetti("Approved", `${idxs.length} request(s) approved.`);
-    await loadPending();
-    await refreshMe();
-  }
-
-  async function denySelected(){
-    const idxs = selectedIndexes();
-    if (!idxs.length){
-      showPopup(false, "Nothing selected", "Select at least one request.");
-      return;
-    }
-    setStatus(`Denying ${idxs.length}…`);
-    for (const i of idxs){
-      const row = rendered[i];
-      if (!row) continue;
-      const reply = getAdminReply(i);
-      const out = await doDeny(row, reply);
-      if (!(out && out.ok)){
-        const err = (out && (out.error || out.message)) || "Deny failed mid-batch";
-        showPopup(false, "Batch deny stopped", err);
-        setStatus(err);
-        return;
-      }
-    }
-    openConfetti("Denied", `${idxs.length} request(s) denied.`);
-    await loadPending();
-    await refreshMe();
-  }
-
-  btnRefresh.onclick = loadPending;
-  searchEl && searchEl.addEventListener("input", renderTable);
-  eventSel && eventSel.addEventListener("change", renderTable);
-  catSel && catSel.addEventListener("change", renderTable);
-
-  allBox && allBox.addEventListener("change", ()=>{
-    const on = allBox.checked;
-    bodyEl.querySelectorAll(".pcChk").forEach(chk => chk.checked = on);
+  const sum = await GET({ action:"studentsummary", student_id: currentStudentId });
+  const ul = document.getElementById("reqList");
+  ul.innerHTML = "";
+  const rawReqs = (sum && sum.requirements) ? sum.requirements : [];
+  const have = new Map((rawReqs || []).map(r => [String(r.requirement_key), !!r.is_checked]));
+  Object.keys(REQUIREMENT_LABELS).forEach(k => {
+    const li = document.createElement("li");
+    const box = document.createElement("span");
+    const checked = have.get(k) === true;
+    box.className = "box" + (checked ? " done" : "");
+    box.textContent = checked ? "✓" : "";
+    const label = document.createElement("span");
+    label.textContent = REQUIREMENT_LABELS[k];
+    li.append(box, label);
+    ul.appendChild(li);
   });
 
-  btnApSel && (btnApSel.onclick = approveSelected);
-  btnDnSel && (btnDnSel.onclick = denySelected);
+  const evResp = await GET({ action:"events" });
+  eventsCache = Array.isArray(evResp) ? evResp : (evResp && Array.isArray(evResp.events) ? evResp.events : (evResp && Array.isArray(evResp.rows) ? evResp.rows : []));
+  const activeEvents = eventsCache.filter(isActiveEvent);
 
-  loadPending();
+  initCalendarSafe(activeEvents);
+
+  const reqSel = document.getElementById("reqEvent");
+  const btnReq = document.getElementById("btnReq");
+  const reqList = [...activeEvents].sort((a,b)=>{
+    const ta = Date.parse(a.start); const tb = Date.parse(b.start);
+    if (isNaN(ta) && isNaN(tb)) return 0;
+    if (isNaN(ta)) return 1;
+    if (isNaN(tb)) return -1;
+    return tb - ta;
+  });
+  reqSel.innerHTML = "";
+  if (!reqList.length){
+    const o = document.createElement("option"); o.value = ""; o.textContent = "No active events available"; reqSel.appendChild(o);
+    reqSel.disabled = true; btnReq.disabled = true;
+  } else {
+    reqSel.disabled = false; btnReq.disabled = false;
+    reqList.forEach(ev => {
+      const o = document.createElement("option"); o.value = ev.event_id; o.textContent = `${ev.title} — ${fmtDate(ev.start)}`;
+      reqSel.appendChild(o);
+    });
+  }
+
+  const suSel  = document.getElementById("signupEvent");
+  const btnSu  = document.getElementById("btnSignup");
+  const now = Date.now();
+  const upcoming = activeEvents.filter(ev => {
+    const t = Date.parse(ev.start);
+    return !isNaN(t) && t >= now - 86400000;
+  }).sort((a,b)=>Date.parse(a.start)-Date.parse(b.start));
+  suSel.innerHTML = "";
+  if (!upcoming.length){
+    const o = document.createElement("option"); o.value = ""; o.textContent = "No upcoming events"; suSel.appendChild(o);
+    suSel.disabled = true; btnSu.disabled = true;
+  } else {
+    suSel.disabled = false; btnSu.disabled = false;
+    upcoming.forEach(ev => {
+      const o = document.createElement("option"); o.value = ev.event_id;
+      const capTxt = ev.signup_capacity ? ` (${ev.signup_capacity} cap)` : "";
+      o.textContent = `${ev.title} — ${fmtDate(ev.start)}${capTxt}`;
+      suSel.appendChild(o);
+    });
+  }
+
+  /* Link selects to auto-fetch shifts */
+  reqSel.addEventListener("change", async (e)=> setShiftUI("req", e.target.value));
+  suSel.addEventListener("change", async (e)=> setShiftUI("su", e.target.value));
+
+  if (reqSel.value) await setShiftUI("req", reqSel.value);
+  if (suSel.value) await setShiftUI("su", suSel.value);
+
+
+  /* Submissions */
+  document.getElementById("formRequest").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msgEl = document.getElementById("msgReq");
+    msgEl.textContent = "";
+    if (!reqSel.value){ toast(msgEl, false, "Please choose an event."); return; }
+
+    const shiftId = getSelectedShift("req");
+    if (mustPickShiftForEvent(reqSel.value) && !shiftId){
+      toast(msgEl, false, "Please select a shift.");
+      return;
+    }
+
+    const btn = document.getElementById("btnReq");
+    btn.disabled = true;
+    const hoursToSend = requestedHoursOrDefault(document.getElementById("reqHours").value, reqSel.value, shiftId);
+   
+    const out = await POST("request", {
+      student_id: currentStudentId, 
+      event_id: reqSel.value, 
+      shift_id: shiftId,
+      requested_hours: hoursToSend,
+      comment: (document.getElementById("reqComment").value || "").trim(), 
+      notify: true, source: "portal_student", current_semester: CURRENT_SEMESTER
+    });
+   
+    toast(msgEl, !!out.ok, out.ok ? "Request submitted!" : (out.error || "Error"));
+    btn.disabled = false;
+    if (out.ok){
+      openConfetti("Attendance request submitted 🎉", `Your attendance request was submitted.<br><br><b>Event:</b> ${eventLabelFromSelect(reqSel)}<br><b>Hours:</b> ${hoursToSend}`);
+      document.getElementById("reqHours").value = "";
+      document.getElementById("reqComment").value = "";
+      await loadHistory();
+    }
+  });
+
+  document.getElementById("formSignup").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msgEl = document.getElementById("msgSignup");
+    msgEl.textContent = "";
+    if (!suSel.value){ toast(msgEl, false, "Please choose an event."); return; }
+
+    const shiftId = getSelectedShift("su");
+    if (mustPickShiftForEvent(suSel.value) && !shiftId){
+      toast(msgEl, false, "Please select a shift.");
+      return;
+    }
+
+    const btn = document.getElementById("btnSignup");
+    btn.disabled = true;
+    const hoursToSend = requestedHoursOrDefault(document.getElementById("suHours").value, suSel.value, shiftId);
+   
+    const out = await POST("signup", {
+      student_id: currentStudentId, 
+      event_id: suSel.value, 
+      shift_id: shiftId,
+      created_by: "student", 
+      requested_hours: hoursToSend,
+      comment: (document.getElementById("suComment").value || "").trim(), 
+      notify: true, source: "portal_student", current_semester: CURRENT_SEMESTER
+    });
+   
+    toast(msgEl, !!out.ok, out.ok ? `Sign-up ${out.status === "accepted" ? "confirmed ✅" : "waitlisted ⏳"}` : (out.error || "Error"));
+    btn.disabled = false;
+    if (out.ok){
+      const statusLine = (out.status === "accepted") ? "You were accepted!" : "You were added to the waitlist.";
+      openConfetti("Sign-up submitted 🎉", `Your sign-up was submitted.<br><br><b>Event:</b> ${eventLabelFromSelect(suSel)}<br><b>Status:</b> ${statusLine}<br><b>Hours:</b> ${hoursToSend}`);
+      document.getElementById("suHours").value = "";
+      document.getElementById("suComment").value = "";
+      await loadHistory();
+    }
+  });
+
+  await loadHistory();
+})();
+
+function buildHistoryDedupeKey(row, type) {
+  const semester = rowSemester(row);
+  const eventId = rowEventId(row);
+  const status = type === "attendance" ? "approved" : normalizeStatus(row.status || row.request_status || row.decision || row.state);
+  return `${type}_${semester}_${eventId}_${status}`;
 }
 
-/* =========================
-   REQUIREMENTS (Admin)
-   ========================= */
-async function initReqAdmin(){
-  const elDL      = document.getElementById("rq_students");
-  const elSearch = document.getElementById("rq_search");
-  const elLoad    = document.getElementById("rq_load");
-  const elList    = document.getElementById("rq_list");
-  const elStatus = document.getElementById("rq_status");
-  const elSel      = document.getElementById("rq_sel");
-  const btnAll    = document.getElementById("rq_check_all");
-  const btnNone    = document.getElementById("rq_uncheck_all");
-
-  if (!elDL || !elSearch || !elLoad || !elList) return;
-
-  const keys = Object.keys(REQUIREMENT_LABELS);
-  let students = [];
-  let current = null;
-
-  function setStatus(t, isErr){
-    if (!elStatus) return;
-    elStatus.textContent = t || "";
-    elStatus.className = isErr ? "err" : "muted small";
-  }
-
-  setStatus("Loading students…");
-  const s = await GET({ action:"students" });
-  const arr = Array.isArray(s) ? s : (s && Array.isArray(s.students) ? s.students : []);
-  students = (arr || []).map(x => ({
-    student_id: (x.student_id || x.email || "").trim(),
-    email: (x.email || "").trim(),
-    name: (x.name || x.student_name || x.full_name || "").trim()
-  })).filter(x => x.student_id);
-
-  elDL.innerHTML = students.map(st => `<option value="${esc(st.student_id)}">${esc(st.name || st.email || st.student_id)}</option>`).join("");
-  setStatus("Ready. Pick a student and click Load.");
-
-  elLoad.onclick = async ()=>{
-    const input = (elSearch.value || "").trim();
-    if(!input) return setStatus("Enter or select a student email.", true);
-    current = students.find(s => _norm(s.student_id) === _norm(input))
-            || students.find(s => _norm(s.email) === _norm(input))
-            || students.find(s => (s.name||"").toLowerCase().includes(input.toLowerCase()))
-            || { student_id: input, email: input, name: "" };
-    await loadStudent(current.student_id, current.name || current.email || "");
-  };
-
-  btnAll && (btnAll.onclick = ()=> bulkSet(true));
-  btnNone && (btnNone.onclick = ()=> bulkSet(false));
-
-  async function loadStudent(student_id, displayName){
-    setStatus("Loading requirements…");
-    if (elSel){
-      elSel.innerHTML = `<span class="rq-pill">${esc(student_id)}</span>${displayName ? " · "+esc(displayName) : ""}`;
-    }
-    const sum = await GET({ action:"studentsummary", student_id });
-    if(!sum || sum.ok === false){
-      return setStatus("Failed to load: " + ((sum && (sum.error || sum.message)) || "unknown"), true);
-    }
-    const rows = Array.isArray(sum.requirements) ? sum.requirements : [];
-    const have = new Map(rows.map(r => [
-      String(r.requirement_key ?? r.key ?? ""),
-      (String(r.is_checked) === "true" || r.is_checked === true || String(r.is_checked).toLowerCase() === "yes" || r.is_checked === 1)
-    ]));
-
-    elList.innerHTML = keys.map(k=>{
-      const checked = have.get(k) === true;
-      const label = REQUIREMENT_LABELS[k] || k;
-      return `
-        <div class="rq-row" data-key="${esc(k)}">
-          <label class="rq-lbl">
-            <input type="checkbox" ${checked ? "checked" : ""} data-role="rq-cb">
-            <span>${esc(label)}</span>
-          </label>
-          <div class="rq-meta">${checked ? "checked" : "unchecked"}</div>
-        </div>`;
-    }).join("");
-
-    elList.querySelectorAll('input[type="checkbox"][data-role="rq-cb"]').forEach(cb=>{
-      cb.addEventListener("change", async (ev)=>{
-        const row = ev.target.closest(".rq-row");
-        const key = row && row.getAttribute("data-key");
-        if(!key) return;
-        const desired = !!ev.target.checked;
-        setStatus("Saving…");
-        const out = await POST_tryActions(
-          ["setrequirement","set_requirement","requirement_set","update_requirement"],
-          {
-            student_id,
-            requirement_key: key,
-            is_checked: desired,
-            updated_by: "admin",
-            notify: true,
-            source: "portal_admin",
-            current_semester: CURRENT_SEMESTER
-          }
-        );
-        if(!out || !out.ok){
-          ev.target.checked = !desired;
-          const err = (out && (out.error || out.message)) || "Save failed";
-          setStatus(`Save failed for "${key}": ${err}`, true);
-          showPopup(false, "Save failed", `Could not update "${key}".\n${err}`);
-        } else {
-          const meta = row.querySelector(".rq-meta");
-          if (meta) meta.textContent = desired ? "checked" : "unchecked";
-          setStatus(`Saved "${key}" → ${desired ? "checked" : "unchecked"}.`);
-          openConfetti("Saved", `"${key}" was updated.`);
-        }
+async function fetchRequestsWithFallback(studentId) {
+  const actionsToTry = ["requests", "requesthistory", "history"];
+  for (const action of actionsToTry) {
+    try {
+      const resp = await GET({ action, student_id: studentId });
+      const rows = normalizeRequestsList(resp);
+      const cleaned = (rows || []).filter(r => {
+        if (!r || !belongsToCurrentStudent(r, studentId)) return false;
+        const s = normalizeStatus(r.status || r.request_status || r.decision || r.state);
+        return s === "pending" || s === "denied";
       });
-    });
-    setStatus(`Loaded ${keys.length} items.`);
+      if (cleaned && cleaned.length) { return cleaned; }
+    } catch (_) {}
   }
+  return [];
+}
 
-  async function bulkSet(val){
-    if(!current) return setStatus("Load a student first.", true);
-    const boxes = elList.querySelectorAll('input[type="checkbox"][data-role="rq-cb"]');
-    let okCount=0, failCount=0;
-    setStatus("Bulk saving…");
-    for (const cb of boxes){
-      const row = cb.closest(".rq-row");
-      const key = row && row.getAttribute("data-key");
-      if(!key) continue;
-      if ((cb.checked ? true : false) === val) continue;
-      cb.checked = val;
-      const out = await POST_tryActions(
-        ["setrequirement","set_requirement","requirement_set","update_requirement"],
-        {
-          student_id: current.student_id,
-          requirement_key: key,
-          is_checked: val,
-          updated_by: "admin",
-          notify: true,
-          source: "portal_admin",
-          current_semester: CURRENT_SEMESTER
-        }
-      );
-      if(!out || !out.ok){
-        cb.checked = !val;
-        failCount++;
-      } else {
-        okCount++;
-        const meta = row.querySelector(".rq-meta");
-        if (meta) meta.textContent = val ? "checked" : "unchecked";
+async function loadHistory() {
+  try {
+    const attResp = await GET({ action: "attendance", student_id: currentStudentId });
+    const attRowsRaw = normalizeAttendanceList(attResp).filter(r => belongsToCurrentStudent(r, currentStudentId));
+    const reqRowsRaw = await fetchRequestsWithFallback(currentStudentId);
+
+    const validAtt = attRowsRaw
+      .filter(r => {
+        const s = normalizeStatus(r.status || r.request_status || r.decision || r.state);
+        return !s || s === "approved";
+      })
+      .map(r => ({ ...r, _type: "attendance" }));
+
+    const validReq = reqRowsRaw.map(r => ({ ...r, _type: "request" }));
+
+    const seen = new Set();
+    _attendanceCache = [];
+    _requestsCache = [];
+
+    for (const r of validAtt) {
+      const key = buildHistoryDedupeKey(r, "attendance");
+      if (!seen.has(key)) {
+        seen.add(key);
+        _attendanceCache.push(r);
       }
     }
-    setStatus(`Bulk saved: ${okCount} ok${failCount ? `, ${failCount} failed` : ""}`, !!failCount);
-    if (okCount && failCount === 0){
-      openConfetti("Bulk update", `Updated ${okCount} item(s).`);
-    } else {
-      showPopup(failCount === 0, "Bulk update", `Updated ${okCount} item(s).${failCount ? `\nFailed: ${failCount}` : ""}`);
+
+    for (const r of validReq) {
+      const key = buildHistoryDedupeKey(r, "request");
+      if (!seen.has(key)) {
+        seen.add(key);
+        _requestsCache.push(r);
+      }
     }
+
+    _fullHistoryCache = [..._attendanceCache, ..._requestsCache];
+
+    const semesters = Array.from(new Set(_fullHistoryCache.map(r => rowSemester(r)))).sort((a, b) => a.localeCompare(b));
+    const sel = document.getElementById("histSem");
+    sel.innerHTML = "";
+    
+    if (!semesters.length) {
+      sel.innerHTML = `<option value="">No history yet</option>`;
+      document.getElementById("histRows").innerHTML = `<tr><td colspan="6" class="muted small">No history yet.</td></tr>`;
+      document.getElementById("histSemTotal").textContent = "0"; 
+      document.getElementById("histAllTotal").textContent = "0"; 
+      document.getElementById("hoursTotal").textContent = "0";
+      toastHist(true, "");
+      return;
+    }
+
+    semesters.forEach(s => { 
+      const o = document.createElement("option"); 
+      o.value = s; 
+      o.textContent = s; 
+      sel.appendChild(o); 
+    });
+    
+    sel.value = semesters.includes(CURRENT_SEMESTER) ? CURRENT_SEMESTER : semesters[semesters.length - 1];
+    
+    const allTotal = _attendanceCache.reduce((acc, r) => acc + hoursNum(r.hours_awarded), 0);
+    document.getElementById("histAllTotal").textContent = (Math.round(allTotal * 100) / 100).toString();
+    
+    sel.onchange = () => renderHistory(sel.value);
+    renderHistory(sel.value);
+    syncTopHoursToCurrentSemester();
+    
+    if (!_requestsCache.length) { 
+      toastHist(true, "Note: No requests were returned for your account."); 
+    } else { 
+      toastHist(true, ""); 
+    }
+    
+  } catch (e) {
+    toastHist(false, "History failed to load.");
+    document.getElementById("histRows").innerHTML = `<tr><td colspan="6" class="muted small">History unavailable.</td></tr>`;
   }
+}
+
+function syncTopHoursToCurrentSemester(){
+  const sem = String(CURRENT_SEMESTER || "").trim();
+  const rows = (_attendanceCache || []).filter(r => rowSemester(r) === sem);
+  const total = rows.reduce((acc,r)=>acc + hoursNum(r.hours_awarded), 0);
+  document.getElementById("hoursTotal").textContent = (Math.round(total*100)/100).toString();
+  document.getElementById("hoursSub").textContent = CURRENT_SEMESTER;
+}
+
+function renderHistory(sem){
+  const semKey = String(sem || "");
+  const rows = (_fullHistoryCache || []).filter(r => belongsToCurrentStudent(r, currentStudentId)).filter(r => rowSemester(r) === semKey);
+  const tbody = document.getElementById("histRows");
+  tbody.innerHTML = "";
+  const semAtt = (_attendanceCache || []).filter(r => rowSemester(r) === semKey);
+  const semTotal = semAtt.reduce((acc,r)=>acc + hoursNum(r.hours_awarded), 0);
+  document.getElementById("histSemTotal").textContent = (Math.round(semTotal*100)/100).toString();
+  if (!rows.length){ tbody.innerHTML = `<tr><td colspan="6" class="muted small">No history in this semester.</td></tr>`; return; }
+  rows.sort((a,b)=>rowDateKey(b)-rowDateKey(a));
+ 
+  rows.forEach(r => {
+    const sid = String(r.shift_id ?? r.shiftId ?? r.shift ?? "").trim();
+    let sLab = r.shift_title || r.shiftTitle || r.shift_name || "";
+    if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
+    const sTxt = sLab ? ` (Shift: ${sLab})` : "";
+    const title = (rowEventTitle(r) || "—") + sTxt;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><span class="tag">${rowSemester(r)}</span></td>
+      <td>${title}</td>
+      <td>${rowEventDateForDisplay(r)}</td>
+      <td>${String(rowHoursForDisplay(r))}</td>
+      <td><span class="emoji-bg">${statusIconForRow(r)}</span></td>
+      <td>${rowComment(r)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ===== MODAL QUICK ACTIONS ===== */
+function _setSelectIfExists(selectId, value){
+  const sel = document.getElementById(selectId);
+  if (!sel) return { ok:false, reason:"missing-select" };
+  const v = String(value || "").trim();
+  if (!v) return { ok:false, reason:"missing-value" };
+  const opt = Array.from(sel.options || []).find(o => String(o.value) === v);
+  if (!opt) return { ok:false, reason:"not-in-dropdown" };
+  sel.value = v;
+  return { ok:true };
+}
+
+function _jumpToForm(formId, focusId){
+  const form = document.getElementById(formId);
+  if (!form) return;
+  closeModal();
+  form.scrollIntoView({ behavior:"smooth", block:"start" });
+  if (focusId){ setTimeout(() => { const el = document.getElementById(focusId); if (el && typeof el.focus === "function") el.focus(); }, 250); }
+}
+
+async function modalSignup(){
+  const res = _setSelectIfExists("signupEvent", _modalEventId);
+  if (!res.ok){ openConfetti("Can’t sign up from this event", "This event is not available in your Sign-up dropdown."); return; }
+  await setShiftUI("su", _modalEventId);
+  const s = modalSelectedShift();
+  if (s) _setSelectIfExists("suShift", s);
+  _jumpToForm("formSignup", "suComment");
+}
+
+async function modalRequestAttendance(){
+  const res = _setSelectIfExists("reqEvent", _modalEventId);
+  if (!res.ok){ openConfetti("Can’t request attendance", "This event is not available in your Attendance Request dropdown."); return; }
+  await setShiftUI("req", _modalEventId);
+  const s = modalSelectedShift();
+  if (s) _setSelectIfExists("reqShift", s);
+  _jumpToForm("formRequest", "reqComment");
 }
 </script>
 </body>
