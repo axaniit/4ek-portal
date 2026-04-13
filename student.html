@@ -1388,10 +1388,17 @@ function closeModal(){ document.getElementById("eventModal").style.display = "no
   await loadHistory();
 })();
 
-async function fetchRequestsWithFallback(studentId){
+function buildHistoryDedupeKey(row, type) {
+  const semester = rowSemester(row);
+  const eventId = rowEventId(row);
+  const status = type === "attendance" ? "approved" : normalizeStatus(row.status || row.request_status || row.decision || row.state);
+  return `${type}_${semester}_${eventId}_${status}`;
+}
+
+async function fetchRequestsWithFallback(studentId) {
   const actionsToTry = ["requests", "requesthistory", "history"];
-  for (const action of actionsToTry){
-    try{
+  for (const action of actionsToTry) {
+    try {
       const resp = await GET({ action, student_id: studentId });
       const rows = normalizeRequestsList(resp);
       const cleaned = (rows || []).filter(r => {
@@ -1399,40 +1406,86 @@ async function fetchRequestsWithFallback(studentId){
         const s = normalizeStatus(r.status || r.request_status || r.decision || r.state);
         return s === "pending" || s === "denied";
       });
-      if (cleaned && cleaned.length){ return cleaned; }
-    }catch(_){}
+      if (cleaned && cleaned.length) { return cleaned; }
+    } catch (_) {}
   }
   return [];
 }
 
-async function loadHistory(){
-  try{
-    const attResp = await GET({ action:"attendance", student_id: currentStudentId });
-    const attRows = normalizeAttendanceList(attResp).filter(r => belongsToCurrentStudent(r, currentStudentId)).map(r => ({ ...r, _type:"attendance" }));
-    _attendanceCache = attRows;
+async function loadHistory() {
+  try {
+    const attResp = await GET({ action: "attendance", student_id: currentStudentId });
+    const attRowsRaw = normalizeAttendanceList(attResp).filter(r => belongsToCurrentStudent(r, currentStudentId));
     const reqRowsRaw = await fetchRequestsWithFallback(currentStudentId);
-    const reqRows = (reqRowsRaw || []).filter(r => belongsToCurrentStudent(r, currentStudentId)).map(r => ({ ...r, _type:"request" }));
-    _requestsCache = reqRows;
+
+    const validAtt = attRowsRaw
+      .filter(r => {
+        const s = normalizeStatus(r.status || r.request_status || r.decision || r.state);
+        return !s || s === "approved";
+      })
+      .map(r => ({ ...r, _type: "attendance" }));
+
+    const validReq = reqRowsRaw.map(r => ({ ...r, _type: "request" }));
+
+    const seen = new Set();
+    _attendanceCache = [];
+    _requestsCache = [];
+
+    for (const r of validAtt) {
+      const key = buildHistoryDedupeKey(r, "attendance");
+      if (!seen.has(key)) {
+        seen.add(key);
+        _attendanceCache.push(r);
+      }
+    }
+
+    for (const r of validReq) {
+      const key = buildHistoryDedupeKey(r, "request");
+      if (!seen.has(key)) {
+        seen.add(key);
+        _requestsCache.push(r);
+      }
+    }
+
     _fullHistoryCache = [..._attendanceCache, ..._requestsCache];
-    const semesters = Array.from(new Set(_fullHistoryCache.map(r => rowSemester(r)))).sort((a,b)=>a.localeCompare(b));
+
+    const semesters = Array.from(new Set(_fullHistoryCache.map(r => rowSemester(r)))).sort((a, b) => a.localeCompare(b));
     const sel = document.getElementById("histSem");
     sel.innerHTML = "";
-    if (!semesters.length){
+    
+    if (!semesters.length) {
       sel.innerHTML = `<option value="">No history yet</option>`;
       document.getElementById("histRows").innerHTML = `<tr><td colspan="6" class="muted small">No history yet.</td></tr>`;
-      document.getElementById("histSemTotal").textContent = "0"; document.getElementById("histAllTotal").textContent = "0"; document.getElementById("hoursTotal").textContent = "0";
+      document.getElementById("histSemTotal").textContent = "0"; 
+      document.getElementById("histAllTotal").textContent = "0"; 
+      document.getElementById("hoursTotal").textContent = "0";
       toastHist(true, "");
       return;
     }
-    semesters.forEach(s => { const o = document.createElement("option"); o.value = s; o.textContent = s; sel.appendChild(o); });
+
+    semesters.forEach(s => { 
+      const o = document.createElement("option"); 
+      o.value = s; 
+      o.textContent = s; 
+      sel.appendChild(o); 
+    });
+    
     sel.value = semesters.includes(CURRENT_SEMESTER) ? CURRENT_SEMESTER : semesters[semesters.length - 1];
-    const allTotal = _attendanceCache.reduce((acc,r)=>acc + hoursNum(r.hours_awarded), 0);
-    document.getElementById("histAllTotal").textContent = (Math.round(allTotal*100)/100).toString();
+    
+    const allTotal = _attendanceCache.reduce((acc, r) => acc + hoursNum(r.hours_awarded), 0);
+    document.getElementById("histAllTotal").textContent = (Math.round(allTotal * 100) / 100).toString();
+    
     sel.onchange = () => renderHistory(sel.value);
     renderHistory(sel.value);
     syncTopHoursToCurrentSemester();
-    if (!_requestsCache.length){ toastHist(true, "Note: No requests were returned for your account."); } else { toastHist(true, ""); }
-  } catch (e){
+    
+    if (!_requestsCache.length) { 
+      toastHist(true, "Note: No requests were returned for your account."); 
+    } else { 
+      toastHist(true, ""); 
+    }
+    
+  } catch (e) {
     toastHist(false, "History failed to load.");
     document.getElementById("histRows").innerHTML = `<tr><td colspan="6" class="muted small">History unavailable.</td></tr>`;
   }
