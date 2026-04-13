@@ -1402,115 +1402,22 @@ async function fetchRequestsWithFallback(studentId){
 }
 
 <script>
-async function fetchRequestsWithFallback(studentId){
-  const actionsToTry = ["requests", "requesthistory", "history"];
-
-  for (const action of actionsToTry){
-    try{
-      const resp = await GET({ action, student_id: studentId });
-      const rows = normalizeRequestsList(resp);
-
-      const cleaned = (rows || [])
-        .filter(r => r && belongsToCurrentStudent(r, studentId))
-        .filter(r => {
-          const status = normalizeStatus(
-            r.status || r.request_status || r.decision || r.state
-          );
-
-          // Only keep pending or denied requests
-          return status === "pending" || status === "denied";
-        })
-        .filter(r => r.hours_awarded == null); // extra guard so approved attendance rows don't leak in
-
-      if (cleaned.length){
-        return cleaned;
-      }
-    } catch (_) {}
-  }
 
   return [];
 }
 
-async function loadHistory(){
-  try{
-    const attResp = await GET({ action:"attendance", student_id: currentStudentId });
+function buildHistoryDedupKey(row){
+  const type = String(row?._type || "").trim().toLowerCase();
+  const semester = rowSemester(row);
+  const eventId = rowEventId(row);
+  const title = rowEventTitle(row);
+  const status =
+    type === "attendance"
+      ? "approved"
+      : normalizeStatus(row.status || row.request_status || row.decision || row.state);
 
-    const attRows = normalizeAttendanceList(attResp)
-      .filter(r => belongsToCurrentStudent(r, currentStudentId))
-      .filter(r => {
-        // Only approved attendance should appear here
-        const status = normalizeStatus(
-          r.status || r.request_status || r.decision || r.state
-        );
-
-        // If attendance tab has no status column, keep the row.
-        // If it does have one, only keep approved rows.
-        return !status || status === "approved";
-      })
-      .map(r => ({ ...r, _type:"attendance" }));
-
-    _attendanceCache = attRows;
-
-    const reqRowsRaw = await fetchRequestsWithFallback(currentStudentId);
-
-    const reqRows = (reqRowsRaw || [])
-      .filter(r => belongsToCurrentStudent(r, currentStudentId))
-      .map(r => ({ ...r, _type:"request" }));
-
-    _requestsCache = reqRows;
-
-    // Final history = approved attendance + pending/denied requests only
-    _fullHistoryCache = [..._attendanceCache, ..._requestsCache];
-
-    const semesters = Array.from(
-      new Set(_fullHistoryCache.map(r => rowSemester(r)))
-    ).sort((a, b) => a.localeCompare(b));
-
-    const sel = document.getElementById("histSem");
-    sel.innerHTML = "";
-
-    if (!semesters.length){
-      sel.innerHTML = `<option value="">No history yet</option>`;
-      document.getElementById("histRows").innerHTML =
-        `<tr><td colspan="6" class="muted small">No history yet.</td></tr>`;
-      document.getElementById("histSemTotal").textContent = "0";
-      document.getElementById("histAllTotal").textContent = "0";
-      document.getElementById("hoursTotal").textContent = "0";
-      toastHist(true, "");
-      return;
-    }
-
-    semesters.forEach(s => {
-      const o = document.createElement("option");
-      o.value = s;
-      o.textContent = s;
-      sel.appendChild(o);
-    });
-
-    sel.value = semesters.includes(CURRENT_SEMESTER)
-      ? CURRENT_SEMESTER
-      : semesters[semesters.length - 1];
-
-    const allTotal = _attendanceCache.reduce(
-      (acc, r) => acc + hoursNum(r.hours_awarded),
-      0
-    );
-
-    document.getElementById("histAllTotal").textContent =
-      (Math.round(allTotal * 100) / 100).toString();
-
-    sel.onchange = () => renderHistory(sel.value);
-    renderHistory(sel.value);
-    syncTopHoursToCurrentSemester();
-
-    toastHist(true, "");
-  } catch (e){
-    toastHist(false, "History failed to load.");
-    document.getElementById("histRows").innerHTML =
-      `<tr><td colspan="6" class="muted small">History unavailable.</td></tr>`;
-  }
+  return [type, semester, eventId, title, status].join(" | ");
 }
-</script>
 
 /* ===== MODAL QUICK ACTIONS ===== */
 function _setSelectIfExists(selectId, value){
