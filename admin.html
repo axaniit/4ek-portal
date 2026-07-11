@@ -558,7 +558,7 @@
     <div class="hours">
       <div class="muted">My Semester Total Hours</div>
       <div class="h-big" id="meHoursTotal">0</div>
-      <div class="muted small" id="meHoursSub" style="margin-top:2px;">Spring2026</div>
+      <div class="muted small" id="meHoursSub" style="margin-top:2px;">Loading…</div>
     </div>
   </header>
 
@@ -933,7 +933,8 @@
 /* ===== CONFIG ===== */
 const API = "https://script.google.com/macros/s/AKfycbxUUnLnZWfYGe0ZJ5NKtoLXa78qXCK-cEeCv2Ip_3Xm_XUDy-fFp-w0gShBxakcjJdCPg/exec";
 const SESSION_KEY = "portal_session_v1";
-const CURRENT_SEMESTER = "Spring2026";
+let CURRENT_SEMESTER = "Unassigned";
+let SEMESTER_RANGES = [];
 
 /* ===== REQUIREMENTS ===== */
 const REQUIREMENT_LABELS = {
@@ -998,6 +999,24 @@ async function POST_tryActions(actions, payload){
     if (out && out.ok) return out;
   }
   return last || { ok:false, error:"No matching POST action worked" };
+}
+
+async function loadSemesterConfig(){
+  const resp = await GET({ action:"currentsemester" });
+
+  if (resp && resp.ok){
+    const current = String(resp.semester_id || resp.current_semester || "").trim();
+    if (current) CURRENT_SEMESTER = current;
+
+    if (Array.isArray(resp.ranges)) {
+      SEMESTER_RANGES = resp.ranges.filter(r => r && r.id);
+    }
+  }
+
+  return {
+    semester_id: CURRENT_SEMESTER,
+    ranges: SEMESTER_RANGES
+  };
 }
 
 function fmtDate(dt){
@@ -1766,6 +1785,8 @@ function autofillEventIdIfEmpty(){
 /* ===== BOOT ===== */
 (async function(){
   try{
+    await loadSemesterConfig();
+
     const meHoursSub = document.getElementById("meHoursSub");
     if (meHoursSub) meHoursSub.textContent = CURRENT_SEMESTER;
 
@@ -2147,6 +2168,10 @@ async function refreshMe(){
   const allTotal = _meHistAttendance.reduce((acc,r)=> acc + hoursNum(r.hours_awarded ?? r.hours ?? r.awarded_hours ?? 0), 0);
 
   const semSet = new Set((_meHistFull || []).map(meHist_rowSemester));
+  SEMESTER_RANGES.forEach(r => {
+    const id = String(r && r.id || "").trim();
+    if (id) semSet.add(id);
+  });
   semSet.add(CURRENT_SEMESTER);
   const semesters = [...semSet].filter(Boolean);
 
