@@ -246,9 +246,19 @@
 
     function redirectToPortal(role){
       const base = getBase();
-      window.location.href = role === "admin"
-        ? base + "/admin.html"
-        : base + "/student.html";
+      const normalizedRole = String(role || "").trim().toLowerCase();
+
+      if (normalizedRole === "owner") {
+        window.location.href = base + "/owner.html";
+        return;
+      }
+
+      if (normalizedRole === "admin") {
+        window.location.href = base + "/admin.html";
+        return;
+      }
+
+      window.location.href = base + "/student.html";
     }
 
     async function GETJSON(params){
