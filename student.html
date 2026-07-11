@@ -285,7 +285,7 @@
     <div class="hours">
       <div class="muted" id="hoursLabel">My Semester Total Hours</div>
       <div class="h-big" id="hoursTotal">0</div>
-      <div class="muted small" id="hoursSub" style="margin-top:2px;">Spring2026</div>
+      <div class="muted small" id="hoursSub" style="margin-top:2px;">Unassigned</div>
     </div>
   </header>
 
@@ -481,7 +481,8 @@
 /* ===== CONFIG ===== */
 const API = "https://script.google.com/macros/s/AKfycbxUUnLnZWfYGe0ZJ5NKtoLXa78qXCK-cEeCv2Ip_3Xm_XUDy-fFp-w0gShBxakcjJdCPg/exec";
 const SESSION_KEY = "portal_session_v1";
-const CURRENT_SEMESTER = "Spring2026";
+let CURRENT_SEMESTER = "Unassigned";
+let SEMESTER_RANGES = [];
 
 const REQUIREMENT_LABELS = {
   "2 Tailgates": "2 Tailgates",
@@ -510,6 +511,28 @@ async function GET(q){
   const r = await fetch(API + "?" + new URLSearchParams(q), { mode:"cors", cache:"no-cache", redirect:"follow" });
   const t = await r.text();
   try { return JSON.parse(t); } catch { return { ok:false, error:"Non-JSON response", body:t }; }
+}
+
+async function loadSemesterConfig(){
+  try {
+    const resp = await GET({ action:"currentsemester" });
+
+    if (resp && resp.ok){
+      const current = String(resp.semester_id || resp.current_semester || "").trim();
+      if (current) CURRENT_SEMESTER = current;
+
+      if (Array.isArray(resp.ranges)) {
+        SEMESTER_RANGES = resp.ranges.filter(r => r && r.id && r.start && r.end);
+      }
+    }
+  } catch (err) {
+    console.warn("Unable to load semester configuration from Apps Script.", err);
+  }
+
+  return {
+    semester_id: CURRENT_SEMESTER,
+    ranges: SEMESTER_RANGES
+  };
 }
 async function POST(action, payload){
   const body = Object.assign({ action }, payload || {});
@@ -654,6 +677,17 @@ function eventLabelFromSelect(sel){
 }
 
 function cleanSemesterLabel(x){ return String(x || "").trim() || "Unknown"; }
+
+function semesterForDate(dt){
+  if (!dt || !Array.isArray(SEMESTER_RANGES) || !SEMESTER_RANGES.length) return "";
+  const d = new Date(dt);
+  if (isNaN(d.getTime())) return "";
+
+  const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  const match = SEMESTER_RANGES.find(r => key >= String(r.start) && key <= String(r.end));
+  return match ? String(match.id || "").trim() : "";
+}
+
 function hoursNum(v){ const n = Number(v); return isFinite(n) ? n : 0; }
 function toastHist(ok, msg){
   const el = document.getElementById("msgHist");
@@ -717,7 +751,16 @@ function rowEventDateForDisplay(row){
 }
 
 function rowSemester(row){
-  return cleanSemesterLabel(row.semester_id || row.semester || row.semesterId || row.sem || "");
+  const direct = String(row.semester_id || row.semester || row.semesterId || row.sem || row.current_semester || "").trim();
+  if (direct) return cleanSemesterLabel(direct);
+
+  const ev = eventById(rowEventId(row));
+  const eventSemester = String(ev?.semester_id || ev?.semester || ev?.current_semester || "").trim();
+  if (eventSemester) return cleanSemesterLabel(eventSemester);
+
+  const dt = row.event_start || row.start || row.recorded_at || row.created_at || row.requested_at || ev?.start || "";
+  const calculated = semesterForDate(dt);
+  return cleanSemesterLabel(calculated);
 }
 
 function rowEventTitle(row){
@@ -1226,6 +1269,8 @@ function closeModal(){ document.getElementById("eventModal").style.display = "no
 
 
 (async function(){
+  await loadSemesterConfig();
+
   document.getElementById("hoursLabel").textContent = "My Semester Total Hours";
   document.getElementById("hoursSub").textContent = CURRENT_SEMESTER;
   const sess = getSession();
@@ -1448,28 +1493,49 @@ async function loadHistory() {
 
     _fullHistoryCache = [..._attendanceCache, ..._requestsCache];
 
-    const semesters = Array.from(new Set(_fullHistoryCache.map(r => rowSemester(r)))).sort((a, b) => a.localeCompare(b));
+    const semesterSet = new Set(_fullHistoryCache.map(r => rowSemester(r)).filter(Boolean));
+    SEMESTER_RANGES.forEach(r => {
+      const id = String(r && r.id || "").trim();
+      if (id) semesterSet.add(id);
+    });
+    if (CURRENT_SEMESTER) semesterSet.add(CURRENT_SEMESTER);
+
+    const rangeOrder = new Map(
+      SEMESTER_RANGES.map((r, index) => [String(r.id || "").trim(), index])
+    );
+
+    const semesters = Array.from(semesterSet).filter(Boolean).sort((a, b) => {
+      if (a === CURRENT_SEMESTER && b !== CURRENT_SEMESTER) return -1;
+      if (b === CURRENT_SEMESTER && a !== CURRENT_SEMESTER) return 1;
+
+      const ai = rangeOrder.has(a) ? rangeOrder.get(a) : -1;
+      const bi = rangeOrder.has(b) ? rangeOrder.get(b) : -1;
+      if (ai !== bi) return bi - ai;
+      return b.localeCompare(a);
+    });
+
     const sel = document.getElementById("histSem");
     sel.innerHTML = "";
-    
+
     if (!semesters.length) {
-      sel.innerHTML = `<option value="">No history yet</option>`;
+      sel.innerHTML = `<option value="">No semester available</option>`;
       document.getElementById("histRows").innerHTML = `<tr><td colspan="6" class="muted small">No history yet.</td></tr>`;
-      document.getElementById("histSemTotal").textContent = "0"; 
-      document.getElementById("histAllTotal").textContent = "0"; 
+      document.getElementById("histSemTotal").textContent = "0";
+      document.getElementById("histAllTotal").textContent = "0";
       document.getElementById("hoursTotal").textContent = "0";
+      document.getElementById("hoursSub").textContent = CURRENT_SEMESTER;
       toastHist(true, "");
       return;
     }
 
-    semesters.forEach(s => { 
-      const o = document.createElement("option"); 
-      o.value = s; 
-      o.textContent = s; 
-      sel.appendChild(o); 
+    semesters.forEach(s => {
+      const o = document.createElement("option");
+      o.value = s;
+      o.textContent = s;
+      sel.appendChild(o);
     });
-    
-    sel.value = semesters.includes(CURRENT_SEMESTER) ? CURRENT_SEMESTER : semesters[semesters.length - 1];
+
+    sel.value = semesters.includes(CURRENT_SEMESTER) ? CURRENT_SEMESTER : semesters[0];
     
     const allTotal = _attendanceCache.reduce((acc, r) => acc + hoursNum(r.hours_awarded), 0);
     document.getElementById("histAllTotal").textContent = (Math.round(allTotal * 100) / 100).toString();
