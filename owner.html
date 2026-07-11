@@ -573,6 +573,61 @@
     box-sizing:border-box;
   }
 
+
+
+  /* ===== PERSONAL FORMS + FILES ===== */
+  .portal-workflow-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:16px;
+    align-items:start;
+  }
+  @media (max-width:850px){ .portal-workflow-grid{grid-template-columns:1fr;} }
+  .portal-workflow-panel{
+    border:1px solid #eee;
+    border-radius:12px;
+    padding:14px;
+    background:#fafafa;
+  }
+  .portal-check-line{
+    display:flex !important;
+    align-items:center;
+    gap:10px;
+    font-weight:600;
+  }
+  .portal-check-line input{width:auto !important;margin:0;}
+  .portal-status-pill{
+    display:inline-block;
+    border:1px solid #ddd;
+    border-radius:999px;
+    padding:3px 9px;
+    font-size:12px;
+    background:#fff;
+  }
+  .portal-status-pill.open{border-color:#2e7d32;color:#2e7d32;background:rgba(46,125,50,.08);}
+  .portal-status-pill.closed{border-color:#b00020;color:#b00020;background:rgba(176,0,32,.06);}
+  .portal-file-item{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    padding:12px 0;
+    border-bottom:1px solid #eee;
+  }
+  .portal-file-item:last-child{border-bottom:0;}
+  .portal-file-item a{color:#111;font-weight:700;}
+  .portal-file-remove{white-space:nowrap;align-self:center;}
+  .portal-table-wrap{overflow:auto;border:1px solid #eee;border-radius:10px;}
+  .portal-table{width:100%;border-collapse:collapse;min-width:720px;}
+  .portal-table th,.portal-table td{padding:10px 8px;border-bottom:1px solid #eee;text-align:left;vertical-align:top;}
+  .portal-table th{font-size:12px;color:#666;text-transform:uppercase;letter-spacing:.02em;background:#fafafa;}
+  .portal-table tbody tr:nth-child(even){background:#f9f9f9;}
+  .portal-table tbody tr.portal-two-week-row{background:rgba(46,125,50,.15) !important;}
+  .portal-review-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .portal-review-actions button{padding:7px 10px;margin:0;border-radius:7px;border:0;cursor:pointer;font-weight:700;}
+  .portal-approve{background:#2e7d32;color:#fff;}
+  .portal-deny{background:#b00020;color:#fff;}
+  .portal-owner-toggle{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+
 </style>
 </head>
 <body>
@@ -750,6 +805,78 @@
     </div>
   </section>
 
+
+
+  <div class="card" id="personalWorkflowCard">
+    <div class="card-h">Forms &amp; Files</div>
+    <div class="card-b">
+      <div class="portal-workflow-grid">
+        <form id="dropSwapPortalForm" class="form portal-workflow-panel" autocomplete="off">
+          <h4>Drop / Swap Form</h4>
+          <label>Current sign-up
+            <select id="dropSwapSignup" required></select>
+          </label>
+          <label class="portal-check-line">
+            <input id="dropSwapFoundCoverage" type="checkbox">
+            <span>Have you found coverage?</span>
+          </label>
+          <label id="dropSwapCoverageWrap" style="display:none;">Select coverage
+            <select id="dropSwapCoverageStudent"></select>
+          </label>
+          <label>Additional details (optional)
+            <textarea id="dropSwapDetails" rows="3" placeholder="Add any information the owner should know."></textarea>
+          </label>
+          <button id="dropSwapSubmitBtn" type="submit">Submit Form</button>
+          <div class="msg" id="dropSwapMsg"></div>
+        </form>
+
+        <form id="futureAbsencePortalForm" class="form portal-workflow-panel" autocomplete="off">
+          <h4>Future Absence Form</h4>
+          <div style="margin-bottom:10px;">
+            <span id="futureAbsenceState" class="portal-status-pill">Loading…</span>
+          </div>
+          <label>Upcoming event
+            <select id="futureAbsenceEvent" required></select>
+          </label>
+          <button id="futureAbsenceSubmitBtn" type="submit">Submit Form</button>
+          <div class="msg" id="futureAbsenceMsg"></div>
+        </form>
+      </div>
+
+      <div class="portal-workflow-panel" style="margin-top:16px;">
+        <h4 style="margin-top:0;">My Portal Files</h4>
+        <div class="muted small" style="margin-bottom:10px;">Only links attached to your account appear here. They are not submitted for approval.</div>
+        <form id="portalFileForm" class="form" autocomplete="off">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <label>File title
+              <input id="portalFileTitle" type="text" placeholder="Example: Medical documentation" required>
+            </label>
+            <label>Google Drive link
+              <input id="portalFileUrl" type="url" placeholder="https://drive.google.com/..." required>
+            </label>
+          </div>
+          <label>Notes (optional)
+            <input id="portalFileNotes" type="text" placeholder="Brief description">
+          </label>
+          <button id="portalFileAddBtn" type="submit">Add File Link</button>
+          <div class="msg" id="portalFileMsg"></div>
+        </form>
+        <div id="portalFileList" style="margin-top:12px;"><div class="muted small">Loading files…</div></div>
+      </div>
+
+      <div class="portal-workflow-panel" style="margin-top:16px;">
+        <h4 style="margin-top:0;">My Form Submissions</h4>
+        <div class="portal-table-wrap">
+          <table class="portal-table" style="min-width:620px;">
+            <thead><tr><th>Form</th><th>Event</th><th>Status</th><th>Owner note</th></tr></thead>
+            <tbody id="myPortalFormsRows"><tr><td colspan="4" class="muted small">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
   <div class="card">
     <div class="card-h">Calendar (click an event)</div>
     <div class="card-b"><div id="calendar"></div></div>
@@ -841,10 +968,6 @@
   <div class="card" id="ownerToolsCard">
     <div class="card-h">Owner Controls</div>
     <div class="card-b">
-      <div class="owner-warning muted small">
-        This page intentionally looks like the Admin Portal. Owner access adds the controls below. For hour changes, enter a positive number to add hours or a negative number to remove hours; each change is saved as a separate adjustment record.
-      </div>
-
       <datalist id="owner_students"></datalist>
 
       <div class="owner-tools-grid">
@@ -906,6 +1029,41 @@
           <div class="msg" id="ownerRemoveSignupMsg"></div>
         </div>
       </div>
+    </div>
+  </div>
+
+
+
+
+  <div class="card" id="ownerFormReviewCard">
+    <div class="card-h">Form Review (Owner)</div>
+    <div class="card-b">
+      <div class="portal-owner-toggle">
+        <strong>Future Absence Form:</strong>
+        <span id="ownerFutureState" class="portal-status-pill">Loading…</span>
+        <button id="ownerFutureToggleBtn" type="button" class="secondary">Loading…</button>
+        <button id="ownerFormsRefreshBtn" type="button" class="secondary">Refresh Forms</button>
+      </div>
+
+      <h4>Drop / Swap Forms</h4>
+      <div class="muted small" style="margin-bottom:8px;">Green rows were submitted at least 14 days before the selected event.</div>
+      <div class="portal-table-wrap">
+        <table class="portal-table" style="min-width:1250px;">
+          <thead>
+            <tr><th>Student</th><th>Current sign-up</th><th>Coverage?</th><th>Coverage person</th><th>Details</th><th>Submitted</th><th>Status</th><th>Owner decision</th></tr>
+          </thead>
+          <tbody id="ownerDropSwapRows"><tr><td colspan="8" class="muted small">Loading…</td></tr></tbody>
+        </table>
+      </div>
+
+      <h4 style="margin-top:20px;">Future Absence Forms</h4>
+      <div class="portal-table-wrap">
+        <table class="portal-table" style="min-width:850px;">
+          <thead><tr><th>Student</th><th>Event</th><th>Status</th><th>Owner decision</th></tr></thead>
+          <tbody id="ownerFutureAbsenceRows"><tr><td colspan="4" class="muted small">Loading…</td></tr></tbody>
+        </table>
+      </div>
+      <div class="msg" id="ownerFormsMsg"></div>
     </div>
   </div>
 
@@ -1972,6 +2130,8 @@ function autofillEventIdIfEmpty(){
     const formSu = document.getElementById("formSignup");
     if (formSu) formSu.addEventListener("submit", submitMySignup);
 
+    await initPersonalPortalTools(currentAdminId);
+    await initOwnerFormReview();
     await refreshMe();
   }catch(err){
     console.error("BOOT failed:", err);
@@ -3560,6 +3720,374 @@ async function initReqAdmin(){
     }
   }
 }
+
+
+/* ===== NATIVE FORMS + PERSONAL FILE LINKS ===== */
+let _pwStudentId = "";
+let _pwStudents = [];
+let _pwSignups = [];
+let _pwFiles = [];
+let _pwForms = [];
+let _pwFutureOpen = true;
+let _pwWired = false;
+
+function pwEsc(v){
+  return String(v == null ? "" : v).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]));
+}
+function pwRows(resp){
+  if (Array.isArray(resp)) return resp;
+  if (resp && Array.isArray(resp.rows)) return resp.rows;
+  return [];
+}
+function pwBool(v){
+  if (v === true) return true;
+  const s = String(v ?? "").trim().toLowerCase();
+  return s === "true" || s === "yes" || s === "1" || s === "on";
+}
+function pwStatusLabel(v){
+  const s = String(v || "pending").trim().toLowerCase();
+  return s ? s[0].toUpperCase() + s.slice(1) : "Pending";
+}
+function pwFriendlyError(raw){
+  const s = String(raw || "Something went wrong.");
+  const map = {
+    pending_form_already_exists:"You already have a pending form for that event or sign-up.",
+    future_absence_form_closed:"The Future Absence Form is currently closed.",
+    active_signup_not_found:"That sign-up is no longer active. Refresh and choose another sign-up.",
+    coverage_student_required:"Select the person providing coverage.",
+    google_drive_link_required:"Enter a Google Drive, Docs, Sheets, Slides, or Forms link."
+  };
+  return map[s] || s.replaceAll("_", " ");
+}
+function pwStudentName(s){
+  if (!s) return "";
+  return String(s.name || s.full_name || s.display_name || s.preferred_name || `${s.first_name || ""} ${s.last_name || ""}`.trim() || s.email || s.student_id || "").trim();
+}
+function pwEventLabel(row){
+  const title = row?.event_title || row?.title || row?.event_id || "Event";
+  const dt = row?.event_start || row?.start || "";
+  let dateText = "";
+  try { if (dt) dateText = new Date(dt).toLocaleDateString([], {month:"short",day:"numeric",year:"numeric"}); } catch(_) {}
+  const shift = row?.shift_title || row?.shift_id || "";
+  return `${title}${dateText ? " — " + dateText : ""}${shift ? " — " + shift : ""}`;
+}
+function pwUpcomingEvents(){
+  const cutoff = Date.now() - 86400000;
+  return [...(eventsCache || [])].filter(ev => {
+    const t = Date.parse(ev.start || ev.event_start || "");
+    if (isNaN(t) || t < cutoff) return false;
+    try { return typeof isActiveEvent === "function" ? isActiveEvent(ev) : true; } catch(_) { return true; }
+  }).sort((a,b)=>Date.parse(a.start || a.event_start)-Date.parse(b.start || b.event_start));
+}
+function pwFillCoverage(){
+  const sel = document.getElementById("dropSwapCoverageStudent");
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Select a person…</option>';
+  _pwStudents
+    .filter(s => _norm(s.student_id || s.email) !== _norm(_pwStudentId))
+    .sort((a,b)=>pwStudentName(a).localeCompare(pwStudentName(b)))
+    .forEach(s => {
+      const id = String(s.student_id || s.email || "").trim();
+      if (!id) return;
+      const role = String(s.role || "student").trim();
+      sel.appendChild(new Option(`${pwStudentName(s) || id} — ${role}`, id));
+    });
+}
+function pwFillSignups(){
+  const sel = document.getElementById("dropSwapSignup");
+  const btn = document.getElementById("dropSwapSubmitBtn");
+  if (!sel) return;
+  sel.innerHTML = "";
+  if (!_pwSignups.length){
+    sel.appendChild(new Option("No current sign-ups available", ""));
+    sel.disabled = true;
+    if (btn) btn.disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  if (btn) btn.disabled = false;
+  sel.appendChild(new Option("Select a current sign-up…", ""));
+  _pwSignups.forEach(r => sel.appendChild(new Option(pwEventLabel(r), String(r.signup_id || ""))));
+}
+function pwFillFutureEvents(){
+  const sel = document.getElementById("futureAbsenceEvent");
+  const btn = document.getElementById("futureAbsenceSubmitBtn");
+  const pill = document.getElementById("futureAbsenceState");
+  if (!sel || !btn || !pill) return;
+  pill.textContent = _pwFutureOpen ? "Open" : "Closed";
+  pill.className = `portal-status-pill ${_pwFutureOpen ? "open" : "closed"}`;
+  const list = pwUpcomingEvents();
+  sel.innerHTML = "";
+  if (!list.length){
+    sel.appendChild(new Option("No upcoming events", ""));
+    sel.disabled = true;
+    btn.disabled = true;
+    return;
+  }
+  list.forEach(ev => {
+    const id = String(ev.event_id || ev.id || "").trim();
+    if (id) sel.appendChild(new Option(pwEventLabel(ev), id));
+  });
+  sel.disabled = !_pwFutureOpen;
+  btn.disabled = !_pwFutureOpen;
+}
+function pwRenderFiles(){
+  const box = document.getElementById("portalFileList");
+  if (!box) return;
+  if (!_pwFiles.length){
+    box.innerHTML = '<div class="muted small">No file links have been added to your portal.</div>';
+    return;
+  }
+  box.innerHTML = _pwFiles.map(f => `
+    <div class="portal-file-item">
+      <div>
+        <a href="${pwEsc(f.url)}" target="_blank" rel="noopener">${pwEsc(f.title || "Open file")}</a>
+        ${f.notes ? `<div class="muted small">${pwEsc(f.notes)}</div>` : ""}
+      </div>
+      <button type="button" class="secondary portal-file-remove" data-file-id="${pwEsc(f.file_id)}">Remove</button>
+    </div>`).join("");
+  box.querySelectorAll("[data-file-id]").forEach(btn => btn.addEventListener("click", async ()=>{
+    if (!window.confirm("Remove this file link from your portal?")) return;
+    const out = await POST("removeportalfile", {file_id:btn.dataset.fileId, actor_id:_pwStudentId});
+    const msg = document.getElementById("portalFileMsg");
+    if (!out?.ok){ toast(msg,false,pwFriendlyError(out?.error || out?.message)); return; }
+    toast(msg,true,"File link removed.");
+    await pwLoadFiles();
+  }));
+}
+function pwRenderMyForms(){
+  const body = document.getElementById("myPortalFormsRows");
+  if (!body) return;
+  if (!_pwForms.length){ body.innerHTML = '<tr><td colspan="4" class="muted small">No forms submitted yet.</td></tr>'; return; }
+  body.innerHTML = _pwForms.map(r => `
+    <tr>
+      <td>${_norm(r.form_type) === "drop_swap" ? "Drop / Swap" : "Future Absence"}</td>
+      <td>${pwEsc(r.event_title || r.event_id || "—")}</td>
+      <td>${pwEsc(pwStatusLabel(r.status))}</td>
+      <td>${pwEsc(r.owner_comment || "—")}</td>
+    </tr>`).join("");
+}
+async function pwLoadFiles(){
+  const out = await GET({action:"portalfiles", student_id:_pwStudentId});
+  _pwFiles = pwRows(out);
+  pwRenderFiles();
+}
+async function pwLoadForms(){
+  const out = await GET({action:"myportalforms", student_id:_pwStudentId});
+  _pwForms = pwRows(out);
+  pwRenderMyForms();
+}
+async function pwLoadWorkflowData(){
+  const [studentsOut, signupsOut, settingsOut] = await Promise.all([
+    GET({action:"students"}),
+    GET({action:"mysignups", student_id:_pwStudentId}),
+    GET({action:"futureabsencestatus"})
+  ]);
+  _pwStudents = Array.isArray(studentsOut) ? studentsOut : (studentsOut?.students || studentsOut?.rows || []);
+  _pwSignups = pwRows(signupsOut);
+  _pwFutureOpen = settingsOut?.future_absence_open !== false && !["false","0","closed"].includes(String(settingsOut?.future_absence_open ?? "true").toLowerCase());
+  pwFillCoverage();
+  pwFillSignups();
+  pwFillFutureEvents();
+  await Promise.all([pwLoadFiles(), pwLoadForms()]);
+}
+function pwWireOnce(){
+  if (_pwWired) return;
+  _pwWired = true;
+  const found = document.getElementById("dropSwapFoundCoverage");
+  const coverageWrap = document.getElementById("dropSwapCoverageWrap");
+  const syncCoverage = ()=>{
+    const on = !!found?.checked;
+    if (coverageWrap) coverageWrap.style.display = on ? "block" : "none";
+    const sel = document.getElementById("dropSwapCoverageStudent");
+    if (sel) sel.required = on;
+  };
+  found?.addEventListener("change", syncCoverage);
+  syncCoverage();
+
+  document.getElementById("dropSwapPortalForm")?.addEventListener("submit", async e => {
+    e.preventDefault();
+    const msg = document.getElementById("dropSwapMsg");
+    const btn = document.getElementById("dropSwapSubmitBtn");
+    const signupId = String(document.getElementById("dropSwapSignup")?.value || "").trim();
+    const foundCoverage = !!found?.checked;
+    const coverageId = String(document.getElementById("dropSwapCoverageStudent")?.value || "").trim();
+    const details = String(document.getElementById("dropSwapDetails")?.value || "").trim();
+    if (!signupId){ toast(msg,false,"Select one of your current sign-ups."); return; }
+    if (foundCoverage && !coverageId){ toast(msg,false,"Select the person providing coverage."); return; }
+    btn.disabled = true;
+    const out = await POST("submitdropswap", {
+      student_id:_pwStudentId,
+      signup_id:signupId,
+      found_coverage:foundCoverage,
+      coverage_student_id:foundCoverage ? coverageId : "",
+      details
+    });
+    btn.disabled = false;
+    if (!out?.ok){ toast(msg,false,pwFriendlyError(out?.error || out?.message)); return; }
+    toast(msg,true,"Form submitted.");
+    openConfetti("Form Submitted", "Your Drop / Swap form was submitted.");
+    document.getElementById("dropSwapPortalForm").reset();
+    syncCoverage();
+    await pwLoadForms();
+  });
+
+  document.getElementById("futureAbsencePortalForm")?.addEventListener("submit", async e => {
+    e.preventDefault();
+    const msg = document.getElementById("futureAbsenceMsg");
+    const btn = document.getElementById("futureAbsenceSubmitBtn");
+    const eventId = String(document.getElementById("futureAbsenceEvent")?.value || "").trim();
+    if (!_pwFutureOpen){ toast(msg,false,"The Future Absence Form is closed."); return; }
+    if (!eventId){ toast(msg,false,"Select an upcoming event."); return; }
+    btn.disabled = true;
+    const out = await POST("submitfutureabsence", {student_id:_pwStudentId,event_id:eventId});
+    btn.disabled = false;
+    if (!out?.ok){ toast(msg,false,pwFriendlyError(out?.error || out?.message)); return; }
+    toast(msg,true,"Form submitted.");
+    openConfetti("Form Submitted", "Your Future Absence form was submitted.");
+    await pwLoadForms();
+  });
+
+  document.getElementById("portalFileForm")?.addEventListener("submit", async e => {
+    e.preventDefault();
+    const msg = document.getElementById("portalFileMsg");
+    const btn = document.getElementById("portalFileAddBtn");
+    const title = String(document.getElementById("portalFileTitle")?.value || "").trim();
+    const url = String(document.getElementById("portalFileUrl")?.value || "").trim();
+    const notes = String(document.getElementById("portalFileNotes")?.value || "").trim();
+    btn.disabled = true;
+    const out = await POST("addportalfile", {student_id:_pwStudentId,actor_id:_pwStudentId,title,url,notes});
+    btn.disabled = false;
+    if (!out?.ok){ toast(msg,false,pwFriendlyError(out?.error || out?.message)); return; }
+    toast(msg,true,"File link added to your portal.");
+    openConfetti("File Added", "Your file link was added to your portal.");
+    document.getElementById("portalFileForm").reset();
+    await pwLoadFiles();
+  });
+}
+async function initPersonalPortalTools(studentId){
+  _pwStudentId = String(studentId || "").trim();
+  if (!_pwStudentId || !document.getElementById("personalWorkflowCard")) return;
+  pwWireOnce();
+  await pwLoadWorkflowData();
+}
+
+
+/* ===== OWNER FORM REVIEW ===== */
+let _ownerPortalForms = [];
+let _ownerFutureOpen = true;
+let _ownerReviewWired = false;
+
+function ownerFormRows(resp){ return Array.isArray(resp) ? resp : (resp?.rows || []); }
+function ownerLeadDays(row){
+  const eventMs = Date.parse(row.event_start || "");
+  const submittedMs = Date.parse(row.submitted_at || "");
+  if (isNaN(eventMs) || isNaN(submittedMs)) return null;
+  return (eventMs - submittedMs) / 86400000;
+}
+function ownerSubmittedText(v){
+  const d = new Date(v);
+  return isNaN(d) ? "—" : d.toLocaleString([], {month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"});
+}
+function ownerDecisionCell(row){
+  const pending = _norm(row.status || "pending") === "pending";
+  if (!pending) return `<div><strong>${pwEsc(pwStatusLabel(row.status))}</strong>${row.owner_comment ? `<div class="muted small">${pwEsc(row.owner_comment)}</div>` : ""}</div>`;
+  return `
+    <input class="admin-reply-input owner-form-comment" data-form-comment="${pwEsc(row.form_id)}" placeholder="Owner note (optional)" style="margin-bottom:6px;">
+    <div class="portal-review-actions">
+      <button type="button" class="portal-approve" data-owner-form="${pwEsc(row.form_id)}" data-decision="approved">Approve</button>
+      <button type="button" class="portal-deny" data-owner-form="${pwEsc(row.form_id)}" data-decision="denied">Deny</button>
+    </div>`;
+}
+function renderOwnerFormReview(){
+  const dropBody = document.getElementById("ownerDropSwapRows");
+  const futureBody = document.getElementById("ownerFutureAbsenceRows");
+  const drops = _ownerPortalForms.filter(r => _norm(r.form_type) === "drop_swap");
+  const futures = _ownerPortalForms.filter(r => _norm(r.form_type) === "future_absence");
+
+  if (dropBody){
+    dropBody.innerHTML = drops.length ? drops.map(r => {
+      const green = (ownerLeadDays(r) ?? -999) >= 14 ? "portal-two-week-row" : "";
+      const coverage = pwBool(r.found_coverage) ? "Yes" : "No";
+      return `<tr class="${green}">
+        <td><strong>${pwEsc(r.student_name || r.student_id || "—")}</strong><div class="muted small">${pwEsc(r.student_id || "")}</div></td>
+        <td>${pwEsc(r.event_title || r.event_id || "—")}${r.shift_title || r.shift_id ? `<div class="muted small">${pwEsc(r.shift_title || r.shift_id)}</div>` : ""}</td>
+        <td>${coverage}</td>
+        <td>${pwEsc(r.coverage_name || r.coverage_student_id || "—")}</td>
+        <td>${pwEsc(r.details || "—")}</td>
+        <td>${pwEsc(ownerSubmittedText(r.submitted_at))}</td>
+        <td>${pwEsc(pwStatusLabel(r.status))}</td>
+        <td>${ownerDecisionCell(r)}</td>
+      </tr>`;
+    }).join("") : '<tr><td colspan="8" class="muted small">No Drop / Swap forms.</td></tr>';
+  }
+
+  if (futureBody){
+    futureBody.innerHTML = futures.length ? futures.map(r => `<tr>
+      <td><strong>${pwEsc(r.student_name || r.student_id || "—")}</strong><div class="muted small">${pwEsc(r.student_id || "")}</div></td>
+      <td>${pwEsc(r.event_title || r.event_id || "—")}</td>
+      <td>${pwEsc(pwStatusLabel(r.status))}</td>
+      <td>${ownerDecisionCell(r)}</td>
+    </tr>`).join("") : '<tr><td colspan="4" class="muted small">No Future Absence forms.</td></tr>';
+  }
+
+  document.querySelectorAll("[data-owner-form]").forEach(btn => btn.addEventListener("click", ()=>ownerDecideForm(btn.dataset.ownerForm, btn.dataset.decision)));
+}
+function renderOwnerFutureToggle(){
+  const pill = document.getElementById("ownerFutureState");
+  const btn = document.getElementById("ownerFutureToggleBtn");
+  if (pill){
+    pill.textContent = _ownerFutureOpen ? "Open" : "Closed";
+    pill.className = `portal-status-pill ${_ownerFutureOpen ? "open" : "closed"}`;
+  }
+  if (btn) btn.textContent = _ownerFutureOpen ? "Close Form" : "Open Form";
+}
+async function loadOwnerFormReview(){
+  const msg = document.getElementById("ownerFormsMsg");
+  const [formsOut, settingsOut] = await Promise.all([
+    GET({action:"portalforms",actor_id:currentAdminId}),
+    GET({action:"futureabsencestatus"})
+  ]);
+  if (formsOut?.ok === false){ toast(msg,false,pwFriendlyError(formsOut.error || formsOut.message)); return; }
+  _ownerPortalForms = ownerFormRows(formsOut);
+  _ownerFutureOpen = settingsOut?.future_absence_open !== false && String(settingsOut?.future_absence_open ?? "true").toLowerCase() !== "false";
+  renderOwnerFutureToggle();
+  renderOwnerFormReview();
+  toast(msg,true,`Loaded ${_ownerPortalForms.length} form submission(s).`);
+}
+async function ownerDecideForm(formId, decision){
+  const msg = document.getElementById("ownerFormsMsg");
+  const input = document.querySelector(`[data-form-comment="${CSS.escape(formId)}"]`);
+  const comment = String(input?.value || "").trim();
+  const verb = decision === "approved" ? "approve" : "deny";
+  if (!window.confirm(`${verb[0].toUpperCase()+verb.slice(1)} this form?`)) return;
+  const out = await POST("decideportalform", {form_id:formId,decision,actor_id:currentAdminId,owner_comment:comment});
+  if (!out?.ok){ toast(msg,false,pwFriendlyError(out?.error || out?.message)); return; }
+  toast(msg,true,`Form ${decision}.`);
+  await loadOwnerFormReview();
+  await pwLoadForms();
+}
+async function ownerToggleFutureAbsence(){
+  const msg = document.getElementById("ownerFormsMsg");
+  const next = !_ownerFutureOpen;
+  const out = await POST("setfutureabsenceopen", {actor_id:currentAdminId,is_open:next});
+  if (!out?.ok){ toast(msg,false,pwFriendlyError(out?.error || out?.message)); return; }
+  _ownerFutureOpen = !!out.future_absence_open;
+  _pwFutureOpen = _ownerFutureOpen;
+  renderOwnerFutureToggle();
+  pwFillFutureEvents();
+  toast(msg,true,`Future Absence Form is now ${_ownerFutureOpen ? "open" : "closed"}.`);
+}
+async function initOwnerFormReview(){
+  if (!document.getElementById("ownerFormReviewCard")) return;
+  if (!_ownerReviewWired){
+    _ownerReviewWired = true;
+    document.getElementById("ownerFormsRefreshBtn")?.addEventListener("click", loadOwnerFormReview);
+    document.getElementById("ownerFutureToggleBtn")?.addEventListener("click", ownerToggleFutureAbsence);
+  }
+  await loadOwnerFormReview();
+}
+
 </script>
 </body>
 </html>
