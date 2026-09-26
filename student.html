@@ -623,6 +623,16 @@ const REQUIREMENT_LABELS = {
   "30 Hours (fall)": "30 Hours (fall)"
 };
 
+// Legacy requirement keys are normalized so older saved checkmarks still display correctly.
+const REQUIREMENT_KEY_ALIASES = {
+  "Fall Retreat or Makeup": "Mid-year retreat or makeup",
+  "30 Hours (spring)": "30 Hours (fall)"
+};
+function canonicalRequirementKey(key){
+  const raw = String(key ?? "").trim();
+  return REQUIREMENT_KEY_ALIASES[raw] || raw;
+}
+
 /* ===== UTIL ===== */
 function _norm(v){ return String(v == null ? "" : v).trim().toLowerCase(); }
 
@@ -718,7 +728,8 @@ async function getStudentsCached(){
 function pickBestName(stu, fallbackEmail){
   if (!stu) return titleCaseNameFromEmail(fallbackEmail);
   const cand =
-    stu.name ||
+    stu.name || stu.student_name ||
+    stu.preferred_name || stu.preferredName ||
     stu.full_name || stu.fullName ||
     stu.display_name || stu.displayName ||
     (stu.first_name || stu.firstName || stu.firstname ? `${stu.first_name||stu.firstName||stu.firstname} ${stu.last_name||stu.lastName||stu.lastname||""}`.trim() : "") ||
@@ -728,8 +739,26 @@ function pickBestName(stu, fallbackEmail){
 async function resolveStudentName(studentIdOrEmail){
   const id = _norm(studentIdOrEmail);
   const students = await getStudentsCached();
-  const match = students.find(s => _norm(s.email) === id || _norm(s.student_id) === id);
+  const match = students.find(s =>
+    _norm(s.email) === id ||
+    _norm(s.student_id) === id ||
+    _norm(s.studentId) === id ||
+    _norm(s.username) === id
+  );
   return pickBestName(match, studentIdOrEmail);
+}
+function studentDisplayName(studentIdOrEmail){
+  const raw = String(studentIdOrEmail ?? "").trim();
+  if (!raw) return "—";
+  const id = _norm(raw);
+  const students = Array.isArray(_studentsCache) ? _studentsCache : [];
+  const match = students.find(s =>
+    _norm(s.email) === id ||
+    _norm(s.student_id) === id ||
+    _norm(s.studentId) === id ||
+    _norm(s.username) === id
+  );
+  return pickBestName(match, raw);
 }
 
 function catClass(cat){
@@ -902,8 +931,11 @@ function rowEventTitle(row){
   return base;
 }
 
+function attendanceHours(row){
+  return hoursNum(row?.hours_awarded ?? row?.hours ?? row?.awarded_hours ?? row?.hours_value ?? 0);
+}
 function rowHoursForDisplay(row){
-  if (row?._type === "attendance"){ return hoursNum(row.hours_awarded); }
+  if (row?._type === "attendance"){ return attendanceHours(row); }
   const rh = row.requested_hours ?? row.hours_requested ?? row.hours ?? row.req_hours;
   return hoursNum(rh);
 }
@@ -920,11 +952,32 @@ function getRowStudentToken(row){
   for (const c of candidates){ const n = _norm(c); if (n) return n; }
   return ""; 
 }
-function belongsToCurrentStudent(row, studentId){
+function studentIdentityTokens(studentId){
   const me = _norm(studentId);
-  if (!me) return false;
+  const tokens = new Set();
+  if (me) tokens.add(me);
+  const students = Array.isArray(_studentsCache) ? _studentsCache : [];
+  const match = students.find(s =>
+    _norm(s.email) === me ||
+    _norm(s.student_id) === me ||
+    _norm(s.studentId) === me ||
+    _norm(s.username) === me
+  );
+  if (match){
+    [match.email, match.student_id, match.studentId, match.username].forEach(v => {
+      const n = _norm(v);
+      if (n) tokens.add(n);
+    });
+  }
+  return tokens;
+}
+function belongsToCurrentStudent(row, studentId){
+  const tokens = studentIdentityTokens(studentId);
+  if (!tokens.size) return false;
   const token = getRowStudentToken(row);
-  if (token) return token === me;
+  if (token) return tokens.has(token);
+  // The attendance/requests endpoint was already queried for this student,
+  // so rows without an identity field are safe to keep.
   return true;
 }
 
@@ -1377,7 +1430,7 @@ function openModal(data){
         let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
         if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
         const sTxt = sLab ? ` (Shift: ${sLab})` : "";
-        li.textContent = `${s.student_id}${sTxt}`;
+        li.textContent = `${studentDisplayName(s.student_id ?? s.studentId ?? s.email)}${sTxt}`;
         sUL.appendChild(li);
       });
     }
@@ -1393,7 +1446,7 @@ function openModal(data){
         let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
         if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
         const sTxt = sLab ? ` (Shift: ${sLab})` : "";
-        li.textContent = `${s.student_id}${sTxt}`;
+        li.textContent = `${studentDisplayName(s.student_id ?? s.studentId ?? s.email)}${sTxt}`;
         wUL.appendChild(li);
       });
     } else {
@@ -1413,7 +1466,7 @@ function closeModal(){ document.getElementById("eventModal").style.display = "no
   document.getElementById("hoursLabel").textContent = "My Semester Total Hours";
   document.getElementById("hoursSub").textContent = CURRENT_SEMESTER;
   const sess = getSession();
-  currentStudentId = (sess.username || "").trim();
+  currentStudentId = String(sess.username || sess.student_id || sess.studentId || sess.email || "").trim();
   if (!currentStudentId){
     document.getElementById("ambGreet").textContent = "Session expired";
     document.getElementById("ambName").textContent = "Please go back and log in again.";
@@ -1426,7 +1479,7 @@ function closeModal(){ document.getElementById("eventModal").style.display = "no
   const ul = document.getElementById("reqList");
   ul.innerHTML = "";
   const rawReqs = (sum && sum.requirements) ? sum.requirements : [];
-  const have = new Map((rawReqs || []).map(r => [String(r.requirement_key), !!r.is_checked]));
+  const have = new Map((rawReqs || []).map(r => [canonicalRequirementKey(r.requirement_key ?? r.key), isTrue(r.is_checked)]));
   Object.keys(REQUIREMENT_LABELS).forEach(k => {
     const li = document.createElement("li");
     const box = document.createElement("span");
@@ -1679,7 +1732,7 @@ async function loadHistory() {
 
     sel.value = semesters.includes(CURRENT_SEMESTER) ? CURRENT_SEMESTER : semesters[0];
     
-    const allTotal = _attendanceCache.reduce((acc, r) => acc + hoursNum(r.hours_awarded), 0);
+    const allTotal = _attendanceCache.reduce((acc, r) => acc + attendanceHours(r), 0);
     document.getElementById("histAllTotal").textContent = (Math.round(allTotal * 100) / 100).toString();
     
     sel.onchange = () => renderHistory(sel.value);
@@ -1701,7 +1754,7 @@ async function loadHistory() {
 function syncTopHoursToCurrentSemester(){
   const sem = String(CURRENT_SEMESTER || "").trim();
   const rows = (_attendanceCache || []).filter(r => rowSemester(r) === sem);
-  const total = rows.reduce((acc,r)=>acc + hoursNum(r.hours_awarded), 0);
+  const total = rows.reduce((acc,r)=>acc + attendanceHours(r), 0);
   document.getElementById("hoursTotal").textContent = (Math.round(total*100)/100).toString();
   document.getElementById("hoursSub").textContent = CURRENT_SEMESTER;
 }
@@ -1712,7 +1765,7 @@ function renderHistory(sem){
   const tbody = document.getElementById("histRows");
   tbody.innerHTML = "";
   const semAtt = (_attendanceCache || []).filter(r => rowSemester(r) === semKey);
-  const semTotal = semAtt.reduce((acc,r)=>acc + hoursNum(r.hours_awarded), 0);
+  const semTotal = semAtt.reduce((acc,r)=>acc + attendanceHours(r), 0);
   document.getElementById("histSemTotal").textContent = (Math.round(semTotal*100)/100).toString();
   if (!rows.length){ tbody.innerHTML = `<tr><td colspan="6" class="muted small">No history in this semester.</td></tr>`; return; }
   rows.sort((a,b)=>rowDateKey(b)-rowDateKey(a));
