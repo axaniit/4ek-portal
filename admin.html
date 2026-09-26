@@ -1066,14 +1066,25 @@ let SEMESTER_RANGES = [];
 /* ===== REQUIREMENTS ===== */
 const REQUIREMENT_LABELS = {
   "2 Tailgates": "2 Tailgates",
-  "2 Regalia Shifts": "2 Regalia Shifts (spring)",
+  "2 Regalia Shifts": "2 Regalia Shifts (fall)",
   "1 Homecoming event": "1 Homecoming event",
   "1 Recruitment event": "1 Recruitment event",
   "Day of Giving": "Day of Giving",
-  "2 Socials": "2 Socials (spring)",
-  "Fall Retreat or Makeup": "Fall Retreat or Makeup",
-  "30 Hours (spring)": "30 Hours (spring)"
+  "2 Socials": "2 Socials (fall)",
+  "Mid-year retreat or makeup": "Mid-year retreat or makeup",
+  "First Meeting of the Year": "First Meeting of the Year",
+  "30 Hours (fall)": "30 Hours (fall)"
 };
+
+// Legacy requirement keys are normalized so older saved checkmarks still display correctly.
+const REQUIREMENT_KEY_ALIASES = {
+  "Fall Retreat or Makeup": "Mid-year retreat or makeup",
+  "30 Hours (spring)": "30 Hours (fall)"
+};
+function canonicalRequirementKey(key){
+  const raw = String(key ?? "").trim();
+  return REQUIREMENT_KEY_ALIASES[raw] || raw;
+}
 
 /* ===== UTIL ===== */
 function _norm(v){ return String(v == null ? "" : v).trim().toLowerCase(); }
@@ -1362,7 +1373,8 @@ async function getStudentsCached(){
 function pickBestName(stu, fallbackEmail){
   if (!stu) return String(fallbackEmail||"admin");
   const cand =
-    stu.name ||
+    stu.name || stu.student_name ||
+    stu.preferred_name || stu.preferredName ||
     stu.full_name || stu.fullName ||
     stu.display_name || stu.displayName ||
     (stu.first_name || stu.firstName || stu.firstname ? `${stu.first_name||stu.firstName||stu.firstname} ${stu.last_name||stu.lastName||stu.lastname||""}`.trim() : "") ||
@@ -1372,8 +1384,26 @@ function pickBestName(stu, fallbackEmail){
 async function resolveStudentName(studentIdOrEmail){
   const id = _norm(studentIdOrEmail);
   const students = await getStudentsCached();
-  const match = students.find(s => _norm(s.email) === id || _norm(s.student_id) === id);
+  const match = students.find(s =>
+    _norm(s.email) === id ||
+    _norm(s.student_id) === id ||
+    _norm(s.studentId) === id ||
+    _norm(s.username) === id
+  );
   return pickBestName(match, studentIdOrEmail);
+}
+function studentDisplayName(studentIdOrEmail){
+  const raw = String(studentIdOrEmail ?? "").trim();
+  if (!raw) return "—";
+  const id = _norm(raw);
+  const students = Array.isArray(_studentsCache) ? _studentsCache : [];
+  const match = students.find(s =>
+    _norm(s.email) === id ||
+    _norm(s.student_id) === id ||
+    _norm(s.studentId) === id ||
+    _norm(s.username) === id
+  );
+  return pickBestName(match, raw);
 }
 
 /* ===== CATEGORY → CSS CLASS ===== */
@@ -2519,7 +2549,7 @@ function openModal(data){
       let sLab = a.shift_title || a.shiftTitle || a.shift_name || "";
       if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
       const sTxt = sLab ? ` · Shift: ${sLab}` : "";
-      li.textContent = `${a.student_id}${sTxt}${hrs}${cmt}`;
+      li.textContent = `${studentDisplayName(a.student_id ?? a.studentId ?? a.email)}${sTxt}${hrs}${cmt}`;
       aUL.appendChild(li);
     });
   }
@@ -2537,7 +2567,7 @@ function openModal(data){
       let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
       if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
       const sTxt = sLab ? ` · Shift: ${sLab}` : "";
-      li.textContent = `${s.student_id}${sTxt}${hrs}${cmt}`;
+      li.textContent = `${studentDisplayName(s.student_id ?? s.studentId ?? s.email)}${sTxt}${hrs}${cmt}`;
       sUL.appendChild(li);
     });
   }
@@ -2555,7 +2585,7 @@ function openModal(data){
       let sLab = s.shift_title || s.shiftTitle || s.shift_name || "";
       if (!sLab && sid) sLab = shiftLabelById.get(sid) || sid;
       const sTxt = sLab ? ` · Shift: ${sLab}` : "";
-      li.textContent = `${s.student_id}${sTxt}${hrs}${cmt}`;
+      li.textContent = `${studentDisplayName(s.student_id ?? s.studentId ?? s.email)}${sTxt}${hrs}${cmt}`;
       wUL.appendChild(li);
     });
   } else {
@@ -2923,12 +2953,13 @@ function initPendingCenter(activeEvents){
       const ev = findEventById(evId);
       const cat = normCat(r.category || r.cat || r.event_category || ev?.category || ev?.type || "");
       const title = (r.event_title || ev?.title || "").toLowerCase();
-      const student = getReqStudent(r).toLowerCase();
+      const studentId = getReqStudent(r);
+      const student = studentDisplayName(studentId).toLowerCase();
       const comment = getReqComment(r).toLowerCase();
       if (f.event_id && String(f.event_id) !== String(evId)) return false;
       if (f.cat && String(f.cat) !== String(cat)) return false;
       if (f.q){
-        const hay = `${title} ${student} ${comment} ${evId}`.toLowerCase();
+        const hay = `${title} ${student} ${studentId} ${comment} ${evId}`.toLowerCase();
         if (!hay.includes(f.q)) return false;
       }
       return true;
@@ -2940,7 +2971,8 @@ function initPendingCenter(activeEvents){
       const evId = getReqEventId(r);
       const ev = findEventById(evId);
       const title = r.event_title || ev?.title || evId || "—";
-      const student = getReqStudent(r) || "—";
+      const studentId = getReqStudent(r);
+      const student = studentDisplayName(studentId);
       const hours = getReqHours(r);
       const comment = getReqComment(r);
       const cat = normCat(r.category || r.cat || r.event_category || ev?.category || ev?.type || "");
@@ -3212,7 +3244,7 @@ async function initReqAdmin(){
     }
     const rows = Array.isArray(sum.requirements) ? sum.requirements : [];
     const have = new Map(rows.map(r => [
-      String(r.requirement_key ?? r.key ?? ""),
+      canonicalRequirementKey(r.requirement_key ?? r.key ?? ""),
       (String(r.is_checked) === "true" || r.is_checked === true || String(r.is_checked).toLowerCase() === "yes" || r.is_checked === 1)
     ]));
 
