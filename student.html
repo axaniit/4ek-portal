@@ -576,8 +576,8 @@
       </div>
     </div>
     <div class="modal-f">
-      <button class="secondary" onclick="modalRequestAttendance()">Request attendance</button>
-      <button class="secondary" onclick="modalSignup()">Sign up</button>
+      <button class="secondary" id="mBtnRequestAttendance" onclick="modalRequestAttendance()">Request attendance</button>
+      <button class="secondary" id="mBtnSignup" onclick="modalSignup()">Sign up</button>
       <button class="secondary" onclick="closeModal()">Close</button>
     </div>
   </div>
@@ -1332,6 +1332,13 @@ function openModal(data){
   const isLoading = data.loading === true;
   const sAcc = data.signupsAccepted || [];
   const sWait = data.signupsWait || [];
+  const eventIsActive = isActiveEvent(ev);
+
+  // Inactive events remain viewable on the calendar, but are informational only.
+  const requestBtn = document.getElementById("mBtnRequestAttendance");
+  const signupBtn = document.getElementById("mBtnSignup");
+  if (requestBtn) requestBtn.style.display = eventIsActive ? "" : "none";
+  if (signupBtn) signupBtn.style.display = eventIsActive ? "" : "none";
 
   document.getElementById("mTitle").textContent = ev.title || ev.event_id || "Event";
   document.getElementById("mWhen").textContent  = `${fmtDate(ev.start)}${ev.end ? (" → " + fmtDate(ev.end)) : ""}`;
@@ -1353,7 +1360,11 @@ function openModal(data){
     // Show loaded state
     capEl.textContent = limit > 0 ? `Sign-ups: ${sAcc.length} / ${limit}` : `Sign-ups: ${sAcc.length} (no cap)`;
 
-    setModalShiftUI(_modalEventId); // Process shifts
+    if (eventIsActive) {
+      setModalShiftUI(_modalEventId); // Shift choice is only relevant for active events.
+    } else {
+      document.getElementById("mShiftWrap").style.display = "none";
+    }
 
     const sUL = document.getElementById("mSignups");
     sUL.innerHTML = "";
@@ -1432,7 +1443,9 @@ function closeModal(){ document.getElementById("eventModal").style.display = "no
   eventsCache = Array.isArray(evResp) ? evResp : (evResp && Array.isArray(evResp.events) ? evResp.events : (evResp && Array.isArray(evResp.rows) ? evResp.rows : []));
   const activeEvents = eventsCache.filter(isActiveEvent);
 
-  initCalendarSafe(activeEvents);
+  // Keep every event visible on the calendar, including inactive events.
+  // Interactive dropdowns below still use activeEvents only.
+  initCalendarSafe(eventsCache);
 
   const reqSel = document.getElementById("reqEvent");
   const btnReq = document.getElementById("btnReq");
@@ -1745,6 +1758,11 @@ function _jumpToForm(formId, focusId){
 }
 
 async function modalSignup(){
+  const ev = eventById(_modalEventId);
+  if (!ev || !isActiveEvent(ev)){
+    openConfetti("Can’t sign up from this event", "This event is no longer open for sign-ups.");
+    return;
+  }
   const res = _setSelectIfExists("signupEvent", _modalEventId);
   if (!res.ok){ openConfetti("Can’t sign up from this event", "This event is not available in your Sign-up dropdown."); return; }
   await setShiftUI("su", _modalEventId);
@@ -1754,6 +1772,11 @@ async function modalSignup(){
 }
 
 async function modalRequestAttendance(){
+  const ev = eventById(_modalEventId);
+  if (!ev || !isActiveEvent(ev)){
+    openConfetti("Can’t request attendance", "This event is no longer open for attendance requests.");
+    return;
+  }
   const res = _setSelectIfExists("reqEvent", _modalEventId);
   if (!res.ok){ openConfetti("Can’t request attendance", "This event is not available in your Attendance Request dropdown."); return; }
   await setShiftUI("req", _modalEventId);
