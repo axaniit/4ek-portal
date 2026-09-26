@@ -2096,7 +2096,8 @@ function autofillEventIdIfEmpty(){
     activeEventsCache = (eventsCache || []).filter(isActiveEvent);
 
     fillEventSelects(activeEventsCache);
-    buildCalendar(activeEventsCache);
+    // Keep inactive events visible on the calendar, but out of interactive event dropdowns.
+    buildCalendar(eventsCache);
     await initOwnerControls();
 
     const reqSel = document.getElementById("reqEvent");
@@ -2632,8 +2633,16 @@ function openModal(data){
   document.getElementById("mMyComment").value = "";
   document.getElementById("mMyStatus").textContent = "";
 
-  document.getElementById("mBtnSignupMe").onclick = () => modalSignupMe(_modalEventId);
-  document.getElementById("mBtnRequestMe").onclick = () => modalRequestMe(_modalEventId);
+  // Inactive events remain visible on the calendar, but cannot be signed up for
+  // or used to submit attendance requests from the event modal.
+  const eventIsActive = isActiveEvent(ev);
+  const selfActions = document.querySelector("#eventModal .self-actions");
+  if (selfActions) selfActions.style.display = eventIsActive ? "" : "none";
+
+  const signupMeBtn = document.getElementById("mBtnSignupMe");
+  const requestMeBtn = document.getElementById("mBtnRequestMe");
+  if (signupMeBtn) signupMeBtn.onclick = eventIsActive ? (() => modalSignupMe(_modalEventId)) : null;
+  if (requestMeBtn) requestMeBtn.onclick = eventIsActive ? (() => modalRequestMe(_modalEventId)) : null;
 
   const aUL = document.getElementById("mApproved");
   aUL.innerHTML = "";
@@ -2724,6 +2733,15 @@ async function modalSignupMe(eventId){
   const st = document.getElementById("mMyStatus");
   if (!eventId){ st.textContent = "No event id."; return; }
 
+  // Defensive check: inactive events must never accept a new sign-up, even if
+  // this function is triggered outside the normal modal controls.
+  const eventRow = findEventById(eventId);
+  if (eventRow && !isActiveEvent(eventRow)){
+    st.textContent = "This event is inactive.";
+    showPopup(false, "Event inactive", "Sign-ups are closed for this event.");
+    return;
+  }
+
   const shiftId = modalSelectedShift();
   if (mustPickShiftForEvent(eventId) && !shiftId){
     st.textContent = "Pick a shift.";
@@ -2765,6 +2783,14 @@ async function modalSignupMe(eventId){
 async function modalRequestMe(eventId){
   const st = document.getElementById("mMyStatus");
   if (!eventId){ st.textContent = "No event id."; return; }
+
+  // Defensive check: inactive events must never accept a new attendance request.
+  const eventRow = findEventById(eventId);
+  if (eventRow && !isActiveEvent(eventRow)){
+    st.textContent = "This event is inactive.";
+    showPopup(false, "Event inactive", "Attendance requests are closed for this event.");
+    return;
+  }
 
   const shiftId = modalSelectedShift();
   if (mustPickShiftForEvent(eventId) && !shiftId){
@@ -2902,7 +2928,8 @@ async function saveEvent(){
   shiftLabelById.clear();
 
   fillEventSelects(activeEventsCache);
-  buildCalendar(activeEventsCache);
+  // Keep inactive events visible on the calendar after an event refresh/save.
+  buildCalendar(eventsCache);
 
   setShiftUI("req", document.getElementById("reqEvent")?.value || "");
   setShiftUI("su", document.getElementById("signupEvent")?.value || "");
