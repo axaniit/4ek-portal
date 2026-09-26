@@ -1944,7 +1944,7 @@ function autofillEventIdIfEmpty(){
     activeEventsCache = (eventsCache || []).filter(isActiveEvent);
 
     fillEventSelects(activeEventsCache);
-    buildCalendar(activeEventsCache);
+    buildCalendar(eventsCache);
 
     const reqSel = document.getElementById("reqEvent");
     const suSel  = document.getElementById("signupEvent");
@@ -2039,6 +2039,13 @@ async function submitMyRequest(e){
     return;
   }
 
+  const selectedEvent = findEventById(evId);
+  if (!selectedEvent || !isActiveEvent(selectedEvent)){
+    toast(msgEl, false, "This event is no longer available for attendance requests.");
+    showPopup(false, "Event inactive", "Attendance requests are closed for this event.");
+    return;
+  }
+
   const shiftIdRaw = getSelectedShift("req");
   const shiftId = (shiftIdRaw && String(shiftIdRaw).trim()) ? String(shiftIdRaw).trim() : null;
 
@@ -2093,6 +2100,13 @@ async function submitMySignup(e){
   const evId = document.getElementById("signupEvent").value;
   if (!evId){
     toast(msgEl, false, "Please choose an event.");
+    return;
+  }
+
+  const selectedEvent = findEventById(evId);
+  if (!selectedEvent || !isActiveEvent(selectedEvent)){
+    toast(msgEl, false, "This event is no longer available for sign-up.");
+    showPopup(false, "Event inactive", "Sign-ups are closed for this event.");
     return;
   }
 
@@ -2472,14 +2486,25 @@ function openModal(data){
   const limit = Number(ev.signup_capacity || 0);
   capEl.textContent = limit > 0 ? `Sign-ups: ${sAcc.length} / ${limit}` : `Sign-ups: ${sAcc.length} (no cap)`;
 
-  setModalShiftUI(_modalEventId);
+  const eventIsActive = isActiveEvent(ev);
+  const selfActions = document.querySelector("#eventModal .self-actions");
+  if (selfActions) selfActions.style.display = eventIsActive ? "" : "none";
+
+  if (eventIsActive) {
+    setModalShiftUI(_modalEventId);
+  } else {
+    const shiftWrap = document.getElementById("mShiftWrap");
+    if (shiftWrap) shiftWrap.style.display = "none";
+  }
 
   document.getElementById("mMyHours").value = "";
   document.getElementById("mMyComment").value = "";
   document.getElementById("mMyStatus").textContent = "";
 
-  document.getElementById("mBtnSignupMe").onclick = () => modalSignupMe(_modalEventId);
-  document.getElementById("mBtnRequestMe").onclick = () => modalRequestMe(_modalEventId);
+  const signupMeBtn = document.getElementById("mBtnSignupMe");
+  const requestMeBtn = document.getElementById("mBtnRequestMe");
+  if (signupMeBtn) signupMeBtn.onclick = eventIsActive ? (() => modalSignupMe(_modalEventId)) : null;
+  if (requestMeBtn) requestMeBtn.onclick = eventIsActive ? (() => modalRequestMe(_modalEventId)) : null;
 
   const aUL = document.getElementById("mApproved");
   aUL.innerHTML = "";
@@ -2570,6 +2595,13 @@ async function modalSignupMe(eventId){
   const st = document.getElementById("mMyStatus");
   if (!eventId){ st.textContent = "No event id."; return; }
 
+  const ev = findEventById(eventId);
+  if (!ev || !isActiveEvent(ev)){
+    st.textContent = "Event inactive.";
+    showPopup(false, "Event inactive", "Sign-ups are closed for this event.");
+    return;
+  }
+
   const shiftId = modalSelectedShift();
   if (mustPickShiftForEvent(eventId) && !shiftId){
     st.textContent = "Pick a shift.";
@@ -2611,6 +2643,13 @@ async function modalSignupMe(eventId){
 async function modalRequestMe(eventId){
   const st = document.getElementById("mMyStatus");
   if (!eventId){ st.textContent = "No event id."; return; }
+
+  const ev = findEventById(eventId);
+  if (!ev || !isActiveEvent(ev)){
+    st.textContent = "Event inactive.";
+    showPopup(false, "Event inactive", "Attendance requests are closed for this event.");
+    return;
+  }
 
   const shiftId = modalSelectedShift();
   if (mustPickShiftForEvent(eventId) && !shiftId){
@@ -2748,7 +2787,7 @@ async function saveEvent(){
   shiftLabelById.clear();
 
   fillEventSelects(activeEventsCache);
-  buildCalendar(activeEventsCache);
+  buildCalendar(eventsCache);
 
   setShiftUI("req", document.getElementById("reqEvent")?.value || "");
   setShiftUI("su", document.getElementById("signupEvent")?.value || "");
