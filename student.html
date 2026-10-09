@@ -1474,6 +1474,15 @@ function closeModal(){ document.getElementById("eventModal").style.display = "no
   }
   document.getElementById("ambGreet").textContent = greetingForNow();
   document.getElementById("ambName").textContent = await resolveStudentName(currentStudentId);
+  // Use the roster's canonical student_id for student-scoped backend queries.
+  // The login session may contain an email/username instead of that ID.
+  const accountKey = _norm(currentStudentId);
+  const accountRecord = (await getStudentsCached()).find(stu =>
+    [stu.student_id, stu.email, stu.username, stu.studentId].some(v => _norm(v) === accountKey)
+  );
+  if (accountRecord && String(accountRecord.student_id || accountRecord.studentId || "").trim()) {
+    currentStudentId = String(accountRecord.student_id || accountRecord.studentId).trim();
+  }
 
   const sum = await GET({ action:"studentsummary", student_id: currentStudentId });
   const ul = document.getElementById("reqList");
@@ -1627,11 +1636,16 @@ function closeModal(){ document.getElementById("eventModal").style.display = "no
   await loadHistory();
 })();
 
-function buildHistoryDedupeKey(row, type) {
-  const semester = rowSemester(row);
-  const eventId = rowEventId(row);
-  const status = type === "attendance" ? "approved" : normalizeStatus(row.status || row.request_status || row.decision || row.state);
-  return `${type}_${semester}_${eventId}_${status}`;
+function buildHistoryDedupeKey(row, type, index) {
+  // Different credited attendance entries for the same event are NOT duplicates.
+  // Use a record ID when one exists; otherwise preserve the source row.
+  const recordId = type === "attendance"
+    ? (row.attendance_id ?? row.attendanceId)
+    : (row.request_id ?? row.requestId);
+  if (recordId != null && String(recordId).trim()) {
+    return `${type}_id_${String(recordId).trim()}`;
+  }
+  return `${type}_row_${index}`;
 }
 
 async function fetchRequestsWithFallback(studentId) {
@@ -1670,16 +1684,16 @@ async function loadHistory() {
     _attendanceCache = [];
     _requestsCache = [];
 
-    for (const r of validAtt) {
-      const key = buildHistoryDedupeKey(r, "attendance");
+    for (const [index, r] of validAtt.entries()) {
+      const key = buildHistoryDedupeKey(r, "attendance", index);
       if (!seen.has(key)) {
         seen.add(key);
         _attendanceCache.push(r);
       }
     }
 
-    for (const r of validReq) {
-      const key = buildHistoryDedupeKey(r, "request");
+    for (const [index, r] of validReq.entries()) {
+      const key = buildHistoryDedupeKey(r, "request", index);
       if (!seen.has(key)) {
         seen.add(key);
         _requestsCache.push(r);
