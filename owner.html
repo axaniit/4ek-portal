@@ -912,10 +912,14 @@
           <label style="margin-top:10px;">Notes
             <input id="ev_notes">
           </label>
-          <div id="evPocFields" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
-            <label>Admin POC name <input id="ev_poc_name" type="text" placeholder="Point of contact name"></label>
-            <label>Admin POC email <input id="ev_poc_email" type="email" placeholder="poc@example.com"></label>
-          </div>
+          <fieldset id="evPocFields" style="border:2px solid #F4CA3D;border-radius:12px;padding:14px 16px;margin-top:16px;background:#fffdf4;min-width:0;">
+            <legend style="padding:0 8px;font-weight:800;color:#111;">Event Point of Contact (Admin POC)</legend>
+            <div class="muted small" style="margin-bottom:10px;">Enter the event contact's name and email here. Optional for socials and meetings; leave blank when no contact is assigned.</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
+              <label>POC Name <input id="ev_poc_name" type="text" placeholder="Contact name" autocomplete="off"></label>
+              <label>POC Email Address <input id="ev_poc_email" type="email" placeholder="contact@example.com" autocomplete="off"></label>
+            </div>
+          </fieldset>
 
           <div class="shift-admin">
             <div class="shift-admin-top">
@@ -2650,7 +2654,7 @@ function togglePocFields(){
   const category = String(document.getElementById('ev_cat')?.value || '').trim().toLowerCase();
   const optional = category === 'socials' || category === 'meetings';
   const block = document.getElementById('evPocFields');
-  if(block) block.style.display = 'grid';
+  if(block) block.style.display = 'block';
   // POC details are optional for Socials and Meetings, and may be left blank for any event.
 }
 document.getElementById('ev_cat')?.addEventListener('change', togglePocFields);
