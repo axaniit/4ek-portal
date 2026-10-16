@@ -912,6 +912,10 @@
           <label style="margin-top:10px;">Notes
             <input id="ev_notes">
           </label>
+          <div id="evPocFields" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
+            <label>Admin POC name <input id="ev_poc_name" type="text" placeholder="Point of contact name"></label>
+            <label>Admin POC email <input id="ev_poc_email" type="email" placeholder="poc@example.com"></label>
+          </div>
 
           <div class="shift-admin">
             <div class="shift-admin-top">
@@ -1144,6 +1148,11 @@
       <div id="mWhere" class="muted"></div>
       <div id="mDesc" class="muted"></div>
       <div id="mCap" class="cap"></div>
+      <div id="mPocDetails" style="margin-top:12px; padding:12px; border:1px solid #eee; border-radius:8px;">
+        <strong>Admin POC</strong><div id="mPocName" class="small"></div><div id="mPocEmail" class="small"></div>
+        <div class="muted small" id="mPocMsg"></div>
+        <button id="mUpdatePocBtn" type="button" class="secondary" style="margin-top:8px;">Update POC</button>
+      </div>
 
       <div class="self-actions">
         <div id="mShiftWrap" style="display:none; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #ddd;">
@@ -2636,6 +2645,37 @@ function extractSignupsWait(roster){
   return [];
 }
 
+/* ===== Event POC ===== */
+function togglePocFields(){
+  const category = String(document.getElementById('ev_cat')?.value || '').trim().toLowerCase();
+  const optional = category === 'socials' || category === 'meetings';
+  const block = document.getElementById('evPocFields');
+  if(block) block.style.display = 'grid';
+  // POC details are optional for Socials and Meetings, and may be left blank for any event.
+}
+document.getElementById('ev_cat')?.addEventListener('change', togglePocFields);
+togglePocFields();
+
+async function sendPocUpdate(eventId, pocName, pocEmail, roster){
+  const count = (roster || []).length;
+  if (!window.confirm(`Email the current ${count} accepted sign-up(s) for this event to ${pocName} (${pocEmail})?\n\nThe email will include names, assigned shifts, comments, and an as-of timestamp.`)) return;
+  // Verify ownership server-side rather than trusting a client-supplied role.
+  const pwd = window.prompt('Enter your owner portal password to authorize this email:');
+  if (pwd === null) return;
+  if (!pwd) { window.alert('A password is required. No email was sent.'); return; }
+  const btn = document.getElementById('mUpdatePocBtn');
+  const msg = document.getElementById('mPocMsg');
+  btn.disabled = true;
+  msg.textContent = 'Sending update…';
+  try {
+    const result = await POST('sendpocupdate', { event_id:eventId, actor_id: currentAdminId, password:pwd });
+    if (!result?.ok) throw new Error(result?.message || result?.error || 'Unable to send update');
+    msg.textContent = `Update emailed to ${pocEmail} (${result.recipient_count} accepted sign-ups).`;
+  } catch(e){
+    msg.textContent = `Email not sent: ${e.message || e}`;
+  } finally { btn.disabled = !(pocName && pocEmail); }
+}
+
 /* ===== Modal ===== */
 let _modalEventId = null;
 function openModal(data){
@@ -2657,6 +2697,15 @@ function openModal(data){
   capEl.textContent = limit > 0 ? `Sign-ups: ${sAcc.length} / ${limit}` : `Sign-ups: ${sAcc.length} (no cap)`;
 
   setModalShiftUI(_modalEventId);
+  const pocName = String(ev.admin_poc_name || '').trim();
+  const pocEmail = String(ev.admin_poc_email || '').trim();
+  document.getElementById('mPocName').textContent = pocName || 'Not assigned';
+  document.getElementById('mPocEmail').textContent = pocEmail || '';
+  document.getElementById('mPocMsg').textContent = pocEmail ? '' : 'Assign a POC in the event editor to enable email updates.';
+  const updatePocBtn = document.getElementById('mUpdatePocBtn');
+  updatePocBtn.disabled = !(pocName && pocEmail);
+  updatePocBtn.onclick = () => sendPocUpdate(_modalEventId, pocName, pocEmail, sAcc);
+
 
   document.getElementById("mMyHours").value = "";
   document.getElementById("mMyComment").value = "";
@@ -2744,6 +2793,9 @@ function openModal(data){
     document.getElementById('ev_hours').value = ev.hours_value != null ? ev.hours_value : 0;
     document.getElementById('ev_cap').value   = ev.signup_capacity != null ? ev.signup_capacity : 0;
     document.getElementById('ev_notes').value = ev.notes || ev.description || '';
+    document.getElementById('ev_poc_name').value = ev.admin_poc_name || '';
+    document.getElementById('ev_poc_email').value = ev.admin_poc_email || '';
+    togglePocFields();
 
     try{
       const shifts = await loadShiftsForEvent(ev.event_id || ev.id || "");
@@ -2886,6 +2938,8 @@ async function saveEvent(){
     hours_value: hoursInput,
     signup_capacity: Number(document.getElementById('ev_cap').value || 0),
     notes: (document.getElementById('ev_notes').value || '').trim(),
+    admin_poc_name: (document.getElementById('ev_poc_name').value || '').trim(),
+    admin_poc_email: (document.getElementById('ev_poc_email').value || '').trim(),
     active: true,
     shifts_enabled: !!shiftPack.enabled,
     shifts_required: shiftPack.enabled ? !!shiftPack.required : false,
