@@ -879,8 +879,8 @@
           <label style="margin-top:10px;">Notes
             <input id="ev_notes">
           </label>
-          <fieldset id="evPocFields" style="border:2px solid #F4CA3D;border-radius:12px;padding:14px 16px;margin-top:16px;background:#fffdf4;min-width:0;">
-            <legend style="padding:0 8px;font-weight:800;color:#111;">Event Point of Contact (Admin POC)</legend>
+          <fieldset id="evPocFields" style="border:1px solid #e5e5e5;border-radius:10px;padding:12px 16px;margin-top:14px;background:#fafafa;min-width:0;">
+            <legend style="padding:0 8px;font-weight:600;color:#333;">Event Point of Contact (Admin POC)</legend>
             <div class="muted small" style="margin-bottom:10px;">Enter the event contact's name and email here. Optional for socials and meetings; leave blank when no contact is assigned.</div>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
               <label>POC Name <input id="ev_poc_name" type="text" placeholder="Contact name" autocomplete="off"></label>
@@ -1962,13 +1962,14 @@ function autofillEventIdIfEmpty(){
 
     const sess = getSession();
     
-    currentAdminId = String(sess.username || sess.student_id || sess.studentId || sess.email || "test_admin@example.com").trim();
+    currentAdminId = String(sess.username || sess.student_id || sess.studentId || sess.email || "").trim();
 
     if (!currentAdminId){
       const g = document.getElementById("adminGreet");
       const n = document.getElementById("adminName");
       if (g) g.textContent = "Session expired";
       if (n) n.textContent = "Please go back and log in again.";
+      showPopup(false, "Session expired", "Your login could not be identified. Please log in again before submitting any requests.");
       return;
     }
 
